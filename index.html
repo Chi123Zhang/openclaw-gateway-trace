@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="OpenClaw Gateway trace viewer for source-level G0–G18 execution analysis."/>
+<title>OpenClaw Gateway Trace</title>
+<link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="brandDot"></span>OpenClaw Gateway</div>
+  <div class="controls">
+    <span class="badge">Trace View</span>
+    <label class="casePicker">
+      <span>Trace</span>
+      <select class="speed" id="caseSelect"></select>
+    </label>
+    <select class="speed" id="speed">
+      <option value="900">0.75×</option>
+      <option value="620" selected>1×</option>
+      <option value="380">1.5×</option>
+      <option value="220">2×</option>
+    </select>
+    <button class="btn alt" id="resetBtn">Reset</button>
+    <button class="btn" id="playBtn">▶ Replay</button>
+  </div>
+</header>
+
+<div class="layout">
+<main class="main">
+
+<section class="card conn">
+  <div class="kicker">Connection</div>
+  <div class="sectionTitle">Handshake</div>
+  <div class="connFlow" id="connFlow"></div>
+</section>
+
+<section class="card query">
+  <div><div class="kicker" style="margin-bottom:5px">Input</div><code id="queryText"></code></div>
+  <div class="state" id="requestState">READY</div>
+</section>
+
+<section class="card pipeline">
+  <div class="kicker">Request path</div>
+  <div class="sectionTitle">Gateway execution path</div>
+
+  <div class="archBand">
+    <div class="archTag">Methods & Request Handling · M1–M2</div>
+    <div class="archTag security">Runtime Management & Security · M3</div>
+    <div class="archTag">Methods & Request Handling · M4–M5</div>
+  </div>
+
+  <div class="moduleWrap">
+    <div class="track"></div>
+    <div class="runner" id="runner"></div>
+    <div class="moduleRow" id="moduleRow"></div>
+  </div>
+
+  <div class="expand">
+    <div class="expandHead">
+      <div><span class="kicker">Module</span> <span class="expandTitle" id="expandTitle"></span></div>
+      <span class="badge" id="expandCount"></span>
+    </div>
+    <div class="subflow" id="subflow"></div>
+  </div>
+
+  <div class="boundary">
+    <div class="boundaryGrid">
+      <div class="boundaryBox"><strong>G18 · Reply Resolver Boundary</strong><span id="resolverBoundaryText"></span></div>
+      <div class="returnArrow">→<br>←</div>
+      <div class="boundaryBox"><strong>Deeper Reply / Agent Runtime</strong><span>context / history / memory / skills / tools / model execution</span></div>
+    </div>
+    <div class="returnNote">replyResult returns to the original G16 → filter / deliver / complete → DispatchFromConfigResult → G14 finalization</div>
+  </div>
+</section>
+
+<section class="card detail">
+  <div class="detailHead">
+    <div><div class="kicker" style="margin-bottom:3px">Stage detail</div><div class="detailTitle" id="detailTitle"></div></div>
+    <div class="evidenceBar" id="evidenceBar"></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="detailBreadcrumb" id="detailBreadcrumb"></div>
+
+  <div class="summaryGrid">
+    <div class="info"><h4>Purpose</h4><p id="purpose"></p></div>
+    <div class="info"><h4>Observed in Case 2</h4><p id="case2"></p></div>
+    <div class="info ioInfo">
+      <h4>Input</h4>
+      <p id="input"></p>
+      <div class="ioConcrete">
+        <div class="ioConcreteHead"><span>Runtime values</span><span class="ioEvidence" id="inputEvidence"></span></div>
+        <pre class="ioValues" id="concreteInput"></pre>
+      </div>
+    </div>
+    <div class="info ioInfo">
+      <h4>Output</h4>
+      <p id="output"></p>
+      <div class="ioConcrete">
+        <div class="ioConcreteHead"><span>Runtime values</span><span class="ioEvidence" id="outputEvidence"></span></div>
+        <pre class="ioValues" id="concreteOutput"></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="processSection">
+    <div class="processTop">
+      <div><h4>Process · Trace View</h4><div class="processSummary" id="process"></div></div>
+      <span class="badge" id="stepCount"></span>
+    </div>
+    <div class="compactSteps" id="compactSteps"></div>
+    <button class="sourceToggle" id="sourceToggle" type="button"><span id="sourceToggleLabel">Source detail</span><span class="toggleMark" id="toggleMark">＋</span></button>
+    <div class="sourceDetail" id="sourceDetail">
+      <div class="sourceDetailHead"><div><div class="kicker">Source detail</div><div class="sourceDetailSub">Select a step to inspect its pseudocode and source range.</div></div></div>
+      <div class="sourceWorkspace">
+        <div class="sourceStepList" id="sourceStepList"></div>
+        <div class="stepPanel" id="stepPanel">
+          <div class="stepPanelHead"><div><div class="stepPanelTitle" id="stepPanelTitle"></div><div class="stepPanelMeta"><span class="stepMetaChip" id="stepStageChip"></span><span class="stepMetaChip">PSEUDOCODE</span></div></div><div class="stepHint">selected step</div></div>
+          <div class="stepCodeTools"><div class="stepSourceLabel" style="margin:0">PSEUDOCODE</div><button class="miniCopyBtn" id="copyStepCode" type="button">Copy code</button></div>
+          <pre class="sourceCode" id="stepCode"></pre>
+          <div class="stepCodeTools"><div class="stepSourceLabel" style="margin:0">SOURCE</div><button class="miniCopyBtn" id="copyStepSource" type="button">Copy source</button></div>
+          <div class="stepSource" id="stepSource"></div>
+          <div class="stepSourceLabel">NOTES</div><div class="stepPanelText" id="stepPanelText"></div>
+          <div class="sourceNote">The code shown above is source-aligned pseudocode for readability. The SOURCE field is the verified line range in the fixed v2026.7.1-2 snapshot.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="summaryGrid">
+    <div class="info"><h4>Observed Cost</h4><p><code id="time"></code><br><br><code id="tokens"></code></p></div>
+    <div class="info"><h4>Risk Note</h4><p id="risk"></p></div>
+    <div class="info"><h4>Result</h4><p><code id="result"></code></p></div>
+    <div class="info"><h4>Source Mapping</h4><p><code id="source"></code></p></div>
+  </div>
+</section>
+
+<section class="card output"><div><div class="kicker" style="margin-bottom:5px">Output</div><strong>Dispatch complete</strong></div><div class="finish">FINISHED</div></section>
+</main>
+
+<aside class="card sidebar">
+  <div class="sideTitle">Selected</div>
+  <div class="kv"><span>Stage</span><b id="sideStage">G3</b></div>
+  <div class="kv"><span>Result</span><b id="sideResult" style="color:var(--good)">allow</b></div>
+  <div class="kv"><span>Agent</span><b id="sideAgent" class="pendingValue">not confirmed</b></div>
+  <div class="kv"><span>Resolver</span><b id="sideResolver" class="pendingValue">not reached</b></div>
+  <div class="kv"><span>Provider</span><b id="sideProvider" class="pendingValue">not reached</b></div>
+  <div class="kv"><span>Model</span><b id="sideModel" class="pendingValue">not reached</b></div>
+  <div class="kv"><span>Tools</span><b id="sideTools" class="pendingValue">not reached</b></div>
+  <div class="sep"></div>
+  <div class="sideTitle">Runtime Context</div>
+  <div class="contextBlock">
+    <div class="ctxRow"><div class="ctxLabel"><span>Raw SessionKey</span><small>known at G4</small></div><div class="ctxRight"><b id="ctxRawSession" class="ctxValue pendingValue">not confirmed</b><span id="ctxRawSessionState" class="stateChip neutral">NOT REACHED</span></div></div>
+    <div class="ctxRow"><div class="ctxLabel"><span>Canonical SessionKey</span><small>resolved at G7</small></div><div class="ctxRight"><b id="ctxCanonicalSession" class="ctxValue pendingValue">not resolved</b><span id="ctxCanonicalSessionState" class="stateChip neutral">NOT REACHED</span></div></div>
+    <div class="ctxRow"><div class="ctxLabel"><span>SessionEntry</span><small>loaded at G7</small></div><div class="ctxRight"><b id="ctxSessionEntry" class="ctxValue pendingValue">not resolved</b><span id="ctxSessionEntryState" class="stateChip neutral">NOT REACHED</span></div></div>
+    <div class="ctxRow"><div class="ctxLabel"><span>Backing sessionId</span><small>captured at G8</small></div><div class="ctxRight"><b id="ctxSessionId" class="ctxValue pendingValue">not confirmed</b><span id="ctxSessionIdState" class="stateChip neutral">NOT REACHED</span></div></div>
+    <div class="ctxRow"><div class="ctxLabel"><span>Agent</span><small>resolved at G9</small></div><div class="ctxRight"><b id="ctxAgent" class="ctxValue pendingValue">not resolved</b><span id="ctxAgentState" class="stateChip neutral">NOT REACHED</span></div></div>
+    <div class="ctxRow"><div class="ctxLabel"><span>Send Policy</span><small>evaluated at G10</small></div><div class="ctxRight"><b id="ctxPolicy" class="ctxValue pendingValue">not evaluated</b><span id="ctxPolicyState" class="stateChip neutral">NOT REACHED</span></div></div>
+    <div class="ctxRow"><div class="ctxLabel"><span>MsgContext</span><small>constructed at G13</small></div><div class="ctxRight"><b id="ctxMsgContext" class="ctxValue pendingValue">not constructed</b><span id="ctxMsgContextState" class="stateChip neutral">NOT REACHED</span></div></div>
+    <div class="ctxRow"><div class="ctxLabel"><span>Downstream Agent</span><small>re-confirmed at G17</small></div><div class="ctxRight"><b id="ctxDownstreamAgent" class="ctxValue pendingValue">not reached</b><span id="ctxDownstreamAgentState" class="stateChip neutral">NOT REACHED</span></div></div>
+  </div>
+  <div class="contextNote">Shown after the relevant stage is reached.</div>
+  <div class="sep"></div>
+  <div class="sideTitle">Runtime</div>
+  <div class="kv"><span>ACK</span><b id="ackValue">—</b></div>
+  <div class="kv"><span>Title sync</span><b id="titleSyncValue">—</b></div>
+  <div class="kv"><span>Stage time</span><b id="sideTime">—</b></div>
+  <div class="kv"><span>Token cost</span><b id="sideTokens">—</b></div>
+  <div class="sep"></div>
+  <div class="sideTitle">State</div>
+  <div class="metric"><span>Authentication</span><b id="riskAuth" class="stateChip neutral">NOT REACHED</b></div>
+  <div class="metric"><span>Policy</span><b id="riskPolicy" class="stateChip neutral">NOT REACHED</b></div>
+  <div class="metric"><span>Runtime</span><b id="riskRuntime" class="stateChip neutral">NOT REACHED</b></div>
+  <div class="metric"><span>Routing</span><b id="riskRouting" class="stateChip neutral">NOT REACHED</b></div>
+  <div class="metric overallMetric"><span>Overall</span><b id="riskOverall" class="stateChip good">NO ALERT</b></div>
+  <div class="kv"><span>Evidence</span><b id="coverageText">—</b></div>
+  <div class="barRow"><div class="barHead"><span>Progress</span><span id="progressText">0%</span></div><div class="barTrack"><div class="barFill progressFill" id="progressBar" style="width:0"></div></div></div>
+  <div class="log" id="log"></div>
+  <div class="note">Context and state follow the selected stage. Trace-specific values come from the selected case file.</div>
+</aside>
+</div>
+<script src="data/stages.js"></script>
+<script src="data/cases/index.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
