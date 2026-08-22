@@ -8,6 +8,22 @@ The current repository contains one trace:
 
 Shared Gateway source structure is kept separate from trace-specific runtime data, so new questions can be added without duplicating the dashboard.
 
+## Live site
+
+Open the deployed viewer here:
+
+```text
+https://chi123zhang.github.io/openclaw-gateway-trace/
+```
+
+Direct link to the current trace:
+
+```text
+https://chi123zhang.github.io/openclaw-gateway-trace/?case=cake
+```
+
+The `localhost` address below is only for running a local development copy on your own computer. It is not the public website.
+
 ## Repository layout
 
 ```text
@@ -63,6 +79,8 @@ These files should normally remain unchanged across traces produced from the sam
 
 ## Run locally
 
+For local development only:
+
 ```bash
 python3 -m http.server 8000
 ```
@@ -73,24 +91,17 @@ Then open:
 http://localhost:8000/
 ```
 
-Direct link to the current trace:
+Local direct link to the current trace:
 
 ```text
 http://localhost:8000/?case=cake
 ```
 
-## Publish with GitHub Pages
+## GitHub Pages
 
-Open the repository and go to:
+This repository is published from the `main` branch at `/ (root)` using GitHub Pages.
 
-**Settings → Pages → Build and deployment → Deploy from a branch**
-
-Select:
-
-- Branch: `main`
-- Folder: `/ (root)`
-
-After deployment, the site should be available at:
+Public site:
 
 ```text
 https://chi123zhang.github.io/openclaw-gateway-trace/
@@ -120,10 +131,10 @@ Example index entry:
 }
 ```
 
-The page header will then allow switching between the traces, and a trace can be opened directly with:
+The page header will then allow switching between traces, and a trace can be opened directly with:
 
 ```text
-?case=weather
+https://chi123zhang.github.io/openclaw-gateway-trace/?case=weather
 ```
 
 ## Source snapshot
