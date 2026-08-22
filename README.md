@@ -6,7 +6,7 @@ The current repository contains one trace:
 
 - **How to make a cake?** (`cake`)
 
-The viewer keeps the shared Gateway source mapping and G0–G18 step definitions separate from trace-specific runtime values. That makes it possible to add new questions without duplicating the dashboard code.
+Shared Gateway source structure is kept separate from trace-specific runtime data, so new questions can be added without duplicating the dashboard.
 
 ## Repository layout
 
@@ -17,7 +17,11 @@ openclaw-gateway-trace/
 │   ├── app.js
 │   └── styles.css
 ├── data/
-│   ├── stages.js
+│   ├── modules.js
+│   ├── stages/
+│   │   ├── part1.js      # G0–G6
+│   │   ├── part2.js      # G7–G12
+│   │   └── part3.js      # G13–G18
 │   └── cases/
 │       ├── index.js
 │       ├── cake.js
@@ -26,44 +30,40 @@ openclaw-gateway-trace/
 └── .nojekyll
 ```
 
-### `data/stages.js`
+## Shared Gateway definitions
 
-Shared source-level definitions:
+`data/modules.js` contains the M1–M5 high-level grouping.
 
-- G0–G18 names
-- module ownership
+`data/stages/part1.js`, `part2.js`, and `part3.js` contain the shared G0–G18 definitions:
+
+- stage names and module ownership
 - purpose
-- generic input/output
+- generic input / output
 - process steps
 - source mapping
 - source-aligned pseudocode
 
-These should normally remain the same across traces for the same OpenClaw source snapshot.
+These files should normally remain unchanged across traces produced from the same OpenClaw source snapshot.
 
-### `data/cases/cake.js`
+## Trace-specific data
 
-Trace-specific runtime data:
+`data/cases/cake.js` contains the runtime data for the current trace, including:
 
 - prompt
 - SessionKey / sessionId / runId
 - Agent
 - resolver
-- model/provider/tools
+- model / provider / available tools
 - observed result for each G stage
-- concrete input/output values
+- concrete runtime input / output
 - evidence type
-- stage state
+- state by stage
 
-### `data/cases/index.js`
-
-List of traces shown in the trace selector.
+`data/cases/index.js` controls the trace selector shown in the page header.
 
 ## Run locally
 
-Because the site is static, you can use any simple HTTP server:
-
 ```bash
-cd openclaw-gateway-trace
 python3 -m http.server 8000
 ```
 
@@ -73,7 +73,7 @@ Then open:
 http://localhost:8000/
 ```
 
-The current trace can also be linked directly:
+Direct link to the current trace:
 
 ```text
 http://localhost:8000/?case=cake
@@ -81,12 +81,16 @@ http://localhost:8000/?case=cake
 
 ## Publish with GitHub Pages
 
-1. Open **Settings → Pages**.
-2. Under **Build and deployment**, choose **Deploy from a branch**.
-3. Select branch `main` and folder `/ (root)`.
-4. Save.
+Open the repository and go to:
 
-The site will then be available at:
+**Settings → Pages → Build and deployment → Deploy from a branch**
+
+Select:
+
+- Branch: `main`
+- Folder: `/ (root)`
+
+After deployment, the site should be available at:
 
 ```text
 https://chi123zhang.github.io/openclaw-gateway-trace/
@@ -103,9 +107,24 @@ https://chi123zhang.github.io/openclaw-gateway-trace/?case=cake
 1. Copy `data/cases/_template.js` to a new file, for example `data/cases/weather.js`.
 2. Change the registered case ID from `example` to `weather`.
 3. Fill in the trace-specific metadata and G0–G18 runtime fields.
-4. Add one entry to `data/cases/index.js`.
+4. Add the new trace to `data/cases/index.js`.
 
-The selector in the header will then show both traces.
+Example index entry:
+
+```js
+{
+  id: "weather",
+  title: "What's the weather in New York?",
+  file: "data/cases/weather.js",
+  description: "Gateway trace for the weather query."
+}
+```
+
+The page header will then allow switching between the traces, and a trace can be opened directly with:
+
+```text
+?case=weather
+```
 
 ## Source snapshot
 
@@ -115,4 +134,4 @@ The current source mapping is based on OpenClaw `v2026.7.1-2`, commit:
 0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c
 ```
 
-Runtime evidence and source-derived values are intentionally distinguished in the UI. Missing per-stage timing/token values are not estimated.
+Runtime-observed, native, source, and source-derived evidence are kept distinct. Missing per-stage timing or token values are not estimated.
