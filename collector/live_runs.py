@@ -94,15 +94,28 @@ async def start_live_run(request: RunRequest) -> dict[str, Any]:
     if not message:
         raise HTTPException(status_code=400, detail="message must not be empty")
 
-    session_key = request.sessionKey or client.config.make_session_key()
-    run_id = str(uuid.uuid4())
-
-    try:
-        history = await client.history(session_key)
-        baseline = len(assistant_messages(history))
-    except OpenClawError:
+    # Live viewer semantics:
+    # - No sessionKey in the request and no OPENCLAW_SESSION_KEY override means a
+    #   brand-new session is created for this Run.  Such a session cannot contain
+    #   earlier assistant messages, so a preflight chat.history call is unnecessary.
+    # - An explicit/fixed session may already contain replies, so only that path
+    #   needs a baseline history count before chat.send.
+    existing_session_key = request.sessionKey or client.config.fixed_session_key
+    if existing_session_key:
+        session_key = existing_session_key
+        try:
+            history = await client.history(session_key)
+            baseline = len(assistant_messages(history))
+        except OpenClawError:
+            baseline = 0
+    else:
+        session_key = client.config.make_session_key()
         baseline = 0
 
+    run_id = str(uuid.uuid4())
+
+    # Take the trace cursor immediately before launching chat.send so the live
+    # stream starts at the request boundary rather than after an observer RPC.
     cursor = trace_log.cursor()
     live_id = uuid.uuid4().hex
     run = LiveRun(
@@ -125,6 +138,7 @@ async def start_live_run(request: RunRequest) -> dict[str, Any]:
         "runId": run_id,
         "sessionKey": session_key,
         "status": run.status,
+        "historyPreflight": bool(existing_session_key),
     }
 
 
