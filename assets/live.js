@@ -43,17 +43,47 @@
 
   async function checkCollector() {
     if (!collectorUrl) {
-      setCollectorState("Collector not connected");
+      setCollectorState("Collector not configured");
+      message.textContent = "Set collectorUrl in config.js to run new questions.";
       return;
     }
+
     try {
       const response = await fetch(`${collectorUrl}/health`, { method: "GET" });
       if (!response.ok) throw new Error(`health ${response.status}`);
-      setCollectorState("Collector connected", "connected");
-      message.textContent = "New questions will run through the collector.";
+      const health = await response.json().catch(() => ({}));
+
+      if (!health.openclawCli) {
+        setCollectorState("OpenClaw CLI missing", "error");
+        message.textContent = "Collector is running, but the OpenClaw CLI is not available on its PATH.";
+        return;
+      }
+
+      if (health.gateway !== "reachable") {
+        setCollectorState("Gateway unavailable", "error");
+        message.textContent = health.gatewayError
+          ? `Collector is running, but OpenClaw Gateway is unavailable: ${health.gatewayError}`
+          : "Collector is running, but OpenClaw Gateway is unavailable.";
+        return;
+      }
+
+      if (!health.traceLogConfigured) {
+        setCollectorState("Gateway connected · trace log not set", "connected");
+        message.textContent = "Questions can run, but G0–G18 runtime events need TRACECLAW_LOG_PATH.";
+        return;
+      }
+
+      if (!health.traceLogExists) {
+        setCollectorState("Gateway connected · trace log missing", "error");
+        message.textContent = `TRACECLAW_LOG_PATH is configured but the file does not exist: ${health.traceLogPath || ""}`;
+        return;
+      }
+
+      setCollectorState("Gateway + trace connected", "connected");
+      message.textContent = "Ready to run a new question and collect its Gateway trace.";
     } catch (error) {
       setCollectorState("Collector unavailable", "error");
-      message.textContent = `Collector configured but unavailable: ${error.message}`;
+      message.textContent = `Start the local collector at ${collectorUrl}. ${error.message}`;
     }
   }
 
@@ -116,24 +146,17 @@
     showResponse("");
 
     if (!collectorUrl) {
-      const saved = (window.GATEWAY_CASE_INDEX || []).find(item =>
-        item.title.trim().toLowerCase() === prompt.toLowerCase()
-      );
-      if (saved) {
-        message.textContent = "This question already has a saved trace. Use the Saved trace menu to open it.";
-      } else {
-        message.textContent = "Live collector is not connected yet. The interface is ready; the next step is wiring /api/run to OpenClaw.";
-      }
-      setCollectorState("Collector not connected", "error");
+      message.textContent = "Collector is not configured.";
+      setCollectorState("Collector not configured", "error");
       return;
     }
 
     setBusy(true);
     setCollectorState("Running trace…", "connected");
-    message.textContent = "Sending the question to OpenClaw and waiting for trace data…";
+    message.textContent = "Sending the question to OpenClaw and waiting for the reply and runtime trace…";
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), Number(cfg.requestTimeoutMs) || 120000);
+    const timeout = setTimeout(() => controller.abort(), Number(cfg.requestTimeoutMs) || 135000);
 
     try {
       const response = await fetch(`${collectorUrl}/api/run`, {
@@ -150,8 +173,18 @@
 
       installLiveCase(payload.trace || payload, prompt);
       showResponse(payload.response || payload.trace?.meta?.response || "");
-      setCollectorState("Trace complete", "connected");
-      message.textContent = "Live trace loaded below.";
+
+      const collectorMeta = payload.trace?._collector;
+      if (collectorMeta && Array.isArray(collectorMeta.traceStagesObserved)) {
+        const count = collectorMeta.traceStagesObserved.length;
+        setCollectorState("Trace complete", "connected");
+        message.textContent = count
+          ? `Live trace loaded. Runtime events captured for ${count} G stages.`
+          : "Reply completed, but no correlated G-stage runtime events were found. Check TRACECLAW_LOG_PATH / instrumentation.";
+      } else {
+        setCollectorState("Trace complete", "connected");
+        message.textContent = "Live trace loaded below.";
+      }
     } catch (error) {
       const text = error.name === "AbortError"
         ? "Collector request timed out."
