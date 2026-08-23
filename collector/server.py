@@ -32,7 +32,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.2.0")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.0")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -138,31 +138,50 @@ def _event_stage(
     }
 
 
-def _state_by_stage(meta: dict[str, Any], observed: set[str]) -> dict[str, Any]:
+def _event_bad(event: dict[str, Any]) -> bool:
+    text = " ".join(
+        str(event.get(key, ""))
+        for key in ("result", "reason", "event")
+    ).lower()
+    return any(word in text for word in ("deny", "not_authorized", "blocked", "error", "failed"))
+
+
+def _state_by_stage(
+    meta: dict[str, Any],
+    by_stage: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
     result: dict[str, Any] = {}
+
     for idx in range(19):
         stage = f"G{idx}"
 
-        if idx < 2:
-            auth = {"label": "FALLBACK", "tone": "warn"} if stage in observed else {"label": "—", "tone": "neutral"}
-        elif idx >= 2 and any(f"G{i}" in observed for i in range(2, idx + 1)):
+        if idx == 0 and "G0" in by_stage:
+            current = event_result("G0", by_stage["G0"])
+            auth = {"label": "PASS" if _tone(current) == "good" else "FALLBACK", "tone": "good" if _tone(current) == "good" else "warn"}
+        elif idx == 1 and "G1" in by_stage:
+            current = event_result("G1", by_stage["G1"])
+            auth = {"label": "PASS" if _tone(current) == "good" else "FALLBACK", "tone": "good" if _tone(current) == "good" else "warn"}
+        elif idx >= 2 and "G2" in by_stage:
             auth = {"label": "PASS", "tone": "good"}
         else:
             auth = {"label": "—", "tone": "neutral"}
 
         if idx < 10:
             policy = {"label": "—", "tone": "neutral"}
-        elif "G10" in observed:
-            policy = {"label": str(meta.get("sendPolicy") or "observed"), "tone": "good"}
+        elif "G10" in by_stage:
+            policy_value = str(meta.get("sendPolicy") or event_result("G10", by_stage["G10"]))
+            policy = {"label": policy_value, "tone": "warn" if _tone(policy_value) == "warn" else "good"}
         else:
             policy = {"label": "—", "tone": "neutral"}
 
         if idx < 11:
             runtime = {"label": "—", "tone": "neutral"}
-        elif "G12" in observed:
-            runtime = {"label": "ADMITTED", "tone": "good"}
-        elif "G11" in observed:
-            runtime = {"label": "NEW DISPATCH", "tone": "info"}
+        elif idx == 11 and "G11" in by_stage:
+            decision = str(meta.get("dedupeDecision") or by_stage["G11"].get("dedupeDecision") or "observed")
+            runtime = {"label": decision.replace("_", " ").upper(), "tone": "info"}
+        elif idx >= 12 and "G12" in by_stage:
+            decision = str(meta.get("admissionDecision") or by_stage["G12"].get("admissionDecision") or "observed")
+            runtime = {"label": decision.replace("_", " ").upper(), "tone": "good"}
         else:
             runtime = {"label": "—", "tone": "neutral"}
 
@@ -170,23 +189,47 @@ def _state_by_stage(meta: dict[str, Any], observed: set[str]) -> dict[str, Any]:
             routing = {"label": "—", "tone": "neutral"}
         elif idx < 9:
             routing = {"label": "RESOLVING", "tone": "info"} if any(
-                f"G{i}" in observed for i in range(6, idx + 1)
+                f"G{i}" in by_stage for i in range(6, idx + 1)
             ) else {"label": "—", "tone": "neutral"}
-        elif "G17" in observed:
+        elif idx >= 17 and "G17" in by_stage:
             routing = {"label": str(meta.get("downstreamAgent") or meta.get("agent") or "observed"), "tone": "good"}
-        elif "G9" in observed:
+        elif "G9" in by_stage:
             routing = {"label": str(meta.get("agent") or "observed"), "tone": "good"}
         else:
             routing = {"label": "—", "tone": "neutral"}
+
+        bad_seen = any(
+            _event_bad(event)
+            for key, event in by_stage.items()
+            if key.startswith("G") and key[1:].isdigit() and int(key[1:]) <= idx
+        )
+        overall = {"label": "ALERT" if bad_seen else "NO ALERT", "tone": "warn" if bad_seen else "good"}
 
         result[stage] = {
             "authentication": auth,
             "policy": policy,
             "runtime": runtime,
             "routing": routing,
-            "overall": {"label": "NO ALERT", "tone": "good"},
+            "overall": overall,
         }
     return result
+
+
+def _timeline(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    timeline: list[dict[str, Any]] = []
+    for event in events:
+        stage = event.get("stage")
+        if not isinstance(stage, str) or not stage.startswith("G"):
+            continue
+        item = {
+            "stage": stage,
+            "event": event.get("event") or "observed",
+            "ts": event.get("ts"),
+        }
+        if event.get("result") is not None:
+            item["result"] = event.get("result")
+        timeline.append(item)
+    return timeline
 
 
 def _build_trace(
@@ -200,29 +243,31 @@ def _build_trace(
 ) -> dict[str, Any]:
     by_stage = latest_event_by_stage(events)
 
-    agent = None
-    downstream_agent = None
-    send_policy = None
-    resolver = None
-    resolver_source = None
-    provider = None
-    model = None
-    tools = None
-
+    g7 = by_stage.get("G7", {})
+    g8 = by_stage.get("G8", {})
     g9 = by_stage.get("G9", {})
     g10 = by_stage.get("G10", {})
+    g11 = by_stage.get("G11", {})
+    g12 = by_stage.get("G12", {})
     g17 = by_stage.get("G17", {})
     g18 = by_stage.get("G18", {})
 
     agent = g9.get("agentId") or g17.get("agentId")
+    downstream_agent = ""
     if g17.get("agentId") and g17.get("downstreamAgentId"):
         downstream_agent = f"{g17['agentId']} → {g17['downstreamAgentId']}"
+
     send_policy = g10.get("sendPolicy") or g10.get("result")
+    dedupe_decision = g11.get("dedupeDecision")
+    admission_decision = g12.get("admissionDecision")
     resolver_source = g18.get("resolverSource")
     resolver = "getReplyFromConfig" if resolver_source == "default_getReplyFromConfig" else g18.get("resolver")
     provider = g18.get("provider")
     model = g18.get("model")
     tools = g18.get("toolCount")
+
+    canonical_session_key = g7.get("canonicalSessionKey") or session_key
+    backing_session_id = g8.get("sessionId") or g8.get("backingSessionId") or ""
 
     meta = {
         "id": f"live-{run_id}",
@@ -230,12 +275,14 @@ def _build_trace(
         "prompt": message,
         "response": response or "",
         "rawSessionKey": session_key,
-        "canonicalSessionKey": session_key,
-        "sessionId": "",
+        "canonicalSessionKey": canonical_session_key,
+        "sessionId": backing_session_id,
         "runId": run_id,
         "agent": agent or "",
         "sendPolicy": send_policy or "",
-        "downstreamAgent": downstream_agent or "",
+        "dedupeDecision": dedupe_decision or "",
+        "admissionDecision": admission_decision or "",
+        "downstreamAgent": downstream_agent,
         "resolver": resolver or "",
         "resolverSource": resolver_source or "",
         "provider": provider or "",
@@ -243,7 +290,7 @@ def _build_trace(
         "tools": str(tools) if tools is not None else "",
         "ack": "",
         "titleSync": "",
-        "overallRisk": "NO ALERT",
+        "overallRisk": "ALERT" if any(_event_bad(event) for event in by_stage.values()) else "NO ALERT",
     }
 
     stages: dict[str, Any] = {}
@@ -279,10 +326,11 @@ def _build_trace(
     return {
         "meta": meta,
         "stages": stages,
-        "stateByStage": _state_by_stage(meta, observed),
+        "stateByStage": _state_by_stage(meta, by_stage),
         "_collector": {
             "traceEventCount": len(events),
             "traceStagesObserved": sorted(observed, key=lambda item: int(item[1:])),
+            "timeline": _timeline(events),
             "sendResult": send_result,
             "traceLogConfigured": trace_log.configured,
         },
