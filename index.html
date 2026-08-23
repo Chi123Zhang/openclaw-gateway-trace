@@ -6,6 +6,7 @@
 <meta name="description" content="OpenClaw Gateway trace viewer for source-level G0–G18 execution analysis."/>
 <title>OpenClaw Gateway Trace</title>
 <link rel="stylesheet" href="assets/styles.css"/>
+<link rel="stylesheet" href="assets/live.css"/>
 </head>
 <body>
 
@@ -14,10 +15,10 @@
   <div class="controls">
     <span class="badge">Trace View</span>
     <label class="casePicker">
-      <span>Trace</span>
+      <span>Saved trace</span>
       <select class="speed" id="caseSelect"></select>
     </label>
-    <select class="speed" id="speed">
+    <select class="speed" id="speed" aria-label="Replay speed">
       <option value="900">0.75×</option>
       <option value="620" selected>1×</option>
       <option value="380">1.5×</option>
@@ -30,6 +31,32 @@
 
 <div class="layout">
 <main class="main">
+
+<section class="card askPanel">
+  <form id="askForm">
+    <div class="askHead">
+      <div>
+        <div class="kicker">Run a new trace</div>
+        <div class="sectionTitle">Ask OpenClaw</div>
+      </div>
+      <span class="collectorState" id="collectorState">Collector not connected</span>
+    </div>
+    <label class="askLabel" for="promptInput">Question</label>
+    <div class="askRow">
+      <textarea id="promptInput" rows="2" placeholder="Type a question, for example: How to make a cake?" required></textarea>
+      <button class="btn runTraceBtn" id="runTraceBtn" type="submit">Run trace</button>
+    </div>
+    <div class="askFooter">
+      <span id="runMessage">Saved traces work now. Live questions require the collector service.</span>
+      <button class="textButton" id="useCurrentPromptBtn" type="button">Use current trace prompt</button>
+    </div>
+  </form>
+  <div class="responsePanel" id="responsePanel" hidden>
+    <div class="kicker">Response</div>
+    <pre id="responseText"></pre>
+  </div>
+</section>
+
 <section class="card conn"><div class="kicker">Connection</div><div class="sectionTitle">Handshake</div><div class="connFlow" id="connFlow"></div></section>
 <section class="card query"><div><div class="kicker" style="margin-bottom:5px">Input</div><code id="queryText"></code></div><div class="state" id="requestState">READY</div></section>
 <section class="card pipeline">
@@ -59,6 +86,7 @@
 </section>
 <section class="card output"><div><div class="kicker" style="margin-bottom:5px">Output</div><strong>Dispatch complete</strong></div><div class="finish">FINISHED</div></section>
 </main>
+
 <aside class="card sidebar">
   <div class="sideTitle">Selected</div><div class="kv"><span>Stage</span><b id="sideStage">G3</b></div><div class="kv"><span>Result</span><b id="sideResult" style="color:var(--good)">allow</b></div><div class="kv"><span>Agent</span><b id="sideAgent" class="pendingValue">—</b></div><div class="kv"><span>Resolver</span><b id="sideResolver" class="pendingValue">—</b></div><div class="kv"><span>Provider</span><b id="sideProvider" class="pendingValue">—</b></div><div class="kv"><span>Model</span><b id="sideModel" class="pendingValue">—</b></div><div class="kv"><span>Tools</span><b id="sideTools" class="pendingValue">—</b></div>
   <div class="sep"></div><div class="sideTitle">Runtime Context</div>
@@ -75,10 +103,13 @@
   <div class="sep"></div><div class="sideTitle">Runtime</div><div class="kv"><span>ACK</span><b id="ackValue">—</b></div><div class="kv"><span>Title sync</span><b id="titleSyncValue">—</b></div><div class="kv"><span>Stage time</span><b id="sideTime">—</b></div><div class="kv"><span>Token cost</span><b id="sideTokens">—</b></div>
   <div class="sep"></div><div class="sideTitle">State</div><div class="metric"><span>Authentication</span><b id="riskAuth" class="stateChip neutral">—</b></div><div class="metric"><span>Policy</span><b id="riskPolicy" class="stateChip neutral">—</b></div><div class="metric"><span>Runtime</span><b id="riskRuntime" class="stateChip neutral">—</b></div><div class="metric"><span>Routing</span><b id="riskRouting" class="stateChip neutral">—</b></div><div class="metric overallMetric"><span>Overall</span><b id="riskOverall" class="stateChip good">NO ALERT</b></div><div class="kv"><span>Evidence</span><b id="coverageText">—</b></div><div class="barRow"><div class="barHead"><span>Progress</span><span id="progressText">0%</span></div><div class="barTrack"><div class="barFill progressFill" id="progressBar" style="width:0"></div></div></div><div class="log" id="log"></div><div class="note">Context and state follow the selected stage. Trace-specific values come from the selected case file.</div>
 </aside></div>
+
+<script src="config.js"></script>
 <script src="data/modules.js"></script>
 <script src="data/stages/part1.js"></script>
 <script src="data/stages/part2.js"></script>
 <script src="data/stages/part3.js"></script>
 <script src="data/cases/index.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/live.js"></script>
 </body></html>
