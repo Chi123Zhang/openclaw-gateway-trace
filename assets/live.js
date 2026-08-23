@@ -394,7 +394,7 @@
 
   function sourceBridgeNeeded(nextStage) {
     const next = stageNumber(nextStage);
-    return next >= 17 && revealedRuntimeStages.has("G13") && !queuedObservedStages.has("G14");
+    return next >= 17 && queuedObservedStages.has("G13") && !queuedObservedStages.has("G14");
   }
 
   function enqueueNewTimeline(snapshot) {
