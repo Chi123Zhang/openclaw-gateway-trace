@@ -64,6 +64,11 @@ class TraceLog:
                     events.append(item)
             return events, fh.tell()
 
+    def read_from(self, cursor: TraceCursor) -> tuple[list[dict[str, Any]], TraceCursor]:
+        """Read newly appended trace records and return the next cursor."""
+        events, offset = self._read_from(cursor)
+        return events, TraceCursor(cursor.path, offset)
+
     async def collect(
         self,
         cursor: TraceCursor | None,
