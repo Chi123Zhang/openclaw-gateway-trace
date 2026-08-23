@@ -12,6 +12,8 @@ from typing import Any
 
 
 VALID_STAGES = {f"G{i}" for i in range(19)}
+AUX_STAGES = {"D1", "D2"}
+TRACE_STAGES = VALID_STAGES | AUX_STAGES
 
 
 @dataclass(frozen=True)
@@ -22,9 +24,6 @@ class TraceCursor:
 
 class TraceLog:
     def __init__(self, path: str | None = None) -> None:
-        # TRACECLAW_GATEWAY_TRACE_FILE is the variable used by the instrumented
-        # OpenClaw source tree. TRACECLAW_LOG_PATH remains as a collector-side
-        # override for convenience.
         configured = (
             path
             or os.getenv("TRACECLAW_LOG_PATH")
@@ -61,7 +60,7 @@ class TraceLog:
                     item = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                if isinstance(item, dict) and item.get("stage") in VALID_STAGES:
+                if isinstance(item, dict) and item.get("stage") in TRACE_STAGES:
                     events.append(item)
             return events, fh.tell()
 
@@ -91,7 +90,10 @@ class TraceLog:
                 all_events.extend(batch)
 
             relevant = correlate_events(all_events, run_id=run_id, session_key=session_key)
-            seen_request_stage = any(event.get("stage") not in {"G0", "G1", "G2"} for event in relevant)
+            seen_request_stage = any(
+                event.get("stage") in VALID_STAGES - {"G0", "G1", "G2", "G3"}
+                for event in relevant
+            )
             seen_g18 = any(event.get("stage") == "G18" for event in relevant)
 
             if seen_g18 and time.monotonic() - last_growth >= settle_seconds:
@@ -110,12 +112,20 @@ def correlate_events(
     run_id: str,
     session_key: str,
 ) -> list[dict[str, Any]]:
+    """Correlate one chat.send request without inventing missing identifiers.
+
+    G4+ can be matched by runId/sessionKey. G3 method authorization and G0-G2
+    connection events do not necessarily carry those identifiers, so attach only
+    the nearest pre-request G0-G3 chain before the first exact request match.
+    D1/D2 carry runId and are kept as auxiliary timing events.
+    """
+
     matched_request: list[dict[str, Any]] = []
     request_positions: list[int] = []
 
     for idx, event in enumerate(events):
         stage = event.get("stage")
-        if stage in {"G0", "G1", "G2"}:
+        if stage in {"G0", "G1", "G2", "G3"}:
             continue
         if event.get("runId") == run_id or event.get("sessionKey") == session_key:
             matched_request.append(event)
@@ -125,18 +135,20 @@ def correlate_events(
         return []
 
     first_request_pos = min(request_positions)
-    connection: list[dict[str, Any]] = []
+    prelude: list[dict[str, Any]] = []
     seen: set[str] = set()
+    wanted = {"G0", "G1", "G2", "G3"}
+
     for event in reversed(events[:first_request_pos]):
         stage = event.get("stage")
-        if stage in {"G0", "G1", "G2"} and stage not in seen:
-            connection.append(event)
+        if stage in wanted and stage not in seen:
+            prelude.append(event)
             seen.add(str(stage))
-        if seen == {"G0", "G1", "G2"}:
+        if seen == wanted:
             break
-    connection.reverse()
+    prelude.reverse()
 
-    return connection + matched_request
+    return prelude + matched_request
 
 
 def latest_event_by_stage(events: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -146,6 +158,14 @@ def latest_event_by_stage(events: list[dict[str, Any]]) -> dict[str, dict[str, A
         if stage in VALID_STAGES:
             result[str(stage)] = event
     return result
+
+
+def latest_aux_event(events: list[dict[str, Any]], stage: str) -> dict[str, Any] | None:
+    found: dict[str, Any] | None = None
+    for event in events:
+        if event.get("stage") == stage:
+            found = event
+    return found
 
 
 def display_event(event: dict[str, Any]) -> str:
