@@ -14,6 +14,7 @@
 
   let liveRunning = false;
   let currentLiveId = null;
+  let collectorReady = false;
 
   function integrateHeaderControlsIntoRunTrace() {
     const askRow = document.querySelector(".askRow");
@@ -59,11 +60,11 @@
   }
 
   useCurrent.addEventListener("click", () => {
-    input.value = currentPrompt();
+    input.value = currentPrompt() === "—" ? "" : currentPrompt();
     input.focus();
   });
 
-  function blankStage(stage) {
+  function blankStage() {
     return {
       result: "—",
       evidence: ["source"],
@@ -81,8 +82,16 @@
 
   function makeBlankCase(prompt = "") {
     const stages = {};
+    const stateByStage = {};
     (window.GATEWAY_STAGE_CATALOG || []).forEach(stage => {
-      stages[stage.id] = blankStage(stage.id);
+      stages[stage.id] = blankStage();
+      stateByStage[stage.id] = {
+        authentication: { label: "—", tone: "neutral" },
+        policy: { label: "—", tone: "neutral" },
+        runtime: { label: "—", tone: "neutral" },
+        routing: { label: "—", tone: "neutral" },
+        overall: { label: "—", tone: "neutral" }
+      };
     });
     return {
       meta: {
@@ -109,7 +118,7 @@
         overallRisk: "—"
       },
       stages,
-      stateByStage: {},
+      stateByStage,
       _collector: { traceStagesObserved: [], timeline: [], traceEventCount: 0 }
     };
   }
@@ -137,7 +146,7 @@
       } else if (complete) {
         stages[id] = value;
       } else {
-        stages[id] = { ...value, ...blankStage(id) };
+        stages[id] = { ...value, ...blankStage() };
       }
     }
     return { ...caseData, stages };
@@ -189,6 +198,15 @@
     document.getElementById("progressText").textContent = `${pct}%`;
   }
 
+  function installIdleView({ clearInput = false } = {}) {
+    const blank = makeBlankCase("");
+    installCase(blank, "", false);
+    document.getElementById("queryText").textContent = "—";
+    document.getElementById("requestState").textContent = "READY";
+    showResponse("");
+    if (clearInput) input.value = "";
+  }
+
   function clearForNewRun(prompt) {
     const blank = makeBlankCase(prompt);
     installCase(blank, prompt, false);
@@ -201,13 +219,14 @@
 
   async function checkCollector() {
     if (!collectorUrl) {
+      collectorReady = false;
       setCollectorState("Collector not configured");
       message.textContent = "Set collectorUrl in config.js to run new questions.";
       return;
     }
 
     try {
-      const response = await fetch(`${collectorUrl}/health`, { method: "GET" });
+      const response = await fetch(`${collectorUrl}/health`, { method: "GET", cache: "no-store" });
       if (!response.ok) throw new Error(`health ${response.status}`);
       const health = await response.json().catch(() => ({}));
       if (!health.openclawCli) throw new Error("OpenClaw CLI missing");
@@ -215,10 +234,11 @@
       if (!health.traceLogConfigured) throw new Error("TRACECLAW_LOG_PATH not configured");
       if (!health.traceLogExists) throw new Error(`Trace log missing: ${health.traceLogPath || ""}`);
 
+      collectorReady = true;
       setCollectorState("Gateway + trace connected", "connected");
       message.textContent = "Ready. No runtime result is shown until you press Run trace.";
-      if (!liveRunning) installCase(makeBlankCase(""), "", false);
     } catch (error) {
+      collectorReady = false;
       setCollectorState("Collector unavailable", "error");
       message.textContent = `Collector/Gateway unavailable: ${error.message}`;
     }
@@ -274,6 +294,11 @@
     }
     if (liveRunning) return;
 
+    if (!collectorReady) {
+      await checkCollector();
+      if (!collectorReady) return;
+    }
+
     liveRunning = true;
     setBusy(true);
     clearForNewRun(prompt);
@@ -305,5 +330,29 @@
   });
 
   integrateHeaderControlsIntoRunTrace();
-  checkCollector();
+
+  const clearButton = document.getElementById("resetBtn");
+  if (clearButton) {
+    clearButton.onclick = () => {
+      if (liveRunning) return;
+      currentLiveId = null;
+      installIdleView({ clearInput: true });
+      message.textContent = collectorReady
+        ? "Ready. No runtime result is shown until you press Run trace."
+        : "Start the local collector, then press Run trace.";
+    };
+  }
+
+  async function initializeLiveViewer() {
+    // app.js asynchronously loads the default saved trace. Wait until that work is
+    // complete, then deliberately replace it with an evidence-neutral idle view.
+    for (let i = 0; i < 100; i += 1) {
+      if (ACTIVE_CASE && byId && byId.G3) break;
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    installIdleView();
+    await checkCollector();
+  }
+
+  initializeLiveViewer();
 })();
