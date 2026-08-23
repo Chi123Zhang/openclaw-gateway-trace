@@ -12,6 +12,91 @@
   const cfg = window.GATEWAY_CONFIG || {};
   const collectorUrl = String(cfg.collectorUrl || "").replace(/\/+$/, "");
 
+  function addRuntimeLine(root, label, value, observed = true) {
+    const line = document.createElement("div");
+    line.style.display = "grid";
+    line.style.gridTemplateColumns = "110px 1fr";
+    line.style.gap = "10px";
+    line.style.marginTop = "5px";
+
+    const key = document.createElement("span");
+    key.textContent = label;
+    key.style.color = "var(--muted)";
+
+    const val = document.createElement("code");
+    val.textContent = value || "not observed";
+    val.style.color = observed && value ? "var(--cyan)" : "var(--muted)";
+    val.style.wordBreak = "break-word";
+
+    line.append(key, val);
+    root.append(line);
+  }
+
+  function renderRuntimeBoundary() {
+    const boundary = document.querySelector(".pipeline .boundary");
+    if (!boundary) return;
+
+    const inReplyDispatch = activeModule === "M5";
+    boundary.hidden = !inReplyDispatch;
+    if (!inReplyDispatch) return;
+
+    const meta = ACTIVE_CASE?.meta || CASE2 || {};
+    const observedStages = ACTIVE_CASE?._collector?.traceStagesObserved || [];
+    const g18Observed = observedStages.includes("G18") || ACTIVE_CASE?.stages?.G18?.evidence?.includes("runtime");
+
+    const resolverText = document.getElementById("resolverBoundaryText");
+    if (resolverText) {
+      resolverText.textContent = "";
+      const label = document.createElement("span");
+      label.textContent = g18Observed ? "Observed resolver for this run" : "Resolver boundary · source path";
+      const code = document.createElement("code");
+      code.textContent = meta.resolverSource || meta.resolver || "not observed";
+      code.style.marginTop = "5px";
+      resolverText.append(label, code);
+    }
+
+    const boxes = boundary.querySelectorAll(".boundaryBox");
+    const runtimeBox = boxes[1];
+    if (runtimeBox) {
+      runtimeBox.textContent = "";
+
+      const title = document.createElement("strong");
+      title.textContent = "Deeper Reply / Agent Runtime · this run";
+      runtimeBox.append(title);
+
+      addRuntimeLine(runtimeBox, "Agent", meta.downstreamAgent || meta.agent || "", Boolean(meta.downstreamAgent || meta.agent));
+      addRuntimeLine(runtimeBox, "Resolver", meta.resolverSource || meta.resolver || "", Boolean(meta.resolverSource || meta.resolver));
+      addRuntimeLine(runtimeBox, "Provider", meta.provider || "", Boolean(meta.provider));
+      addRuntimeLine(runtimeBox, "Model", meta.model || "", Boolean(meta.model));
+      addRuntimeLine(runtimeBox, "Tools", meta.tools || "", Boolean(meta.tools));
+
+      const evidence = document.createElement("div");
+      evidence.style.marginTop = "9px";
+      evidence.style.paddingTop = "8px";
+      evidence.style.borderTop = "1px solid #28323b";
+      evidence.style.fontSize = "10px";
+      evidence.style.lineHeight = "1.45";
+      evidence.style.color = "var(--muted)";
+      evidence.textContent = g18Observed
+        ? "G18 was observed. Only runtime fields actually captured for this request are shown; uninstrumented inner steps remain ‘not observed’."
+        : "No standalone G18 runtime event was captured for this request. The box shows only source/control-flow context."
+      runtimeBox.append(evidence);
+    }
+
+    const returnNote = boundary.querySelector(".returnNote");
+    if (returnNote) {
+      returnNote.textContent = "SOURCE CONTROL FLOW · replyResult returns to the original G16 → filter / deliver / complete → DispatchFromConfigResult → G14 finalization. This line describes architecture, not a claim that every inner runtime step was separately observed.";
+    }
+  }
+
+  const baseRenderAll = window.renderAll;
+  if (typeof baseRenderAll === "function") {
+    window.renderAll = function renderAllWithRuntimeBoundary() {
+      baseRenderAll();
+      renderRuntimeBoundary();
+    };
+  }
+
   function setCollectorState(text, tone = "") {
     collectorState.textContent = text;
     collectorState.className = `collectorState ${tone}`.trim();
@@ -115,6 +200,7 @@
 
     applyCaseMeta();
     renderAll();
+    renderRuntimeBoundary();
     renderLog();
     syncSourceToggle();
 
@@ -198,4 +284,5 @@
   });
 
   checkCollector();
+  setTimeout(renderRuntimeBoundary, 0);
 })();
