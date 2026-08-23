@@ -1,37 +1,65 @@
 # OpenClaw Gateway Trace Viewer
 
-A static source-level trace viewer for the OpenClaw Gateway `chat.send` path.
+A source-level viewer for the OpenClaw Gateway `chat.send` path.
 
-The current repository contains one trace:
+The project now has two modes:
 
-- **How to make a cake?** (`cake`)
+1. **Saved traces** — open an existing trace such as **How to make a cake?**
+2. **Live trace input** — type a new question in the page and send it to a collector service that will run OpenClaw and return the G0–G18 trace
 
-Shared Gateway source structure is kept separate from trace-specific runtime data, so new questions can be added without duplicating the dashboard.
+The live input UI is already included. The next backend step is connecting the collector to the real OpenClaw Gateway and TraceClaw runtime events.
 
 ## Live site
-
-Open the deployed viewer here:
 
 ```text
 https://chi123zhang.github.io/openclaw-gateway-trace/
 ```
 
-Direct link to the current trace:
+Current saved trace:
 
 ```text
 https://chi123zhang.github.io/openclaw-gateway-trace/?case=cake
 ```
 
-The `localhost` address below is only for running a local development copy on your own computer. It is not the public website.
+GitHub Pages is static. It can display saved traces directly, but arbitrary new questions need the separate collector service described below.
+
+## Current architecture
+
+```text
+Browser
+  │
+  ├─ Saved trace
+  │    └─ data/cases/cake.js
+  │
+  └─ New question
+       │
+       └─ POST /api/run
+             │
+             ▼
+       Trace Collector
+             │
+             ├─ OpenClaw chat.send
+             ├─ TraceClaw / Gateway events
+             └─ final reply
+             │
+             ▼
+       normalized G0–G18 trace
+             │
+             ▼
+       existing dashboard
+```
 
 ## Repository layout
 
 ```text
 openclaw-gateway-trace/
 ├── index.html
+├── config.js
 ├── assets/
 │   ├── app.js
-│   └── styles.css
+│   ├── live.js
+│   ├── styles.css
+│   └── live.css
 ├── data/
 │   ├── modules.js
 │   ├── stages/
@@ -42,8 +70,103 @@ openclaw-gateway-trace/
 │       ├── index.js
 │       ├── cake.js
 │       └── _template.js
+├── collector/
+│   ├── server.py
+│   ├── requirements.txt
+│   └── README.md
 ├── .gitignore
 └── .nojekyll
+```
+
+## Frontend
+
+`index.html` now contains an **Ask OpenClaw** input at the top.
+
+When `config.js` has no collector URL, the page still works as a saved-trace viewer and clearly reports that the collector is not connected.
+
+When a collector URL is configured, the frontend sends:
+
+```http
+POST /api/run
+Content-Type: application/json
+```
+
+```json
+{
+  "message": "How to make a cake?"
+}
+```
+
+The returned trace is loaded into the same G0–G18 dashboard without rebuilding the page.
+
+## Collector
+
+The collector API shell lives in `collector/`.
+
+Current routes:
+
+```text
+GET  /health
+POST /api/run
+```
+
+`/api/run` intentionally returns `503` for now instead of fabricating runtime data. The next implementation step is to connect it to:
+
+- OpenClaw Gateway `chat.send`
+- the run ID / SessionKey produced by that request
+- TraceClaw / Gateway runtime events for the same run
+- the final reply
+
+The collector should return the same trace shape used by `data/cases/cake.js`.
+
+## Configure the collector
+
+`config.js`:
+
+```js
+window.GATEWAY_CONFIG = {
+  collectorUrl: "",
+  requestTimeoutMs: 120000
+};
+```
+
+For a deployed HTTPS collector:
+
+```js
+window.GATEWAY_CONFIG = {
+  collectorUrl: "https://your-collector.example.com",
+  requestTimeoutMs: 120000
+};
+```
+
+For local development, serve the frontend locally and use:
+
+```js
+collectorUrl: "http://127.0.0.1:8787"
+```
+
+## Run locally
+
+Frontend:
+
+```bash
+python3 -m http.server 8000
+```
+
+Collector shell:
+
+```bash
+cd collector
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn server:app --host 127.0.0.1 --port 8787 --reload
+```
+
+Then open:
+
+```text
+http://localhost:8000/
 ```
 
 ## Shared Gateway definitions
@@ -59,83 +182,23 @@ openclaw-gateway-trace/
 - source mapping
 - source-aligned pseudocode
 
-These files should normally remain unchanged across traces produced from the same OpenClaw source snapshot.
+These should remain shared across traces produced from the same OpenClaw source snapshot.
 
-## Trace-specific data
+## Saved trace data
 
-`data/cases/cake.js` contains the runtime data for the current trace, including:
+`data/cases/cake.js` contains the current saved runtime trace:
 
 - prompt
 - SessionKey / sessionId / runId
 - Agent
 - resolver
-- model / provider / available tools
-- observed result for each G stage
+- model / provider / tools
+- observed stage results
 - concrete runtime input / output
 - evidence type
 - state by stage
 
-`data/cases/index.js` controls the trace selector shown in the page header.
-
-## Run locally
-
-For local development only:
-
-```bash
-python3 -m http.server 8000
-```
-
-Then open:
-
-```text
-http://localhost:8000/
-```
-
-Local direct link to the current trace:
-
-```text
-http://localhost:8000/?case=cake
-```
-
-## GitHub Pages
-
-This repository is published from the `main` branch at `/ (root)` using GitHub Pages.
-
-Public site:
-
-```text
-https://chi123zhang.github.io/openclaw-gateway-trace/
-```
-
-Current trace:
-
-```text
-https://chi123zhang.github.io/openclaw-gateway-trace/?case=cake
-```
-
-## Add another question / trace
-
-1. Copy `data/cases/_template.js` to a new file, for example `data/cases/weather.js`.
-2. Change the registered case ID from `example` to `weather`.
-3. Fill in the trace-specific metadata and G0–G18 runtime fields.
-4. Add the new trace to `data/cases/index.js`.
-
-Example index entry:
-
-```js
-{
-  id: "weather",
-  title: "What's the weather in New York?",
-  file: "data/cases/weather.js",
-  description: "Gateway trace for the weather query."
-}
-```
-
-The page header will then allow switching between traces, and a trace can be opened directly with:
-
-```text
-https://chi123zhang.github.io/openclaw-gateway-trace/?case=weather
-```
+Saved traces remain useful as reproducible examples even after live collection is connected.
 
 ## Source snapshot
 
@@ -145,4 +208,4 @@ The current source mapping is based on OpenClaw `v2026.7.1-2`, commit:
 0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c
 ```
 
-Runtime-observed, native, source, and source-derived evidence are kept distinct. Missing per-stage timing or token values are not estimated.
+Runtime-observed, native, source, and source-derived evidence are kept distinct. Missing runtime fields are not invented.
