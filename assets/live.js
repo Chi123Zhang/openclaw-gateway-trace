@@ -12,6 +12,25 @@
   const cfg = window.GATEWAY_CONFIG || {};
   const collectorUrl = String(cfg.collectorUrl || "").replace(/\/+$/, "");
 
+  function integrateHeaderControlsIntoRunTrace() {
+    const askRow = document.querySelector(".askRow");
+    const casePicker = document.querySelector(".casePicker");
+    const speed = document.getElementById("speed");
+    const reset = document.getElementById("resetBtn");
+    const replay = document.getElementById("playBtn");
+
+    if (casePicker) casePicker.style.display = "none";
+    if (replay) replay.style.display = "none";
+
+    if (askRow && speed && reset) {
+      speed.title = "Replay speed for the observed runtime path";
+      reset.textContent = "Reset view";
+      askRow.append(speed, reset);
+      askRow.style.gridTemplateColumns = "minmax(0,1fr) auto auto auto";
+      askRow.style.alignItems = "stretch";
+    }
+  }
+
   function addRuntimeLine(root, label, value, observed = true) {
     const line = document.createElement("div");
     line.style.display = "grid";
@@ -59,11 +78,9 @@
     const runtimeBox = boxes[1];
     if (runtimeBox) {
       runtimeBox.textContent = "";
-
       const title = document.createElement("strong");
       title.textContent = "Deeper Reply / Agent Runtime · this run";
       runtimeBox.append(title);
-
       addRuntimeLine(runtimeBox, "Agent", meta.downstreamAgent || meta.agent || "", Boolean(meta.downstreamAgent || meta.agent));
       addRuntimeLine(runtimeBox, "Resolver", meta.resolverSource || meta.resolver || "", Boolean(meta.resolverSource || meta.resolver));
       addRuntimeLine(runtimeBox, "Provider", meta.provider || "", Boolean(meta.provider));
@@ -78,23 +95,29 @@
       evidence.style.lineHeight = "1.45";
       evidence.style.color = "var(--muted)";
       evidence.textContent = g18Observed
-        ? "G18 was observed. Only runtime fields actually captured for this request are shown; uninstrumented inner steps remain ‘not observed’."
-        : "No standalone G18 runtime event was captured for this request. The box shows only source/control-flow context."
+        ? "G18 was observed. Only fields captured for this request are shown; missing fields remain not observed."
+        : "No standalone G18 runtime event was captured for this request.";
       runtimeBox.append(evidence);
     }
 
     const returnNote = boundary.querySelector(".returnNote");
     if (returnNote) {
-      returnNote.textContent = "SOURCE CONTROL FLOW · replyResult returns to the original G16 → filter / deliver / complete → DispatchFromConfigResult → G14 finalization. This line describes architecture, not a claim that every inner runtime step was separately observed.";
+      returnNote.textContent = "SOURCE CONTROL FLOW · replyResult returns to the original G16 → filter / deliver / complete → DispatchFromConfigResult → G14 finalization.";
     }
   }
 
-  const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === "function") {
-    window.renderAll = function renderAllWithRuntimeBoundary() {
-      baseRenderAll();
-      renderRuntimeBoundary();
-    };
+  function deriveModuleResults(caseData) {
+    const meta = caseData.meta || {};
+    const observed = new Set(caseData._collector?.traceStagesObserved || []);
+    return DATA.modules.map(module => {
+      let result = "NOT OBSERVED";
+      if (module.id === "M1") result = observed.has("G5") ? "PASS" : "PARTIAL";
+      if (module.id === "M2") result = meta.agent || (observed.has("G9") ? "RESOLVED" : "PARTIAL");
+      if (module.id === "M3") result = meta.admissionDecision || meta.sendPolicy || (observed.has("G12") ? "OBSERVED" : "PARTIAL");
+      if (module.id === "M4") result = observed.has("G13") ? "G13 OBSERVED" : "SOURCE ONLY";
+      if (module.id === "M5") result = observed.has("G18") ? "G18 OBSERVED" : "SOURCE ONLY";
+      return { ...module, result };
+    });
   }
 
   function setCollectorState(text, tone = "") {
@@ -143,7 +166,6 @@
         message.textContent = "Collector is running, but the OpenClaw CLI is not available on its PATH.";
         return;
       }
-
       if (health.gateway !== "reachable") {
         setCollectorState("Gateway unavailable", "error");
         message.textContent = health.gatewayError
@@ -151,13 +173,11 @@
           : "Collector is running, but OpenClaw Gateway is unavailable.";
         return;
       }
-
       if (!health.traceLogConfigured) {
         setCollectorState("Gateway connected · trace log not set", "connected");
         message.textContent = "Questions can run, but G0–G18 runtime events need TRACECLAW_LOG_PATH.";
         return;
       }
-
       if (!health.traceLogExists) {
         setCollectorState("Gateway connected · trace log missing", "error");
         message.textContent = `TRACECLAW_LOG_PATH is configured but the file does not exist: ${health.traceLogPath || ""}`;
@@ -165,7 +185,7 @@
       }
 
       setCollectorState("Gateway + trace connected", "connected");
-      message.textContent = "Ready to run a new question and collect its Gateway trace.";
+      message.textContent = "Run trace now executes the question and replays the observed runtime path automatically.";
     } catch (error) {
       setCollectorState("Collector unavailable", "error");
       message.textContent = `Start the local collector at ${collectorUrl}. ${error.message}`;
@@ -188,6 +208,7 @@
     ACTIVE_CASE = caseData;
     CASE2 = caseData.meta;
     DATA = mergeCase(caseData);
+    DATA.modules = deriveModuleResults(caseData);
     byId = Object.fromEntries(DATA.stages.map(stage => [stage.id, stage]));
     mods = Object.fromEntries(DATA.modules.map(module => [module.id, module]));
 
@@ -219,6 +240,58 @@
     window.history.replaceState({}, "", url);
   }
 
+  async function replayObservedRuntime(caseData) {
+    const collector = caseData._collector || {};
+    let timeline = Array.isArray(collector.timeline) ? collector.timeline : [];
+
+    if (!timeline.length) {
+      timeline = (collector.traceStagesObserved || []).map(stage => ({ stage, event: "observed" }));
+    }
+
+    timeline = timeline.filter(item => byId[item.stage]);
+    if (!timeline.length) return;
+
+    completed.clear();
+    playing = true;
+    paused = false;
+
+    const requestState = document.getElementById("requestState");
+    requestState.textContent = "RUNNING LIVE TRACE";
+    requestState.classList.remove("pausedState");
+
+    document.getElementById("progressBar").style.width = "0%";
+    document.getElementById("progressText").textContent = "0%";
+    renderAll();
+    renderLog();
+
+    const pipeline = document.querySelector(".pipeline");
+    if (pipeline) pipeline.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const baseDelay = Number(document.getElementById("speed")?.value || 620);
+    const delay = Math.max(110, Math.round(baseDelay * 0.55));
+
+    for (let i = 0; i < timeline.length; i += 1) {
+      const item = timeline[i];
+      setRunning(item.stage);
+      completed.add(item.stage);
+      renderRuntimeBoundary();
+
+      message.textContent = `LIVE · ${item.stage} · ${item.event || "observed"}`;
+      const pct = Math.round(((i + 1) / timeline.length) * 100);
+      document.getElementById("progressBar").style.width = `${pct}%`;
+      document.getElementById("progressText").textContent = `${pct}%`;
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    playing = false;
+    paused = false;
+    requestState.textContent = "FINISHED";
+    setCollectorState("Trace complete", "connected");
+    message.textContent = `Observed runtime replay complete · ${timeline.length} runtime events from this question.`;
+    renderRuntimeBoundary();
+  }
+
   form.addEventListener("submit", async event => {
     event.preventDefault();
     const prompt = input.value.trim();
@@ -238,8 +311,8 @@
     }
 
     setBusy(true);
-    setCollectorState("Running trace…", "connected");
-    message.textContent = "Sending the question to OpenClaw and waiting for the reply and runtime trace…";
+    setCollectorState("Running live trace…", "connected");
+    message.textContent = "Executing this question in OpenClaw and collecting its actual Gateway runtime events…";
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), Number(cfg.requestTimeoutMs) || 135000);
@@ -257,20 +330,10 @@
         throw new Error(payload.detail || payload.error || `HTTP ${response.status}`);
       }
 
-      installLiveCase(payload.trace || payload, prompt);
-      showResponse(payload.response || payload.trace?.meta?.response || "");
-
-      const collectorMeta = payload.trace?._collector;
-      if (collectorMeta && Array.isArray(collectorMeta.traceStagesObserved)) {
-        const count = collectorMeta.traceStagesObserved.length;
-        setCollectorState("Trace complete", "connected");
-        message.textContent = count
-          ? `Live trace loaded. Runtime events captured for ${count} G stages.`
-          : "Reply completed, but no correlated G-stage runtime events were found. Check TRACECLAW_LOG_PATH / instrumentation.";
-      } else {
-        setCollectorState("Trace complete", "connected");
-        message.textContent = "Live trace loaded below.";
-      }
+      const caseData = payload.trace || payload;
+      installLiveCase(caseData, prompt);
+      showResponse(payload.response || caseData?.meta?.response || "");
+      await replayObservedRuntime(caseData);
     } catch (error) {
       const text = error.name === "AbortError"
         ? "Collector request timed out."
@@ -283,6 +346,7 @@
     }
   });
 
+  integrateHeaderControlsIntoRunTrace();
   checkCollector();
   setTimeout(renderRuntimeBoundary, 0);
 })();
