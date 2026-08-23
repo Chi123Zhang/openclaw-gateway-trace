@@ -111,6 +111,34 @@ class TraceLog:
         return correlate_events(all_events, run_id=run_id, session_key=session_key)
 
 
+def _matches_request(event: dict[str, Any], *, run_id: str, session_key: str) -> bool:
+    return event.get("runId") == run_id or event.get("sessionKey") == session_key
+
+
+def _find_connection_start(events: list[dict[str, Any]], first_request_pos: int) -> int | None:
+    """Find the nearest connection-auth start belonging to the request CLI call.
+
+    The instrumented connection path emits G0(start) -> G1 -> G0(resolved) -> G2.
+    G3 follows on the same connection before G4 gains request identifiers.  We keep
+    this raw order instead of reverse-deduplicating it, so the UI can progress in
+    source/runtime order while latest_event_by_stage still sees the final G0 result.
+    """
+
+    for idx in range(first_request_pos - 1, -1, -1):
+        event = events[idx]
+        if (
+            event.get("stage") == "G0"
+            and event.get("event") == "connection_auth_state_resolution_started"
+        ):
+            return idx
+
+    # Fallback for older instrumentation that did not name the start event.
+    for idx in range(first_request_pos - 1, -1, -1):
+        if events[idx].get("stage") == "G0":
+            return idx
+    return None
+
+
 def correlate_events(
     events: list[dict[str, Any]],
     *,
@@ -119,10 +147,10 @@ def correlate_events(
 ) -> list[dict[str, Any]]:
     """Correlate one chat.send request without inventing missing identifiers.
 
-    G4+ can be matched by runId/sessionKey. G3 method authorization and G0-G2
-    connection events do not necessarily carry those identifiers, so attach only
-    the nearest pre-request G0-G3 chain before the first exact request match.
-    D1/D2 carry runId and are kept as auxiliary timing events.
+    G4+ can be matched by runId/sessionKey. G0-G3 occur before those request
+    identifiers are reliably available in every event, so they are attached from
+    the nearest preceding connection chain.  The connection-chain slice preserves
+    original JSONL order, including both G0 start/resolved records.
     """
 
     matched_request: list[dict[str, Any]] = []
@@ -132,7 +160,7 @@ def correlate_events(
         stage = event.get("stage")
         if stage in {"G0", "G1", "G2", "G3"}:
             continue
-        if event.get("runId") == run_id or event.get("sessionKey") == session_key:
+        if _matches_request(event, run_id=run_id, session_key=session_key):
             matched_request.append(event)
             request_positions.append(idx)
 
@@ -140,18 +168,26 @@ def correlate_events(
         return []
 
     first_request_pos = min(request_positions)
-    prelude: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    wanted = {"G0", "G1", "G2", "G3"}
+    start_idx = _find_connection_start(events, first_request_pos)
 
-    for event in reversed(events[:first_request_pos]):
-        stage = event.get("stage")
-        if stage in wanted and stage not in seen:
-            prelude.append(event)
-            seen.add(str(stage))
-        if seen == wanted:
-            break
-    prelude.reverse()
+    if start_idx is not None:
+        prelude = [
+            event
+            for event in events[start_idx:first_request_pos]
+            if event.get("stage") in {"G0", "G1", "G2", "G3"}
+        ]
+    else:
+        # Conservative fallback: take the nearest occurrence of each pre-request
+        # stage, but emit them in logical stage order. This avoids the old bug where
+        # reverse collection produced G1 -> G0 -> G2 -> G3.
+        nearest: dict[str, dict[str, Any]] = {}
+        for event in reversed(events[:first_request_pos]):
+            stage = event.get("stage")
+            if stage in {"G0", "G1", "G2", "G3"} and stage not in nearest:
+                nearest[str(stage)] = event
+            if len(nearest) == 4:
+                break
+        prelude = [nearest[stage] for stage in ("G0", "G1", "G2", "G3") if stage in nearest]
 
     return prelude + matched_request
 
