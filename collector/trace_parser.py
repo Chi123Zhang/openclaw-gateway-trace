@@ -22,7 +22,14 @@ class TraceCursor:
 
 class TraceLog:
     def __init__(self, path: str | None = None) -> None:
-        configured = path or os.getenv("TRACECLAW_LOG_PATH")
+        # TRACECLAW_GATEWAY_TRACE_FILE is the variable used by the instrumented
+        # OpenClaw source tree. TRACECLAW_LOG_PATH remains as a collector-side
+        # override for convenience.
+        configured = (
+            path
+            or os.getenv("TRACECLAW_LOG_PATH")
+            or os.getenv("TRACECLAW_GATEWAY_TRACE_FILE")
+        )
         self.path = Path(configured).expanduser() if configured else None
 
     @property
