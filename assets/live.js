@@ -16,7 +16,34 @@
   let currentLiveId = null;
   let collectorReady = false;
 
-  function integrateHeaderControlsIntoRunTrace() {
+  // Visualization state is deliberately separate from Gateway execution state.
+  // Pausing freezes only the UI. The Gateway and collector keep running so no
+  // TraceClaw evidence is lost; Resume drains the queued observed stages in order.
+  let visualPaused = false;
+  let playbackQueue = [];
+  let queuedObservedStages = new Set();
+  let revealedRuntimeStages = new Set();
+  let revealedSourceStages = new Set();
+  let revealedTimeline = [];
+  let fullCaseSnapshot = null;
+  let backendComplete = false;
+  let backendError = null;
+  let pendingResponse = "";
+  let lastQueuedTimelineLength = 0;
+  let lastDisplayedStage = null;
+
+  const VERIFIED_SOURCE_BRIDGE = ["G14", "G15", "G16"];
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function stageNumber(stage) {
+    const value = Number(String(stage || "").replace("G", ""));
+    return Number.isFinite(value) ? value : -1;
+  }
+
+  function installControls() {
     const askRow = document.querySelector(".askRow");
     const casePicker = document.querySelector(".casePicker");
     const speed = document.getElementById("speed");
@@ -25,14 +52,27 @@
 
     if (casePicker) casePicker.style.display = "none";
     if (replay) replay.style.display = "none";
-    if (speed) speed.style.display = "none";
 
-    if (askRow && reset) {
+    let pauseButton = document.getElementById("livePauseBtn");
+    if (!pauseButton) {
+      pauseButton = document.createElement("button");
+      pauseButton.id = "livePauseBtn";
+      pauseButton.type = "button";
+      pauseButton.className = "btn alt";
+      pauseButton.textContent = "⏸ Pause";
+      pauseButton.hidden = true;
+      pauseButton.disabled = true;
+    }
+
+    if (askRow && speed && reset) {
+      speed.title = "Live visualization speed";
       reset.textContent = "Clear";
-      askRow.append(reset);
-      askRow.style.gridTemplateColumns = "minmax(0,1fr) auto auto";
+      askRow.append(pauseButton, speed, reset);
+      askRow.style.gridTemplateColumns = "minmax(0,1fr) auto auto auto auto";
       askRow.style.alignItems = "stretch";
     }
+
+    pauseButton.onclick = toggleLivePause;
   }
 
   function setCollectorState(text, tone = "") {
@@ -43,6 +83,15 @@
   function setBusy(busy) {
     runButton.disabled = busy;
     runButton.textContent = busy ? "Running live…" : "Run trace";
+    const pauseButton = document.getElementById("livePauseBtn");
+    if (pauseButton) {
+      pauseButton.hidden = !busy;
+      pauseButton.disabled = !busy;
+      if (!busy) {
+        pauseButton.textContent = "⏸ Pause";
+        pauseButton.classList.remove("pauseState");
+      }
+    }
   }
 
   function showResponse(value) {
@@ -60,7 +109,8 @@
   }
 
   useCurrent.addEventListener("click", () => {
-    input.value = currentPrompt() === "—" ? "" : currentPrompt();
+    const value = currentPrompt();
+    input.value = value === "—" ? "" : value;
     input.focus();
   });
 
@@ -77,6 +127,20 @@
       concreteOutput: "—",
       concreteInputEvidence: "NOT OBSERVED YET",
       concreteOutputEvidence: "NOT OBSERVED YET"
+    };
+  }
+
+  function sourcePathStage(stage) {
+    return {
+      ...stage,
+      result: "SOURCE PATH",
+      evidence: ["source"],
+      tone: "good",
+      case2: "This stage is shown only to preserve the verified source control-flow path. No standalone runtime event was captured for it.",
+      time: "not separately observed",
+      tokens: "not observed",
+      concreteOutput: "not separately observed",
+      concreteOutputEvidence: "SOURCE CONTROL FLOW"
     };
   }
 
@@ -123,98 +187,344 @@
     };
   }
 
-  function deriveModuleResults(caseData, complete = false) {
+  function moduleForStage(stage) {
+    return byId?.[stage]?.module || "";
+  }
+
+  function deriveModuleResults(caseData, focusStage = null) {
     const meta = caseData.meta || {};
     const observed = new Set(caseData._collector?.traceStagesObserved || []);
+    const focusModule = focusStage ? moduleForStage(focusStage) : "";
+
     return DATA.modules.map(module => {
       let result = "—";
+
+      if (module.id === focusModule) result = "ACTIVE";
       if (module.id === "M1" && observed.has("G5")) result = "PASS";
       if (module.id === "M2" && observed.has("G9")) result = meta.agent || "RESOLVED";
       if (module.id === "M3" && observed.has("G12")) result = meta.admissionDecision || "OBSERVED";
-      if (module.id === "M4" && observed.has("G13")) result = complete ? "G13 OBSERVED" : "ACTIVE";
-      if (module.id === "M5" && observed.has("G18")) result = complete ? "G18 OBSERVED" : "ACTIVE";
+      if (module.id === "M4" && (revealedSourceStages.has("G15") || stageNumber(focusStage) > 15)) result = "SOURCE PATH COMPLETE";
+      if (module.id === "M5" && observed.has("G18")) result = "G18 OBSERVED";
+
       return { ...module, result };
     });
   }
 
-  function applyRuntimeVisibility(caseData, complete) {
-    const observed = new Set(caseData._collector?.traceStagesObserved || []);
+  function visibleCaseFromSnapshot(snapshot) {
     const stages = {};
-    for (const [id, value] of Object.entries(caseData.stages || {})) {
-      if (observed.has(id)) {
+    for (const [id, value] of Object.entries(snapshot?.stages || {})) {
+      if (revealedRuntimeStages.has(id)) {
         stages[id] = value;
-      } else if (complete) {
-        stages[id] = value;
+      } else if (revealedSourceStages.has(id)) {
+        stages[id] = sourcePathStage(value);
       } else {
         stages[id] = { ...value, ...blankStage() };
       }
     }
-    return { ...caseData, stages };
+
+    return {
+      ...snapshot,
+      stages,
+      _collector: {
+        ...(snapshot?._collector || {}),
+        traceStagesObserved: [...revealedRuntimeStages].sort((a, b) => stageNumber(a) - stageNumber(b)),
+        timeline: [...revealedTimeline]
+      }
+    };
   }
 
-  function installCase(caseData, prompt, complete = false) {
-    const visible = applyRuntimeVisibility(caseData, complete);
-    const id = visible.meta.id || `live-${Date.now()}`;
-    visible.meta.id = id;
-    visible.meta.title = visible.meta.title || prompt;
-    visible.meta.prompt = visible.meta.prompt || prompt;
+  function neutralizePendingPaint() {
+    document.querySelectorAll(".sresult,.mresult").forEach(node => {
+      if (node.textContent.trim() === "—") node.style.color = "var(--muted)";
+      else node.style.color = "";
+    });
+
+    const ready = document.querySelector(".connFlow .ready");
+    if (ready) {
+      const g2Ready = revealedRuntimeStages.has("G2");
+      ready.textContent = g2Ready ? "GATEWAY READY" : "GATEWAY —";
+      ready.style.color = g2Ready ? "var(--good)" : "var(--muted)";
+      ready.style.borderColor = g2Ready ? "#2b4d38" : "var(--line)";
+      ready.style.background = g2Ready ? "#102017" : "#12171c";
+    }
+  }
+
+  function renderRuntimeBoundary() {
+    const boundary = document.querySelector(".pipeline .boundary");
+    if (!boundary) return;
+
+    const inReplyDispatch = activeModule === "M5";
+    boundary.hidden = !inReplyDispatch;
+    if (!inReplyDispatch) return;
+
+    const meta = ACTIVE_CASE?.meta || {};
+    const g18Revealed = revealedRuntimeStages.has("G18");
+    const resolverText = document.getElementById("resolverBoundaryText");
+    if (resolverText) {
+      resolverText.textContent = g18Revealed
+        ? `resolver: ${meta.resolverSource || meta.resolver || "observed"}`
+        : "resolver: not observed yet";
+    }
+
+    const boxes = boundary.querySelectorAll(".boundaryBox");
+    const runtimeBox = boxes[1];
+    if (runtimeBox) {
+      runtimeBox.textContent = "";
+      const title = document.createElement("strong");
+      title.textContent = "Deeper Reply / Agent Runtime · current run";
+      runtimeBox.append(title);
+
+      const rows = [
+        ["Agent", stageNumber(activeStage) >= 17 ? (meta.downstreamAgent || meta.agent) : ""],
+        ["Resolver", g18Revealed ? (meta.resolverSource || meta.resolver) : ""],
+        ["Provider", g18Revealed ? meta.provider : ""],
+        ["Model", g18Revealed ? meta.model : ""],
+        ["Tools", g18Revealed ? meta.tools : ""]
+      ];
+
+      rows.forEach(([label, value]) => {
+        const row = document.createElement("div");
+        row.style.display = "grid";
+        row.style.gridTemplateColumns = "100px 1fr";
+        row.style.gap = "9px";
+        row.style.marginTop = "5px";
+        const key = document.createElement("span");
+        key.textContent = label;
+        key.style.color = "var(--muted)";
+        const val = document.createElement("code");
+        val.textContent = value || "not observed yet";
+        val.style.color = value ? "var(--cyan)" : "var(--muted)";
+        row.append(key, val);
+        runtimeBox.append(row);
+      });
+    }
+  }
+
+  function paintSnapshot(snapshot, focusStage = null) {
+    if (!snapshot) return;
+    const visible = visibleCaseFromSnapshot(snapshot);
 
     ACTIVE_CASE = visible;
     CASE2 = visible.meta;
     DATA = mergeCase(visible);
-    DATA.modules = deriveModuleResults(visible, complete);
     byId = Object.fromEntries(DATA.stages.map(stage => [stage.id, stage]));
     mods = Object.fromEntries(DATA.modules.map(module => [module.id, module]));
+    DATA.modules = deriveModuleResults(visible, focusStage);
+    mods = Object.fromEntries(DATA.modules.map(module => [module.id, module]));
 
-    const timeline = visible._collector?.timeline || [];
-    const observedStages = visible._collector?.traceStagesObserved || [];
     completed.clear();
-    observedStages.forEach(stage => completed.add(stage));
+    revealedRuntimeStages.forEach(stage => completed.add(stage));
+    if (revealedRuntimeStages.has("G5")) completed.add("M1");
+    if (revealedRuntimeStages.has("G9")) completed.add("M2");
+    if (revealedRuntimeStages.has("G12")) completed.add("M3");
+    if (revealedSourceStages.has("G15") || revealedRuntimeStages.has("G17")) completed.add("M4");
+    if (revealedRuntimeStages.has("G18")) completed.add("M5");
 
-    const latest = [...timeline].reverse().find(item => byId[item.stage]);
-    if (latest) {
-      activeStage = latest.stage;
-      activeModule = byId[latest.stage].module;
+    if (focusStage && byId[focusStage]) {
+      activeStage = focusStage;
+      activeModule = byId[focusStage].module;
       activeStep = 0;
-    } else {
-      activeModule = "M1";
-      activeStage = "G3";
-      activeStep = 0;
+      lastDisplayedStage = focusStage;
     }
 
     applyCaseMeta();
     renderAll();
     renderLog();
     syncSourceToggle();
+    neutralizePendingPaint();
+    renderRuntimeBoundary();
 
-    if (latest) {
+    if (focusStage) {
       document.querySelectorAll(".running").forEach(node => node.classList.remove("running"));
-      document.querySelectorAll(`[data-id="${latest.stage}"]`).forEach(node => node.classList.add("running"));
-      document.querySelectorAll(".logline").forEach(node => node.classList.toggle("active", node.dataset.id === latest.stage));
+      document.querySelectorAll(`[data-id="${focusStage}"]`).forEach(node => node.classList.add("running"));
+      document.querySelectorAll(".logline").forEach(node => node.classList.toggle("active", node.dataset.id === focusStage));
+      const module = byId[focusStage]?.module;
+      if (module && module !== "CONN") {
+        const moduleNode = document.querySelector(`.module[data-id="${module}"]`);
+        if (moduleNode) moduleNode.classList.add("running");
+      }
     }
 
-    const pct = complete ? 100 : Math.round((new Set(observedStages).size / 19) * 100);
+    const pathCount = revealedRuntimeStages.size + revealedSourceStages.size;
+    const pct = Math.min(100, Math.round((pathCount / 19) * 100));
     document.getElementById("progressBar").style.width = `${pct}%`;
     document.getElementById("progressText").textContent = `${pct}%`;
   }
 
   function installIdleView({ clearInput = false } = {}) {
-    const blank = makeBlankCase("");
-    installCase(blank, "", false);
+    revealedRuntimeStages = new Set();
+    revealedSourceStages = new Set();
+    revealedTimeline = [];
+    fullCaseSnapshot = makeBlankCase("");
+    lastDisplayedStage = null;
+    paintSnapshot(fullCaseSnapshot, "G3");
     document.getElementById("queryText").textContent = "—";
     document.getElementById("requestState").textContent = "READY";
     showResponse("");
     if (clearInput) input.value = "";
   }
 
-  function clearForNewRun(prompt) {
-    const blank = makeBlankCase(prompt);
-    installCase(blank, prompt, false);
-    showResponse("");
+  function resetLivePlayback(prompt) {
+    visualPaused = false;
+    playbackQueue = [];
+    queuedObservedStages = new Set();
+    revealedRuntimeStages = new Set();
+    revealedSourceStages = new Set();
+    revealedTimeline = [];
+    fullCaseSnapshot = makeBlankCase(prompt);
+    backendComplete = false;
+    backendError = null;
+    pendingResponse = "";
+    lastQueuedTimelineLength = 0;
+    lastDisplayedStage = null;
+
+    const pauseButton = document.getElementById("livePauseBtn");
+    if (pauseButton) {
+      pauseButton.textContent = "⏸ Pause";
+      pauseButton.classList.remove("pauseState");
+    }
+
+    paintSnapshot(fullCaseSnapshot, "G3");
     document.getElementById("queryText").textContent = prompt;
     document.getElementById("requestState").textContent = "STARTING";
+    showResponse("");
     setCollectorState("Starting Gateway…", "connected");
-    message.textContent = "Starting the real chat.send request. Results will appear only when TraceClaw observes them.";
+    message.textContent = "Starting chat.send. The path will advance only as this run is correlated with TraceClaw evidence.";
+  }
+
+  function sourceBridgeNeeded(nextStage) {
+    const next = stageNumber(nextStage);
+    return next >= 17 && revealedRuntimeStages.has("G13") && !queuedObservedStages.has("G14");
+  }
+
+  function enqueueNewTimeline(snapshot) {
+    const timeline = snapshot?._collector?.timeline || [];
+    const newItems = timeline.slice(lastQueuedTimelineLength);
+    lastQueuedTimelineLength = timeline.length;
+
+    for (const item of newItems) {
+      const stage = item?.stage;
+      if (!stage || !byId?.[stage]) continue;
+
+      if (sourceBridgeNeeded(stage)) {
+        for (const sourceStage of VERIFIED_SOURCE_BRIDGE) {
+          if (!queuedObservedStages.has(sourceStage)) {
+            playbackQueue.push({ stage: sourceStage, sourceOnly: true, event: "verified source control flow" });
+            queuedObservedStages.add(sourceStage);
+          }
+        }
+      }
+
+      // A stage can emit more than one event (G0 does in the current source).
+      // Progress focuses the stage only on first observation; later events still
+      // update that card from the latest snapshot without jumping backwards.
+      if (!queuedObservedStages.has(stage)) {
+        playbackQueue.push({ ...item, sourceOnly: false });
+        queuedObservedStages.add(stage);
+      }
+    }
+  }
+
+  function displayDelayMs() {
+    const value = Number(document.getElementById("speed")?.value || 620);
+    return Math.max(140, value);
+  }
+
+  async function waitVisualDelay(ms) {
+    let remaining = ms;
+    while (remaining > 0 && currentLiveId) {
+      if (visualPaused) {
+        await sleep(60);
+        continue;
+      }
+      const chunk = Math.min(50, remaining);
+      await sleep(chunk);
+      remaining -= chunk;
+    }
+  }
+
+  async function revealPlaybackItem(item, prompt) {
+    if (!fullCaseSnapshot) return;
+
+    if (item.sourceOnly) {
+      revealedSourceStages.add(item.stage);
+    } else {
+      revealedRuntimeStages.add(item.stage);
+      revealedTimeline.push(item);
+    }
+
+    paintSnapshot(fullCaseSnapshot, item.stage);
+
+    const module = moduleForStage(item.stage);
+    const moduleText = module === "CONN" ? "Connection" : module;
+    document.getElementById("requestState").textContent = visualPaused ? `PAUSED · ${item.stage}` : "RUNNING";
+
+    if (item.sourceOnly) {
+      setCollectorState(`SOURCE PATH · ${item.stage}`, "connected");
+      message.textContent = `${item.stage} · source-confirmed continuation · no standalone runtime event for this stage`;
+    } else {
+      setCollectorState(`LIVE · ${item.stage}`, "connected");
+      message.textContent = `${moduleText} · ${item.stage} · ${item.event || "observed"}`;
+    }
+
+    await waitVisualDelay(displayDelayMs());
+  }
+
+  async function consumePlayback(prompt) {
+    while (currentLiveId) {
+      if (visualPaused) {
+        await sleep(60);
+        continue;
+      }
+
+      const item = playbackQueue.shift();
+      if (item) {
+        await revealPlaybackItem(item, prompt);
+        continue;
+      }
+
+      if (backendComplete) break;
+      await sleep(50);
+    }
+
+    if (!currentLiveId) return;
+    if (backendError) throw new Error(backendError);
+
+    // Do not reveal the answer ahead of a paused/queued visualization. The final
+    // response appears only after the currently collected execution path catches up.
+    if (pendingResponse) showResponse(pendingResponse);
+    document.getElementById("requestState").textContent = "FINISHED";
+    setCollectorState("Trace complete", "connected");
+    message.textContent = `Finished · ${revealedRuntimeStages.size} Gateway stages observed · source-only gaps remain explicitly labeled.`;
+    neutralizePendingPaint();
+    renderRuntimeBoundary();
+  }
+
+  function toggleLivePause() {
+    if (!liveRunning) return;
+    visualPaused = !visualPaused;
+    const pauseButton = document.getElementById("livePauseBtn");
+
+    if (visualPaused) {
+      if (pauseButton) {
+        pauseButton.textContent = "▶ Resume";
+        pauseButton.classList.add("pauseState");
+      }
+      const where = lastDisplayedStage || "waiting";
+      document.getElementById("requestState").textContent = `PAUSED · ${where}`;
+      setCollectorState(`Paused @ ${where}`, "connected");
+      message.textContent = `Visualization paused at ${where}. OpenClaw continues running and ${playbackQueue.length} queued stage(s) will be shown after Resume.`;
+    } else {
+      if (pauseButton) {
+        pauseButton.textContent = "⏸ Pause";
+        pauseButton.classList.remove("pauseState");
+      }
+      document.getElementById("requestState").textContent = "RUNNING";
+      setCollectorState("Live visualization resumed", "connected");
+      message.textContent = playbackQueue.length
+        ? `Resuming from ${lastDisplayedStage || "current stage"} · ${playbackQueue.length} queued stage(s).`
+        : "Resumed · waiting for the next correlated Gateway stage.";
+    }
   }
 
   async function checkCollector() {
@@ -236,7 +546,7 @@
 
       collectorReady = true;
       setCollectorState("Gateway + trace connected", "connected");
-      message.textContent = "Ready. No runtime result is shown until you press Run trace.";
+      message.textContent = "Ready. Run trace starts a source-aligned live execution view; Pause freezes the visualization without stopping OpenClaw.";
     } catch (error) {
       collectorReady = false;
       setCollectorState("Collector unavailable", "error");
@@ -245,42 +555,31 @@
   }
 
   async function pollLiveRun(liveId, prompt) {
-    let lastTimelineLength = -1;
-
     while (currentLiveId === liveId) {
       const response = await fetch(`${collectorUrl}/api/live/${liveId}`, { cache: "no-store" });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
 
-      const caseData = payload.trace;
-      const timeline = caseData?._collector?.timeline || [];
-      const complete = Boolean(payload.complete);
+      fullCaseSnapshot = payload.trace || fullCaseSnapshot;
+      enqueueNewTimeline(fullCaseSnapshot);
 
-      installCase(caseData, prompt, complete);
-      document.getElementById("requestState").textContent = complete ? "FINISHED" : "RUNNING";
-
-      if (timeline.length !== lastTimelineLength) {
-        lastTimelineLength = timeline.length;
-        const latest = timeline[timeline.length - 1];
-        if (latest) {
-          setCollectorState(`LIVE · ${latest.stage}`, "connected");
-          message.textContent = `${latest.stage} · ${latest.event || "observed"} · observed from the running Gateway`;
-        } else {
-          setCollectorState("Gateway running…", "connected");
-          message.textContent = "Gateway request started; waiting for the first correlated TraceClaw event.";
-        }
+      // Update values already revealed (for example G0 can emit start + resolved)
+      // without moving the visual focus ahead of the playback queue.
+      if (lastDisplayedStage && !visualPaused) {
+        paintSnapshot(fullCaseSnapshot, lastDisplayedStage);
       }
 
-      if (payload.response) showResponse(payload.response);
+      if (payload.response) pendingResponse = payload.response;
+      backendComplete = Boolean(payload.complete);
+      backendError = payload.error || null;
 
-      if (complete) {
-        if (payload.error) throw new Error(payload.error);
-        setCollectorState("Trace complete", "connected");
-        message.textContent = `Finished · ${timeline.length} actual Gateway runtime events observed for this question.`;
-        return;
+      if (visualPaused) {
+        setCollectorState(`Paused @ ${lastDisplayedStage || "waiting"}`, "connected");
+        message.textContent = `Visualization paused. Gateway is still collecting; ${playbackQueue.length} stage(s) queued.`;
       }
 
-      await new Promise(resolve => setTimeout(resolve, 140));
+      if (backendComplete) return;
+      await sleep(100);
     }
   }
 
@@ -301,7 +600,7 @@
 
     liveRunning = true;
     setBusy(true);
-    clearForNewRun(prompt);
+    resetLivePlayback(prompt);
 
     try {
       const response = await fetch(`${collectorUrl}/api/live/start`, {
@@ -317,25 +616,27 @@
       CASE2.rawSessionKey = payload.sessionKey || "";
       document.getElementById("requestState").textContent = "RUNNING";
 
-      await pollLiveRun(payload.liveRunId, prompt);
+      const pollTask = pollLiveRun(payload.liveRunId, prompt);
+      const playbackTask = consumePlayback(prompt);
+      await Promise.all([pollTask, playbackTask]);
     } catch (error) {
       setCollectorState("Run failed", "error");
       message.textContent = `Run failed: ${error.message}`;
       document.getElementById("requestState").textContent = "FAILED";
     } finally {
       liveRunning = false;
+      visualPaused = false;
       currentLiveId = null;
       setBusy(false);
     }
   });
 
-  integrateHeaderControlsIntoRunTrace();
+  installControls();
 
   const clearButton = document.getElementById("resetBtn");
   if (clearButton) {
     clearButton.onclick = () => {
       if (liveRunning) return;
-      currentLiveId = null;
       installIdleView({ clearInput: true });
       message.textContent = collectorReady
         ? "Ready. No runtime result is shown until you press Run trace."
@@ -344,11 +645,11 @@
   }
 
   async function initializeLiveViewer() {
-    // app.js asynchronously loads the default saved trace. Wait until that work is
-    // complete, then deliberately replace it with an evidence-neutral idle view.
+    // app.js may asynchronously load the historical example. Wait for its catalog
+    // initialization, then replace it with an evidence-neutral live idle state.
     for (let i = 0; i < 100; i += 1) {
       if (ACTIVE_CASE && byId && byId.G3) break;
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await sleep(20);
     }
     installIdleView();
     await checkCollector();
