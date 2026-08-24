@@ -21,49 +21,44 @@
     return "neutral";
   }
 
-  function parseLines(raw) {
-    return String(raw || "—")
-      .split("\n")
-      .map(line => line.trim())
-      .filter(Boolean);
+  function prettyValue(value) {
+    if (value === null) return "null";
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
   }
 
-  function keywords(step) {
-    const text = `${step?.title || ""} ${step?.detail || ""} ${step?.code || ""}`.toLowerCase();
-    return new Set(
-      text
-        .replace(/[^a-z0-9_]+/g, " ")
-        .split(/\s+/)
-        .filter(token => token.length >= 4)
-    );
+  function runtimeEvents(stage) {
+    return Array.isArray(stage?.runtimeEvents) ? stage.runtimeEvents : [];
   }
 
-  function lineScore(line, words) {
-    const normalized = line.toLowerCase().replace(/[^a-z0-9_]+/g, " ");
-    let score = 0;
-    words.forEach(word => {
-      if (normalized.includes(word)) score += word.length >= 8 ? 2 : 1;
-    });
-    return score;
+  function eventsForStep(stage, stepIndex) {
+    return runtimeEvents(stage).filter(event => Number(event?.stepIndex) === stepIndex);
   }
 
-  // The stage payload already contains the concrete values that were actually
-  // observed or source-derived for this run. Prefer lines related to the selected
-  // source step, but never manufacture a value that is absent from the stage data.
-  function valuesForStep(raw, step) {
-    const lines = parseLines(raw);
-    if (lines.length <= 5 || lines[0] === "—") return lines.join("\n");
+  function eventFieldsText(events) {
+    if (!events.length) return "—";
+    return events.map((item, index) => {
+      const header = [
+        `${index + 1}. ${item.event || "runtime event"}`,
+        item.ts ? `@ ${item.ts}` : "",
+        item.phase ? `[${item.phase}]` : "",
+      ].filter(Boolean).join(" ");
+      const fields = Object.entries(item.fields || {})
+        .map(([key, value]) => `${key} = ${prettyValue(value)}`)
+        .join("\n");
+      return `${header}${fields ? `\n${fields}` : ""}`;
+    }).join("\n\n");
+  }
 
-    const words = keywords(step);
-    const ranked = lines
-      .map((line, index) => ({ line, index, score: lineScore(line, words) }))
-      .filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score || a.index - b.index)
-      .slice(0, 5)
-      .sort((a, b) => a.index - b.index)
-      .map(item => item.line);
-
-    return (ranked.length ? ranked : lines.slice(0, 5)).join("\n");
+  function stageRuntimeText(stage) {
+    const events = runtimeEvents(stage);
+    if (!events.length) return "No TraceClaw runtime event was captured for this stage.";
+    return eventFieldsText(events);
   }
 
   function ensureInspector() {
@@ -86,11 +81,21 @@
     source.id = "stepIoSource";
     head.append(headText, source);
 
+    const runtimeBox = el("div", "stepRuntimeBox");
+    const runtimeHead = el("div", "stepIoBoxHead");
+    runtimeHead.append(el("span", "stepIoBoxLabel", "Direct runtime observations"));
+    const runtimeEvidence = el("span", "stepIoEvidence neutral", "NOT OBSERVED");
+    runtimeEvidence.id = "stepRuntimeEvidence";
+    runtimeHead.append(runtimeEvidence);
+    const runtimeValues = el("pre", "stepIoValues stepRuntimeValues", "—");
+    runtimeValues.id = "stepRuntimeValues";
+    runtimeBox.append(runtimeHead, runtimeValues);
+
     const grid = el("div", "stepIoGrid");
 
     const inputBox = el("div", "stepIoBox");
     const inputHead = el("div", "stepIoBoxHead");
-    inputHead.append(el("span", "stepIoBoxLabel", "Input values"));
+    inputHead.append(el("span", "stepIoBoxLabel", "Stage input context"));
     const inputEvidence = el("span", "stepIoEvidence", "—");
     inputEvidence.id = "stepIoInputEvidence";
     inputHead.append(inputEvidence);
@@ -100,7 +105,7 @@
 
     const outputBox = el("div", "stepIoBox");
     const outputHead = el("div", "stepIoBoxHead");
-    outputHead.append(el("span", "stepIoBoxLabel", "Output values"));
+    outputHead.append(el("span", "stepIoBoxLabel", "Stage output context"));
     const outputEvidence = el("span", "stepIoEvidence", "—");
     outputEvidence.id = "stepIoOutputEvidence";
     outputHead.append(outputEvidence);
@@ -110,13 +115,19 @@
 
     grid.append(inputBox, outputBox);
 
+    const stageBox = el("details", "stageRuntimeDetails");
+    const summary = el("summary", "stageRuntimeSummary", "All runtime events for this stage");
+    const stageValues = el("pre", "stepIoValues stageRuntimeValues", "—");
+    stageValues.id = "stageRuntimeValues";
+    stageBox.append(summary, stageValues);
+
     const note = el(
       "div",
       "stepIoNote",
-      "Values come from the current run's stage evidence. If a sub-step has no standalone runtime field, the evidence label remains SOURCE or SOURCE-DERIVED rather than being presented as observed runtime data."
+      "Direct runtime observations are shown only when the TraceClaw event itself is tagged to this source step. Stage input/output context remains separately labeled because it may include request-known or source-derived values."
     );
 
-    panel.append(head, grid, note);
+    panel.append(head, runtimeBox, grid, stageBox, note);
     compact.insertAdjacentElement("afterend", panel);
     return panel;
   }
@@ -127,11 +138,29 @@
 
     const stepIndex = Math.max(0, Math.min(Number(activeStep) || 0, Math.max(0, stage.steps.length - 1)));
     const step = stage.steps[stepIndex] || {};
+    const directEvents = eventsForStep(stage, stepIndex);
+    const allEvents = runtimeEvents(stage);
 
     document.getElementById("stepIoTitle").textContent = `${stage.id} · ${stepIndex + 1}. ${step.title || "Step"}`;
     document.getElementById("stepIoSource").textContent = step.source || "";
-    document.getElementById("stepIoInput").textContent = valuesForStep(stage.concreteInput, step) || "—";
-    document.getElementById("stepIoOutput").textContent = valuesForStep(stage.concreteOutput, step) || "—";
+
+    const runtimeEvidence = document.getElementById("stepRuntimeEvidence");
+    const runtimeValues = document.getElementById("stepRuntimeValues");
+    if (directEvents.length) {
+      runtimeEvidence.textContent = `RUNTIME · ${directEvents.length} EVENT${directEvents.length > 1 ? "S" : ""}`;
+      runtimeEvidence.className = "stepIoEvidence observed";
+      runtimeValues.textContent = eventFieldsText(directEvents);
+    } else {
+      runtimeEvidence.textContent = "NO DIRECT STEP EVENT";
+      runtimeEvidence.className = "stepIoEvidence neutral";
+      runtimeValues.textContent = allEvents.length
+        ? "This stage has runtime evidence, but the current instrumentation does not tag any event to this exact source sub-step. See “All runtime events for this stage” below."
+        : "No TraceClaw runtime event was captured for this stage in the current run.";
+    }
+
+    document.getElementById("stepIoInput").textContent = stage.concreteInput || "—";
+    document.getElementById("stepIoOutput").textContent = stage.concreteOutput || "—";
+    document.getElementById("stageRuntimeValues").textContent = stageRuntimeText(stage);
 
     const inputEvidence = document.getElementById("stepIoInputEvidence");
     const outputEvidence = document.getElementById("stepIoOutputEvidence");
@@ -145,14 +174,21 @@
     document.querySelectorAll("#compactSteps .compactStep").forEach(row => {
       const index = Number(row.dataset.step || 0);
       const step = stage?.steps?.[index];
+      const directCount = eventsForStep(stage, index).length;
       row.setAttribute("role", "button");
       row.tabIndex = 0;
-      row.setAttribute("aria-label", `${step?.title || `Step ${index + 1}`}. Show input and output values.`);
-      row.title = "Show input and output values";
+      row.setAttribute("aria-label", `${step?.title || `Step ${index + 1}`}. Inspect runtime evidence.`);
+      row.title = directCount
+        ? `${directCount} direct runtime event${directCount > 1 ? "s" : ""}`
+        : "No direct runtime event for this sub-step";
 
-      if (!row.querySelector(".stepIoHint")) {
-        row.append(el("span", "stepIoHint", "Input / Output"));
+      let hint = row.querySelector(".stepIoHint");
+      if (!hint) {
+        hint = el("span", "stepIoHint");
+        row.append(hint);
       }
+      hint.textContent = directCount ? `${directCount} runtime` : "stage evidence";
+      hint.classList.toggle("observed", directCount > 0);
 
       const select = () => {
         activeStep = index;
@@ -161,8 +197,6 @@
         updateInspector(stage);
       };
 
-      // Replace the old behavior that automatically opened the long source panel.
-      // Source detail remains available through its explicit toggle below.
       row.onclick = select;
       row.onkeydown = event => {
         if (event.key === "Enter" || event.key === " ") {
@@ -188,7 +222,7 @@
 
     const summary = document.getElementById("process");
     if (summary && !document.getElementById("stepFlowHint")) {
-      const hint = el("div", "stepFlowHint", "Select any step to inspect the concrete input and output values for the current run.");
+      const hint = el("div", "stepFlowHint", "Select a step to inspect direct runtime observations. Source-derived context is shown separately and never presented as measured runtime data.");
       hint.id = "stepFlowHint";
       summary.insertAdjacentElement("afterend", hint);
     }
