@@ -7,6 +7,7 @@
 <title>OpenClaw Gateway Trace</title>
 <link rel="stylesheet" href="assets/styles.css"/>
 <link rel="stylesheet" href="assets/live.css"/>
+<link rel="stylesheet" href="assets/step-inspector.css"/>
 </head>
 <body>
 
@@ -77,7 +78,7 @@
     <div class="info ioInfo"><h4>Output</h4><p id="output"></p><div class="ioConcrete"><div class="ioConcreteHead"><span>Runtime values</span><span class="ioEvidence" id="outputEvidence"></span></div><pre class="ioValues" id="concreteOutput"></pre></div></div>
   </div>
   <div class="processSection">
-    <div class="processTop"><div><h4>Process · Trace View</h4><div class="processSummary" id="process"></div></div><span class="badge" id="stepCount"></span></div>
+    <div class="processTop"><div><h4>Execution steps</h4><div class="processSummary" id="process"></div></div><span class="badge" id="stepCount"></span></div>
     <div class="compactSteps" id="compactSteps"></div>
     <button class="sourceToggle" id="sourceToggle" type="button"><span id="sourceToggleLabel">Source detail</span><span class="toggleMark" id="toggleMark">＋</span></button>
     <div class="sourceDetail" id="sourceDetail"><div class="sourceDetailHead"><div><div class="kicker">Source detail</div><div class="sourceDetailSub">Select a step to inspect its pseudocode and source range.</div></div></div><div class="sourceWorkspace"><div class="sourceStepList" id="sourceStepList"></div><div class="stepPanel" id="stepPanel"><div class="stepPanelHead"><div><div class="stepPanelTitle" id="stepPanelTitle"></div><div class="stepPanelMeta"><span class="stepMetaChip" id="stepStageChip"></span><span class="stepMetaChip">PSEUDOCODE</span></div></div><div class="stepHint">selected step</div></div><div class="stepCodeTools"><div class="stepSourceLabel" style="margin:0">PSEUDOCODE</div><button class="miniCopyBtn" id="copyStepCode" type="button">Copy code</button></div><pre class="sourceCode" id="stepCode"></pre><div class="stepCodeTools"><div class="stepSourceLabel" style="margin:0">SOURCE</div><button class="miniCopyBtn" id="copyStepSource" type="button">Copy source</button></div><div class="stepSource" id="stepSource"></div><div class="stepSourceLabel">NOTES</div><div class="stepPanelText" id="stepPanelText"></div><div class="sourceNote">The code shown above is source-aligned pseudocode for readability. The SOURCE field is the verified line range in the fixed v2026.7.1-2 snapshot.</div></div></div></div>
@@ -111,6 +112,7 @@
 <script src="data/stages/part3.js"></script>
 <script src="data/cases/index.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/step-inspector.js"></script>
 <script src="assets/session-reuse.js"></script>
 <script src="assets/live.js"></script>
 </body></html>
