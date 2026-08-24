@@ -1,27 +1,50 @@
 (() => {
-  let scheduled = false;
+  // Exact relations used by the overview arrows. These labels mirror the fixed
+  // v2026.7.1-2 source path; they are not inferred from visual adjacency.
+  const RELATIONS = {
+    "G0:G1": { kind: "call", label: "nested call" },
+    "G1:G2": { kind: "return-chain", label: "return to G0 · then G2" },
+    "G3:G4": { kind: "guard", label: "authorization guard" },
+    "G4:G5": { kind: "data", label: "p.message" },
+    "G6:G7": { kind: "data", label: "requestedAgentId + rawSessionKey" },
+    "G7:G8": { kind: "data", label: "loaded Session state" },
+    "G8:G9": { kind: "data", label: "selectedAgent.agentId" },
+    "G10:G11": { kind: "guard", label: "policy guard" },
+    "G11:G12": { kind: "guard", label: "dedupe fall-through" },
+    "G13:G14": { kind: "data", label: "ctx" },
+    "G14:G15": { kind: "call", label: "nested call" },
+    "G16:G17": { kind: "internal", label: "internal resolution" },
+    "G17:G18": { kind: "sequence", label: "G16 continues · later G18" },
+  };
+
+  function adjacentStageIds(arrow) {
+    let from = arrow.previousElementSibling;
+    while (from && !from.dataset?.id) from = from.previousElementSibling;
+    let to = arrow.nextElementSibling;
+    while (to && !to.dataset?.id) to = to.nextElementSibling;
+    return [from?.dataset?.id || "", to?.dataset?.id || ""];
+  }
 
   function decorateArrowLabels(root = document) {
-    root.querySelectorAll?.('.stageFlowArrow[data-flow-label]').forEach(arrow => {
-      let label = arrow.querySelector(':scope > .flowRelationLabel');
+    root.querySelectorAll?.('.connFlow > .arrow, .subflow > .arrow').forEach(arrow => {
+      const [from, to] = adjacentStageIds(arrow);
+      if (!from || !to) return;
+      arrow.dataset.from = from;
+      arrow.dataset.to = to;
+      const relation = RELATIONS[`${from}:${to}`];
+      if (!relation) return;
+
+      arrow.dataset.flowKind = relation.kind;
+      arrow.dataset.flowLabel = relation.label;
+      arrow.classList.add("stageFlowArrow");
+
+      let label = arrow.querySelector('.flowRelationLabel');
       if (!label) {
         label = document.createElement('span');
         label.className = 'flowRelationLabel';
-        label.textContent = arrow.dataset.flowLabel || '';
         arrow.append(label);
-        return;
       }
-      const next = arrow.dataset.flowLabel || '';
-      if (label.textContent !== next) label.textContent = next;
-    });
-  }
-
-  function scheduleDecorate() {
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      decorateArrowLabels();
+      if (label.textContent !== relation.label) label.textContent = relation.label;
     });
   }
 
@@ -30,40 +53,22 @@
       const previous = renderAll;
       renderAll = function renderAllWithReadableFlowLabels(...args) {
         const result = previous(...args);
-        scheduleDecorate();
+        requestAnimationFrame(() => decorateArrowLabels());
         return result;
       };
     }
-
     if (typeof renderSubflow === 'function') {
       const previousSubflow = renderSubflow;
       renderSubflow = function renderSubflowWithReadableFlowLabels(...args) {
         const result = previousSubflow(...args);
-        scheduleDecorate();
+        requestAnimationFrame(() => decorateArrowLabels(document));
         return result;
       };
     }
-
     decorateArrowLabels();
-
-    // The viewer rebuilds stage/module nodes during replay and live polling.
-    // Observe only structural changes and coalesce them into one animation frame.
-    // Do not rewrite labels on every mutation: that can create a self-triggering
-    // MutationObserver loop and stall the page.
-    const observer = new MutationObserver(mutations => {
-      const relevant = mutations.some(mutation =>
-        [...mutation.addedNodes].some(node =>
-          node.nodeType === 1 && (
-            node.matches?.('.stageFlowArrow, .arrow, .subnode, .stageCard') ||
-            node.querySelector?.('.stageFlowArrow, .arrow, .subnode, .stageCard')
-          )
-        )
-      );
-      if (relevant) scheduleDecorate();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
   }
 
+  window.GATEWAY_FLOW_RELATIONS = RELATIONS;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, { once: true });
   else install();
 })();
