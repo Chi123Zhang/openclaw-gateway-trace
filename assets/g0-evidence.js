@@ -36,44 +36,28 @@
   };
 
   const STEP_KEYS = [
-    {
-      i: ["authConfig", "connectAuth", "deviceIdentityPresent", "requestAuthContext"],
-      o: [],
-    },
-    {
-      i: ["connectAuth", "deviceIdentityPresent"],
-      o: ["sharedAuthProvided", "bootstrapTokenCandidatePresent", "deviceTokenCandidatePresent"],
-    },
-    {
-      i: ["authConfig", "sharedAuthProvided"],
-      o: ["authResult", "authMethod"],
-    },
-    {
-      i: ["sharedAuthProvided", "authResult"],
-      o: ["sharedAuthOk"],
-    },
+    { i: ["authConfig", "connectAuth", "deviceIdentityPresent", "requestAuthContext"], o: [] },
+    { i: ["connectAuth", "deviceIdentityPresent"], o: ["sharedAuthProvided", "bootstrapTokenCandidatePresent", "deviceTokenCandidatePresent"] },
+    { i: ["authConfig", "sharedAuthProvided"], o: ["authResult", "authMethod"] },
+    { i: ["sharedAuthProvided", "authResult"], o: ["sharedAuthOk"] },
     {
       i: ["authResult", "authMethod", "sharedAuthOk", "sharedAuthProvided"],
-      o: [
-        "authResult",
-        "authMethod",
-        "sharedAuthOk",
-        "sharedAuthProvided",
-        "bootstrapTokenCandidatePresent",
-        "deviceTokenCandidatePresent",
-      ],
+      o: ["authResult", "authMethod", "sharedAuthOk", "sharedAuthProvided", "bootstrapTokenCandidatePresent", "deviceTokenCandidatePresent"],
     },
   ];
 
   const normalize = value => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
-  function g0() {
-    try { return window.byId?.G0 || null; } catch { return null; }
+  function stageById(id) {
+    try {
+      return typeof byId !== "undefined" ? byId?.[id] || null : null;
+    } catch {
+      return null;
+    }
   }
 
-  function g1() {
-    try { return window.byId?.G1 || null; } catch { return null; }
-  }
+  function g0() { return stageById("G0"); }
+  function g1() { return stageById("G1"); }
 
   function runtimeEvents(stage) {
     return Array.isArray(stage?.runtimeEvents) ? stage.runtimeEvents : [];
@@ -121,7 +105,7 @@
     };
   }
 
-  function fact(key) {
+  function fact(key, stage = g0()) {
     if (key === "connectAuth") {
       return unknown(key, "Raw handshake credential values are intentionally not emitted by the trace.");
     }
@@ -129,7 +113,7 @@
       return unknown(key, "req / trustedProxies / IP / rate-limit inputs are part of the fixed source call but are not emitted by the current G0 event.");
     }
 
-    const found = runtimeField(g0(), ALIASES[key] || [key]);
+    const found = runtimeField(stage, ALIASES[key] || [key]);
     if (found) return { key, label: LABEL[key] || key, ...found };
     return unknown(key);
   }
@@ -139,7 +123,7 @@
     return { label, value: item.value, evidence: item.evidence, source: item.source, observed: true };
   }
 
-  function status(index, inputs, outputs) {
+  function status(inputs, outputs) {
     const runtimeOutput = outputs.some(item => item.evidence === "RUNTIME" || item.evidence === "NATIVE");
     if (runtimeOutput) return { label: "OBSERVED", tone: "observed" };
     const runtimeInput = inputs.some(item => item.evidence === "RUNTIME" || item.evidence === "NATIVE");
@@ -147,7 +131,7 @@
     return { label: "UNRESOLVED", tone: "unresolved" };
   }
 
-  function interpretation(index, model) {
+  function interpretation(index) {
     const descriptions = [
       "G0 receives resolved Gateway auth configuration, connectAuth, the device-identity presence flag, and request/network authentication context. The current trace directly exposes only the fields it emitted; raw credential values and proxy/rate-limit objects remain unobserved.",
       "G0 normalizes shared token/password auth and derives bootstrap/device-token candidates. Candidate presence is shown only from the runtime summary fields; credential values themselves are not exposed.",
@@ -158,8 +142,7 @@
     return descriptions[index] || "G0 source-aligned step.";
   }
 
-  function patchConcrete() {
-    const stage = g0();
+  function patchConcrete(stage = g0()) {
     if (!stage) return;
 
     const inputPairs = [
@@ -197,10 +180,10 @@
   function inspect(stage, index) {
     if (stage?.id !== "G0") return previous.inspect(stage, index);
 
-    patchConcrete();
+    patchConcrete(stage);
     const spec = STEP_KEYS[index] || { i: [], o: [] };
-    const inputs = spec.i.map(fact);
-    const outputs = spec.o.map(fact);
+    const inputs = spec.i.map(key => fact(key, stage));
+    const outputs = spec.o.map(key => fact(key, stage));
     const knownFacts = [];
 
     if (index === 2) {
@@ -209,31 +192,27 @@
       if (item) knownFacts.push(item);
     }
     if (index === 4) {
-      const final = stageResult(g0());
+      const final = stageResult(stage);
       const item = knownFact("G0 auth-state result", final);
       if (item) knownFacts.push(item);
     }
 
-    const model = {
-      status: status(index, inputs, outputs),
+    return {
+      status: status(inputs, outputs),
       inputs,
       outputs,
       knownFacts,
-      interpretation: "",
+      interpretation: interpretation(index),
       directEvents: runtimeEvents(stage).filter(event => Number(event?.stepIndex) === index),
       allEvents: runtimeEvents(stage),
     };
-    model.interpretation = interpretation(index, model);
-    return model;
   }
 
   window.GATEWAY_STEP_EVIDENCE = { ...previous, inspect };
 
-  patchConcrete();
-
-  if (typeof window.renderAll === "function") {
-    const priorRenderAll = window.renderAll;
-    window.renderAll = function renderAllWithAlignedG0(...args) {
+  if (typeof renderAll === "function") {
+    const priorRenderAll = renderAll;
+    renderAll = function renderAllWithAlignedG0(...args) {
       patchConcrete();
       return priorRenderAll(...args);
     };
