@@ -110,18 +110,20 @@
   }
 })();
 
-// Load the G0 source/runtime alignment patches after the base evidence and
-// verified-flow modules are installed. This keeps the change isolated to G0.
+// Load source/runtime alignment patches after the base evidence and verified-flow
+// modules are installed. Each patch stays isolated to its named stage.
 (() => {
-  const files = ["assets/g0-evidence.js", "assets/g0-handoff-fix.js"];
+  const files = [
+    "assets/g0-evidence.js",
+    "assets/g0-handoff-fix.js",
+    "assets/g1-evidence.js",
+  ];
   let index = 0;
 
   function next() {
     if (index >= files.length) {
       try {
         if (typeof renderAll === "function") renderAll();
-        const stage = window.byId?.[window.activeStage];
-        if (stage && typeof renderSteps === "function") renderSteps(stage);
       } catch {}
       return;
     }
