@@ -23,12 +23,13 @@
       const banner = document.createElement("section");
       banner.id = "referenceBanner";
       banner.className = "card referenceBanner";
+      banner.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 14px;margin-bottom:12px";
       banner.innerHTML = `
         <div>
           <div class="kicker">Saved trace</div>
           <strong>How to make a cake?</strong>
         </div>
-        <div class="referenceMeta">OpenClaw v2026.7.1-2 · source commit 0790d9f · Replay uses the same verified G/M flow as the live viewer.</div>`;
+        <div class="referenceMeta" style="max-width:720px;text-align:right;color:var(--muted);font:10px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace">OpenClaw v2026.7.1-2 · source commit 0790d9f · Replay uses the same verified G/M flow as the live viewer.</div>`;
       main.prepend(banner);
     }
   };
