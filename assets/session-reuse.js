@@ -117,6 +117,7 @@
     "assets/g0-evidence.js",
     "assets/g0-handoff-fix.js",
     "assets/g1-evidence.js",
+    "assets/g2-evidence.js",
   ];
   let index = 0;
 
