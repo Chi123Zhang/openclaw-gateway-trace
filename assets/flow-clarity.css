@@ -3,43 +3,38 @@
 /* G0–G2 handshake */
 .connFlow{display:flex;align-items:stretch;gap:0!important;flex-wrap:nowrap!important;overflow-x:auto;padding:4px 2px 14px!important}
 .connFlow .stageCard{flex:0 0 235px;min-width:235px!important}
-.connFlow>.arrow{position:relative;flex:0 0 86px;min-width:86px!important;display:flex;align-items:center;justify-content:flex-end;font-size:0!important;overflow:visible!important}
-.connFlow>.arrow::before{content:"";position:absolute;left:10px;right:16px;top:44%;height:2px;background:#596670}
+.connFlow>.arrow{position:relative;flex:0 0 94px;min-width:94px!important;display:flex;align-items:center;justify-content:flex-end;font-size:0!important;overflow:visible!important}
+.connFlow>.arrow::before{content:"";position:absolute;left:10px;right:16px;top:39%;height:2px;background:#596670}
 .connFlow>.arrow::after{content:"→";position:relative;z-index:1;margin-right:4px;padding-left:3px;background:#121518;color:#a0abb3;font-size:20px;line-height:1}
-.connFlow>.stageFlowArrow[data-flow-label]{padding-bottom:20px}
-.connFlow>.stageFlowArrow[data-flow-label]::before{top:40%}
-.connFlow>.stageFlowArrow[data-flow-label]{color:transparent!important}
-.connFlow>.stageFlowArrow[data-flow-label]::selection{background:transparent}
+.connFlow>.stageFlowArrow[data-flow-label]{padding-bottom:26px}
 
 /* G stages inside the selected module */
-.subflow{gap:0!important;align-items:stretch!important;padding:8px 2px 22px!important}
+.subflow{gap:0!important;align-items:stretch!important;padding:8px 2px 24px!important}
 .subflow>.subnode{min-width:190px!important}
-.subflow>.arrow{position:relative;flex:0 0 112px;min-width:112px!important;display:flex;align-items:center;justify-content:flex-end;font-size:0!important;overflow:visible!important}
-.subflow>.arrow::before{content:"";position:absolute;left:12px;right:18px;top:44%;height:2px;background:#53606a}
+.subflow>.arrow{position:relative;flex:0 0 124px;min-width:124px!important;display:flex;align-items:center;justify-content:flex-end;font-size:0!important;overflow:visible!important}
+.subflow>.arrow::before{content:"";position:absolute;left:12px;right:18px;top:39%;height:2px;background:#53606a}
 .subflow>.arrow::after{content:"→";position:relative;z-index:1;margin-right:5px;padding-left:4px;background:#121518;color:#a0abb3;font-size:20px;line-height:1}
-.subflow>.stageFlowArrow[data-flow-label]{padding-bottom:22px}
-.subflow>.stageFlowArrow[data-flow-label]::before{top:40%}
+.subflow>.stageFlowArrow[data-flow-label]{padding-bottom:28px}
 
-/* Relation labels created by stage-handoff.js should sit below the line, never on top of cards. */
-.stageFlowArrow[data-flow-label]{position:relative!important;overflow:visible!important;pointer-events:none}
-.stageFlowArrow[data-flow-label]::after{top:auto!important;left:auto!important;transform:none!important}
+/* Relation labels sit below the line so they never cover cards or arrowheads. */
+.stageFlowArrow[data-flow-label]{position:relative!important;overflow:visible!important;pointer-events:none;animation:none!important;transition:none!important;opacity:1!important}
 .stageFlowArrow[data-flow-label]::before{z-index:0}
-.stageFlowArrow[data-flow-label]{text-indent:0!important}
-.stageFlowArrow[data-flow-label]{animation:none!important}
-.stageFlowArrow[data-flow-label]{transition:none!important}
-.stageFlowArrow[data-flow-label]{opacity:1!important}
-.stageFlowArrow[data-flow-label]{filter:none!important}
+.stageFlowArrow[data-flow-label]::after{top:auto!important;left:auto!important;transform:none!important}
+.flowRelationLabel{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);z-index:3;display:block;max-width:118px;padding:2px 5px;border:1px solid #303940;border-radius:3px;background:#101417;color:#7f8b94;font:8px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;white-space:normal;word-break:normal;pointer-events:none}
+.connFlow .flowRelationLabel{max-width:92px}
+.stageFlowArrow.flowActive::before{background:#718178!important}
+.stageFlowArrow.flowPassed::before{background:#58655d!important}
 
 /* M1–M5 module flow */
 .moduleWrap{overflow-x:auto;padding-bottom:10px}
-.moduleFlowRow{display:grid!important;grid-template-columns:minmax(205px,1fr) 118px minmax(205px,1fr) 118px minmax(205px,1fr) 118px minmax(205px,1fr) 154px minmax(205px,1fr)!important;gap:0!important;align-items:stretch!important;min-width:1380px}
+.moduleFlowRow{display:grid!important;grid-template-columns:minmax(205px,1fr) 122px minmax(205px,1fr) 122px minmax(205px,1fr) 122px minmax(205px,1fr) 158px minmax(205px,1fr)!important;gap:0!important;align-items:stretch!important;min-width:1400px}
 .moduleFlowRow>.module{min-height:154px!important;margin:0!important;z-index:2}
-.moduleConnector{position:relative;display:flex;flex-direction:column;justify-content:center;padding:23px 9px 8px;overflow:visible}
+.moduleConnector{position:relative;display:flex;flex-direction:column;justify-content:center;padding:24px 10px 8px;overflow:visible}
 .moduleConnectorType{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;padding:3px 5px;border:1px solid #354049;border-radius:3px;background:#101417;color:#84909a;font:8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;white-space:nowrap}
 .moduleConnectorForward,.moduleConnectorReturn{display:flex;align-items:center;width:100%}
 .moduleConnectorLine,.moduleConnectorReturnLine{height:2px;flex:1;background:#5a6670}
 .moduleConnectorArrow,.moduleConnectorReturnArrow{color:#a0abb3;font:19px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
-.moduleConnectorLabel,.moduleConnectorReturnLabel{margin-top:5px;text-align:center;color:#8d98a1;font:9px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-word}
+.moduleConnectorLabel,.moduleConnectorReturnLabel{margin-top:6px;text-align:center;color:#8d98a1;font:9px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-word}
 .moduleConnectorProof{display:none}
 .moduleConnector.data .moduleConnectorLine{background:#607765}
 .moduleConnector.data .moduleConnectorType{border-color:#43574a;color:#93aa99}
@@ -51,11 +46,11 @@
 .moduleConnectorReturn{margin-top:13px}
 .moduleConnectorReturnLine{background:#6b6274}
 .moduleConnectorReturnArrow{color:#b0a7b9;margin-right:2px}
-.moduleConnectorReturnLabel{margin-top:2px;color:#9e96a8}
+.moduleConnectorReturnLabel{margin-top:3px;color:#9e96a8}
 
 @media(max-width:1100px){
   .connFlow .stageCard{flex-basis:210px;min-width:210px!important}
-  .connFlow>.arrow{flex-basis:74px;min-width:74px!important}
+  .connFlow>.arrow{flex-basis:82px;min-width:82px!important}
   .subflow>.subnode{min-width:175px!important}
-  .subflow>.arrow{flex-basis:96px;min-width:96px!important}
+  .subflow>.arrow{flex-basis:108px;min-width:108px!important}
 }
