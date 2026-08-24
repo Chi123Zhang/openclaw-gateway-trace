@@ -17,19 +17,37 @@
 .subflow>.stageFlowArrow[data-flow-label]{padding-bottom:28px}
 
 /* Relation labels sit below the line so they never cover cards or arrowheads. */
-.stageFlowArrow[data-flow-label]{position:relative!important;overflow:visible!important;pointer-events:none;animation:none!important;transition:none!important;opacity:1!important}
+.stageFlowArrow[data-flow-label]{position:relative!important;overflow:visible!important;pointer-events:none;opacity:1!important}
 .stageFlowArrow[data-flow-label]::before{z-index:0}
 .stageFlowArrow[data-flow-label]::after{top:auto!important;left:auto!important;transform:none!important}
-.flowRelationLabel{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);z-index:3;display:block;max-width:118px;padding:2px 5px;border:1px solid #303940;border-radius:3px;background:#101417;color:#7f8b94;font:8px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;white-space:normal;word-break:normal;pointer-events:none}
+.flowRelationLabel{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);z-index:3;display:block;max-width:118px;padding:2px 5px;border:1px solid #303940;border-radius:3px;background:#101417;color:#7f8b94;font:8px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;white-space:normal;pointer-events:none}
 .connFlow .flowRelationLabel{max-width:92px}
-.stageFlowArrow.flowActive::before{background:#718178!important}
-.stageFlowArrow.flowPassed::before{background:#58655d!important}
+
+/* Source semantics. Line style means something; it is not decorative. */
+.stageFlowArrow[data-flow-kind="data"]::before{background:#597161}
+.stageFlowArrow[data-flow-kind="call"]::before{background:#5c7079}
+.stageFlowArrow[data-flow-kind="guard"]::before{background:repeating-linear-gradient(90deg,#766a50 0 8px,transparent 8px 13px)}
+.stageFlowArrow[data-flow-kind="sequence"]::before{background:repeating-linear-gradient(90deg,#56616a 0 3px,transparent 3px 8px)}
+.stageFlowArrow[data-flow-kind="internal"]::before{background:#59646e}
+.stageFlowArrow[data-flow-kind="return-chain"]::before{background:repeating-linear-gradient(90deg,#6a6274 0 9px,transparent 9px 14px)}
+.stageFlowArrow[data-flow-kind="return-chain"] .flowRelationLabel{border-color:#4b4552;color:#aaa2b2}
+
+/* Runtime progress. Only the connector by which the current stage was reached moves. */
+.stageFlowArrow.flowPending{opacity:.58!important}
+.stageFlowArrow.flowDone{opacity:.9!important}
+.stageFlowArrow.flowDone::before{background:#496254!important}
+.stageFlowArrow.flowDone::after{color:#7fa48a!important}
+.stageFlowArrow.flowDone .flowRelationLabel{color:#778c7d;border-color:#35453b}
+.stageFlowArrow.flowCurrent{opacity:1!important}
+.stageFlowArrow.flowCurrent::before{height:3px!important;background:linear-gradient(90deg,#34433a 0%,#8ed0a0 48%,#34433a 100%)!important;background-size:210% 100%!important;box-shadow:0 0 8px rgba(125,194,145,.28);animation:verifiedFlowSweep 1.15s linear infinite!important}
+.stageFlowArrow.flowCurrent::after{color:#a9dfb6!important;text-shadow:0 0 8px rgba(140,211,158,.24)}
+.stageFlowArrow.flowCurrent .flowRelationLabel{color:#b3d8bc;border-color:#4f7259;background:#111915}
 
 /* M1–M5 module flow */
 .moduleWrap{overflow-x:auto;padding-bottom:10px}
 .moduleFlowRow{display:grid!important;grid-template-columns:minmax(205px,1fr) 122px minmax(205px,1fr) 122px minmax(205px,1fr) 122px minmax(205px,1fr) 158px minmax(205px,1fr)!important;gap:0!important;align-items:stretch!important;min-width:1400px}
 .moduleFlowRow>.module{min-height:154px!important;margin:0!important;z-index:2}
-.moduleConnector{position:relative;display:flex;flex-direction:column;justify-content:center;padding:24px 10px 8px;overflow:visible}
+.moduleConnector{position:relative;display:flex;flex-direction:column;justify-content:center;padding:24px 10px 8px;overflow:visible;opacity:.66;transition:opacity .14s ease}
 .moduleConnectorType{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;padding:3px 5px;border:1px solid #354049;border-radius:3px;background:#101417;color:#84909a;font:8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;white-space:nowrap}
 .moduleConnectorForward,.moduleConnectorReturn{display:flex;align-items:center;width:100%}
 .moduleConnectorLine,.moduleConnectorReturnLine{height:2px;flex:1;background:#5a6670}
@@ -48,9 +66,36 @@
 .moduleConnectorReturnArrow{color:#b0a7b9;margin-right:2px}
 .moduleConnectorReturnLabel{margin-top:3px;color:#9e96a8}
 
+.moduleConnector.flowPending{opacity:.54}
+.moduleConnector.flowDone{opacity:.9}
+.moduleConnector.flowDone .moduleConnectorLine{background:#496254!important}
+.moduleConnector.flowDone .moduleConnectorArrow{color:#7fa48a}
+.moduleConnector.flowCurrent{opacity:1}
+.moduleConnector.flowCurrent .moduleConnectorLine{height:3px;background:linear-gradient(90deg,#34433a 0%,#8ed0a0 48%,#34433a 100%)!important;background-size:210% 100%!important;box-shadow:0 0 8px rgba(125,194,145,.26);animation:verifiedFlowSweep 1.15s linear infinite}
+.moduleConnector.flowCurrent .moduleConnectorArrow{color:#a9dfb6}
+.moduleConnector.flowCurrent .moduleConnectorType{border-color:#4f7259;color:#b3d8bc;background:#111915}
+.moduleConnector.returnCurrent .moduleConnectorReturnLine{height:3px;background:linear-gradient(90deg,#403947 0%,#b3a7be 48%,#403947 100%);background-size:210% 100%;animation:verifiedFlowSweepReverse 1.15s linear infinite}
+.moduleConnector.returnCurrent .moduleConnectorReturnArrow{color:#c7bccf}
+.moduleConnector.returnDone .moduleConnectorReturnLine{background:#5d5665}
+
+/* Connection-level handoff into the later chat.send request. This is explicitly a prerequisite, not a direct function call. */
+.connectionRequestBridge{margin:8px 0 2px;padding:7px 16px;display:grid;grid-template-columns:34px minmax(90px,1fr) auto 20px 34px;align-items:center;gap:8px;color:#78848d;opacity:.62}
+.bridgeNode{display:grid;place-items:center;height:25px;border:1px solid #303940;border-radius:4px;background:#111519;font:9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#89949d}
+.bridgeLine{position:relative;height:2px;background:repeating-linear-gradient(90deg,#505b64 0 3px,transparent 3px 8px)}
+.bridgePulse{display:none;position:absolute;top:-2px;left:0;width:6px;height:6px;border-radius:50%;background:#9bc8a8;box-shadow:0 0 7px rgba(155,200,168,.35);animation:bridgeMove 1.2s linear infinite}
+.bridgeRelation{display:flex;align-items:center;gap:7px;white-space:nowrap;font:9px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace}
+.bridgeRelation b{padding:3px 5px;border:1px solid #3a4249;border-radius:3px;color:#909ba4;font-size:8px;letter-spacing:.04em}
+.bridgeArrow{font-size:16px;color:#8b969f}.connectionRequestBridge.flowCurrent{opacity:1}.connectionRequestBridge.flowCurrent .bridgeLine{height:3px;background:#597161}.connectionRequestBridge.flowCurrent .bridgePulse{display:block}.connectionRequestBridge.flowCurrent .bridgeArrow{color:#a9dfb6}.connectionRequestBridge.flowDone{opacity:.85}.connectionRequestBridge.flowDone .bridgeLine{background:#496254}.connectionRequestBridge.flowDone .bridgeNode{border-color:#374b3e;color:#82a88d}
+
+@keyframes verifiedFlowSweep{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@keyframes verifiedFlowSweepReverse{0%{background-position:-100% 0}100%{background-position:100% 0}}
+@keyframes bridgeMove{0%{left:0;opacity:.2}15%{opacity:1}85%{opacity:1}100%{left:calc(100% - 6px);opacity:.2}}
+
+@media(prefers-reduced-motion:reduce){.stageFlowArrow.flowCurrent::before,.moduleConnector.flowCurrent .moduleConnectorLine,.moduleConnector.returnCurrent .moduleConnectorReturnLine,.bridgePulse{animation:none!important}}
 @media(max-width:1100px){
   .connFlow .stageCard{flex-basis:210px;min-width:210px!important}
   .connFlow>.arrow{flex-basis:82px;min-width:82px!important}
   .subflow>.subnode{min-width:175px!important}
   .subflow>.arrow{flex-basis:108px;min-width:108px!important}
+  .bridgeRelation span{white-space:normal}
 }
