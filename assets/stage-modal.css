@@ -1,0 +1,51 @@
+/* Stage inspector modal: keep the main trace compact and inspect G0–G18 in place. */
+.detail.stageModalTarget{display:none;margin:0}
+
+.stageModalBackdrop{position:fixed;inset:0;z-index:900;background:rgba(5,8,10,.72);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .16s ease}
+body.stageModalOpen .stageModalBackdrop{opacity:1;pointer-events:auto}
+body.stageModalOpen{overflow:hidden}
+
+body.stageModalOpen .detail.stageModalTarget{display:block;position:fixed;z-index:910;left:50%;top:5vh;transform:translateX(-50%);width:min(1440px,92vw);height:90vh;overflow-y:auto;overscroll-behavior:contain;background:#14181c;border:1px solid #3a434b;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.45)}
+
+body.stageModalOpen .detail.stageModalTarget::-webkit-scrollbar{width:10px}
+body.stageModalOpen .detail.stageModalTarget::-webkit-scrollbar-track{background:#111417}
+body.stageModalOpen .detail.stageModalTarget::-webkit-scrollbar-thumb{background:#333b43;border-radius:10px;border:2px solid #111417}
+
+.stageModalTarget .detailHead{position:sticky;top:0;z-index:8;background:rgba(20,24,28,.97);backdrop-filter:blur(10px);border-bottom:1px solid #2f363d;padding:16px 64px 16px 20px}
+.stageModalTarget .detailHead::after{content:"Click a stage to inspect its execution details";display:block;margin-top:5px;font-size:11px;font-weight:400;color:#7f8a94}
+
+.stageModalClose{position:absolute;right:18px;top:16px;width:34px;height:34px;border:1px solid #39424a;border-radius:7px;background:#171b20;color:#aeb7bf;font-size:20px;line-height:30px;cursor:pointer;display:grid;place-items:center;transition:background .14s ease,border-color .14s ease,color .14s ease}
+.stageModalClose:hover{background:#1d2328;border-color:#56636e;color:#eef2f5}
+.stageModalClose:focus-visible{outline:2px solid #78908a;outline-offset:2px}
+
+/* Make the modal read like an engineering inspector rather than a long dashboard. */
+body.stageModalOpen .stageModalTarget .tabs{position:sticky;top:76px;z-index:7;background:#14181c;border-bottom:1px solid #292f35;overflow-x:auto;flex-wrap:nowrap}
+body.stageModalOpen .stageModalTarget .tab{flex:0 0 auto;min-width:150px;cursor:pointer}
+body.stageModalOpen .stageModalTarget .detailBreadcrumb{position:sticky;top:128px;z-index:6;background:#12161a;border-bottom:1px solid #292f35}
+body.stageModalOpen .stageModalTarget .summaryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.stageModalOpen .stageModalTarget .info{min-height:0;padding:17px 19px}
+body.stageModalOpen .stageModalTarget .ioInfo{min-height:0}
+body.stageModalOpen .stageModalTarget .ioValues{max-height:190px;overflow:auto}
+body.stageModalOpen .stageModalTarget .processSection{border-top:1px solid #2b3238}
+body.stageModalOpen .stageModalTarget .compactSteps{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body.stageModalOpen .stageModalTarget .compactStep{min-height:54px;cursor:pointer}
+body.stageModalOpen .stageModalTarget .stepIoPanel{margin:14px 0 0}
+body.stageModalOpen .stageModalTarget .sourceToggle{margin-top:14px}
+
+/* Make every G-stage card clearly inspectable without adding decorative chrome. */
+.stageCard[data-id^="G"],.subnode[data-id^="G"],.tab[data-id^="G"]{cursor:pointer}
+.stageCard[data-id^="G"]:hover,.subnode[data-id^="G"]:hover{border-color:#66727c;background:#1a1f24}
+
+@media(max-width:900px){
+  body.stageModalOpen .detail.stageModalTarget{top:2vh;width:96vw;height:96vh;border-radius:9px}
+  body.stageModalOpen .stageModalTarget .summaryGrid{grid-template-columns:1fr}
+  body.stageModalOpen .stageModalTarget .compactSteps{grid-template-columns:1fr}
+  body.stageModalOpen .stageModalTarget .detailBreadcrumb{position:static}
+  body.stageModalOpen .stageModalTarget .tabs{top:72px}
+}
+
+@media(max-width:620px){
+  body.stageModalOpen .detail.stageModalTarget{inset:0;transform:none;width:100vw;height:100vh;border:0;border-radius:0}
+  .stageModalTarget .detailHead{padding-left:15px;padding-right:58px}
+  .stageModalClose{right:12px;top:13px}
+}
