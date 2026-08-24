@@ -109,3 +109,34 @@
     installControl();
   }
 })();
+
+// Load the G0 source/runtime alignment patches after the base evidence and
+// verified-flow modules are installed. This keeps the change isolated to G0.
+(() => {
+  const files = ["assets/g0-evidence.js", "assets/g0-handoff-fix.js"];
+  let index = 0;
+
+  function next() {
+    if (index >= files.length) {
+      try {
+        if (typeof renderAll === "function") renderAll();
+        const stage = window.byId?.[window.activeStage];
+        if (stage && typeof renderSteps === "function") renderSteps(stage);
+      } catch {}
+      return;
+    }
+    const src = files[index++];
+    if (document.querySelector(`script[src="${src}"]`)) {
+      next();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = false;
+    script.onload = next;
+    document.body.appendChild(script);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", next, { once: true });
+  else next();
+})();
