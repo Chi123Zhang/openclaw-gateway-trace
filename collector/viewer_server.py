@@ -10,7 +10,8 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 
 from server import app
-import live_runs  # noqa: F401  # registers incremental live-run routes
+import runtime_detail  # noqa: F401  # enriches _build_trace with raw runtime evidence
+import live_runs  # noqa: F401  # registers incremental live-run routes after enrichment
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
