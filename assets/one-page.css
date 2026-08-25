@@ -1,0 +1,369 @@
+/* One-page desktop layout.
+ * Goal: keep the live Gateway overview inside one viewport, remove low-value
+ * sidebar progress detail, and guarantee that M1-M5 are all visible at once.
+ * Stage modal pages remain independently navigable.
+ */
+
+@media (min-width: 1041px) {
+  html, body { height: 100%; }
+  body { overflow: hidden; font-size: 11px; line-height: 1.35; }
+
+  header {
+    min-height: 42px !important;
+    height: 42px;
+    padding: 5px 12px !important;
+  }
+  .brand { font-size: 12px !important; }
+  .controls { gap: 5px !important; }
+  header .badge, header .speed, header .btn {
+    font-size: 9px !important;
+    padding: 4px 6px !important;
+  }
+  .casePicker { font-size: 9px !important; }
+
+  .layout {
+    width: 100%;
+    max-width: none !important;
+    height: calc(100vh - 42px);
+    padding: 7px 9px 8px !important;
+    grid-template-columns: minmax(0, 1fr) 246px !important;
+    gap: 8px !important;
+    overflow: hidden;
+  }
+
+  .main {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .card { border-radius: 5px !important; }
+  .kicker { font-size: 8px !important; }
+  .sectionTitle { font-size: 12px !important; margin-top: 1px !important; }
+
+  /* Ask + response: very short collapsed preview. */
+  .askPanel {
+    flex: 0 0 auto;
+    padding: 7px 9px !important;
+    margin: 0 !important;
+  }
+  .askHead { margin-bottom: 5px !important; gap: 6px !important; }
+  .askLabel { margin-bottom: 3px !important; font-size: 9px !important; }
+  .askRow { gap: 5px !important; }
+  #promptInput {
+    min-height: 34px !important;
+    height: 34px;
+    resize: none !important;
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+  }
+  .runTraceBtn { min-width: 78px !important; font-size: 9px !important; padding: 4px 7px !important; }
+  .askFooter { display: none !important; }
+  .collectorState { font-size: 8px !important; padding: 3px 5px !important; }
+
+  .responsePanel {
+    margin-top: 5px !important;
+    padding-top: 5px !important;
+  }
+  .responseToolbar { margin-bottom: 4px !important; }
+  .responseControls { gap: 3px !important; }
+  .responseControl {
+    height: 22px !important;
+    min-width: 26px !important;
+    padding: 0 6px !important;
+    font-size: 8px !important;
+  }
+  .responsePanel.responseCollapsed #responseText {
+    max-height: 58px !important;
+    overflow: hidden !important;
+  }
+  .responsePanel.responseExpanded #responseText {
+    max-height: 28vh !important;
+    overflow: auto !important;
+  }
+  #responseText {
+    padding: 6px 8px !important;
+    font-size: calc(9px * var(--response-font-scale, 1)) !important;
+    line-height: 1.35 !important;
+  }
+  .responsePanel.responseCollapsed::after { height: 18px !important; }
+
+  /* Connection strip: one compact row. */
+  .conn {
+    flex: 0 0 auto;
+    padding: 7px 9px !important;
+  }
+  .connFlow {
+    margin-top: 5px !important;
+    padding: 1px 0 2px !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+  }
+  .connFlow .stageCard {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 5px 7px !important;
+  }
+  .connFlow > .arrow {
+    flex: 0 0 44px !important;
+    min-width: 44px !important;
+  }
+  .connFlow > .arrow::before { left: 5px !important; right: 9px !important; }
+  .connFlow > .arrow::after { font-size: 13px !important; }
+  .connFlow .flowRelationLabel { display: none !important; }
+  .stageCard .sid { font-size: 8px !important; }
+  .stageCard .stitle { font-size: 9px !important; margin-top: 1px !important; }
+  .stageCard .sresult { font-size: 8px !important; margin-top: 2px !important; }
+  .ready { padding: 5px 7px !important; font-size: 8px !important; }
+
+  /* Query becomes a single compact line. */
+  .query {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    padding: 6px 8px !important;
+    min-height: 34px;
+  }
+  .query code { font-size: 9px !important; line-height: 1.2 !important; }
+  .query .state { padding: 4px 6px !important; font-size: 8px !important; }
+
+  /* Pipeline takes the remaining space. */
+  .pipeline {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0 !important;
+    padding: 8px 9px !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .pipeline > .kicker { flex: 0 0 auto; }
+  .pipeline > .sectionTitle { flex: 0 0 auto; }
+  .archBand {
+    flex: 0 0 auto;
+    gap: 4px !important;
+    margin-top: 5px !important;
+  }
+  .archTag { padding: 4px 5px !important; font-size: 8px !important; }
+
+  /* Guarantee all five modules and all four connectors fit without horizontal scroll. */
+  .moduleWrap {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    margin-top: 6px !important;
+    padding-bottom: 0 !important;
+    overflow: hidden !important;
+  }
+  .moduleFlowRow {
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-template-columns:
+      minmax(0, 1fr) 54px
+      minmax(0, 1fr) 54px
+      minmax(0, 1fr) 54px
+      minmax(0, 1fr) 64px
+      minmax(0, 1fr) !important;
+    gap: 0 !important;
+  }
+  .moduleFlowRow > .module {
+    min-width: 0 !important;
+    min-height: 94px !important;
+    height: 94px;
+    padding: 7px 8px !important;
+    overflow: hidden;
+  }
+  .module .mid { font-size: 8px !important; }
+  .module h3 {
+    font-size: 10px !important;
+    margin: 3px 0 !important;
+    line-height: 1.15 !important;
+  }
+  .module p {
+    font-size: 8px !important;
+    line-height: 1.25 !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .module .arch {
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+    margin-top: 3px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .module .mresult {
+    bottom: 6px !important;
+    left: 8px !important;
+    font-size: 8px !important;
+  }
+  .moduleConnector {
+    min-width: 0 !important;
+    padding: 17px 4px 4px !important;
+  }
+  .moduleConnectorType {
+    top: 3px !important;
+    padding: 2px 3px !important;
+    font-size: 6px !important;
+  }
+  .moduleConnectorArrow, .moduleConnectorReturnArrow { font-size: 12px !important; }
+  .moduleConnectorLabel, .moduleConnectorReturnLabel {
+    margin-top: 3px !important;
+    font-size: 6px !important;
+    line-height: 1.1 !important;
+  }
+  .moduleConnectorReturn { margin-top: 6px !important; }
+
+  /* Selected module G-stage strip stays visible but compact and does not scroll. */
+  .expand {
+    flex: 0 0 auto;
+    margin-top: 6px !important;
+    padding-top: 5px !important;
+  }
+  .expandHead { margin-bottom: 4px !important; }
+  .expandTitle { font-size: 9px !important; }
+  #expandCount { padding: 2px 4px !important; font-size: 7px !important; }
+  .subflow {
+    padding: 2px 0 3px !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+  }
+  .subflow > .subnode {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 5px 6px !important;
+  }
+  .subflow > .arrow {
+    flex: 0 0 34px !important;
+    min-width: 34px !important;
+  }
+  .subflow > .arrow::before { left: 3px !important; right: 7px !important; }
+  .subflow > .arrow::after { font-size: 11px !important; }
+  .subflow .flowRelationLabel { display: none !important; }
+  .subnode .sid { font-size: 7px !important; }
+  .subnode .stitle {
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+    margin-top: 1px !important;
+  }
+  .subnode .sresult { font-size: 7px !important; margin-top: 2px !important; }
+
+  /* Boundary reduced to a single compact band. */
+  .boundary {
+    flex: 0 0 auto;
+    margin-top: 5px !important;
+    padding: 5px 6px !important;
+  }
+  .boundaryGrid { grid-template-columns: 1fr 28px 1fr !important; gap: 4px !important; }
+  .boundaryBox { padding: 5px 6px !important; }
+  .boundaryBox strong { font-size: 8px !important; margin-bottom: 1px !important; }
+  .boundaryBox span { font-size: 7px !important; line-height: 1.2 !important; }
+  .returnArrow { font-size: 10px !important; }
+  .returnNote {
+    margin-top: 3px !important;
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Output line stays visible at the bottom without extending the document. */
+  .output {
+    flex: 0 0 auto;
+    min-height: 30px;
+    margin: 0 !important;
+    padding: 5px 8px !important;
+  }
+  .output strong, .output .finish { font-size: 9px !important; }
+
+  /* ---------- Right sidebar ---------- */
+  .sidebar {
+    position: relative !important;
+    top: auto !important;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 8px !important;
+    font-size: 9px !important;
+  }
+  .sidebar .sideTitle { font-size: 8px !important; margin-bottom: 4px !important; }
+  .sidebar .sep { margin: 6px 0 !important; }
+  .sidebar .kv { padding: 4px 0 !important; font-size: 9px !important; }
+  .sidebar .kv b { font-size: 8px !important; }
+  .sidebar .contextBlock { border-radius: 4px !important; }
+  .sidebar .ctxRow { padding: 4px 5px !important; }
+  .sidebar .ctxLabel { margin-bottom: 2px !important; }
+  .sidebar .ctxLabel span { font-size: 8px !important; }
+  .sidebar .ctxLabel small { display: none !important; }
+  .sidebar .ctxValue { font-size: 7px !important; line-height: 1.2 !important; max-width: 155px !important; }
+  .sidebar .stateChip { font-size: 6px !important; padding: 2px 3px !important; }
+  .sidebar .metric { padding: 3px 0 !important; font-size: 8px !important; }
+  .compactSideSummary { gap: 4px !important; margin: 4px 0 6px !important; }
+  .compactSideItem { padding: 5px 6px !important; }
+  .compactSideLabel { font-size: 6px !important; margin-bottom: 2px !important; }
+  .compactSideValue { font-size: 8px !important; }
+
+  /* Remove the entire lower progress/evidence/log block. */
+  .sidebar .barRow,
+  .sidebar #log,
+  .sidebar .log,
+  .sidebar .note,
+  .sidebar .contextNote,
+  .sidebar .kv:has(#coverageText) {
+    display: none !important;
+  }
+
+  /* Also hide legacy verbose identity/runtime rows even if JS compacting did not run. */
+  .sidebar .kv:has(#sideStage),
+  .sidebar .kv:has(#sideResult),
+  .sidebar .kv:has(#sideAgent),
+  .sidebar .kv:has(#sideResolver),
+  .sidebar .kv:has(#sideProvider),
+  .sidebar .kv:has(#sideModel),
+  .sidebar .kv:has(#sideTools),
+  .sidebar .kv:has(#ackValue),
+  .sidebar .kv:has(#titleSyncValue),
+  .sidebar .kv:has(#sideTime),
+  .sidebar .kv:has(#sideTokens),
+  .sidebar .ctxRow:has(#ctxSessionEntry),
+  .sidebar .ctxRow:has(#ctxSessionId),
+  .sidebar .ctxRow:has(#ctxPolicy),
+  .sidebar .ctxRow:has(#ctxDownstreamAgent),
+  .sidebar .metric:has(#riskPolicy),
+  .sidebar .metric:has(#riskOverall) {
+    display: none !important;
+  }
+
+  /* Stage detail remains modal/paged; overview itself fits without document scroll. */
+  body.stageModalOpen .detail.stageModalTarget {
+    top: 3vh !important;
+    height: 94vh !important;
+    width: min(1240px, 94vw) !important;
+  }
+  body.stageModalOpen .stageModalTarget .detailHead { padding: 9px 46px 8px 12px !important; }
+  body.stageModalOpen .stageModalTarget .tabs { top: 55px !important; padding: 6px 10px !important; }
+  body.stageModalOpen .stagePageTabs { top: 99px !important; padding: 6px 10px !important; }
+  body.stageModalOpen .stageModalTarget .tab { padding: 5px 7px !important; min-width: 115px !important; }
+  body.stageModalOpen .stageModalTarget .compactPrimarySummary .info { padding: 10px 11px !important; }
+  body.stageModalOpen .stageModalTarget .compactPrimarySummary .info h4 { margin-bottom: 5px !important; font-size: 9px !important; }
+  body.stageModalOpen .stageModalTarget .compactPrimarySummary .info p { font-size: 10px !important; line-height: 1.35 !important; }
+  body.stageModalOpen .stageModalTarget .compactPrimarySummary .ioConcrete { margin-top: 7px !important; padding-top: 6px !important; }
+  body.stageModalOpen .stageModalTarget .compactPrimarySummary .ioValues { max-height: 135px !important; font-size: 8px !important; line-height: 1.35 !important; padding: 7px 8px !important; }
+}
+
+/* On smaller screens preserve usability rather than forcing desktop fit. */
+@media (max-width: 1040px) {
+  .sidebar .barRow,
+  .sidebar #log,
+  .sidebar .log,
+  .sidebar .note,
+  .sidebar .kv:has(#coverageText) { display: none !important; }
+}
