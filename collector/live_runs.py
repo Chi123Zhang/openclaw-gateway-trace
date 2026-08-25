@@ -1,6 +1,6 @@
 """Incremental live-run API for the Gateway trace viewer.
 
-The existing /api/run endpoint returns only after the request is complete.  This
+The existing /api/run endpoint returns only after the request is complete. This
 module adds a two-phase API so the browser can clear stale results immediately,
 start the real chat.send call, and then poll TraceClaw while the Gateway is still
 executing the request.
@@ -53,14 +53,28 @@ async def _execute(run: LiveRun) -> None:
         )
         run.status = "waiting_for_reply"
 
+        # chat.send and assistant-history visibility are separate boundaries. Do
+        # not declare the live run complete merely because chat.send returned.
+        # Give chat.history a useful minimum observation window even when the
+        # gateway call itself consumed most of OPENCLAW_TIMEOUT_MS.
         elapsed = time.monotonic() - run.started_at
-        remaining = max(2.0, (client.config.timeout_ms / 1000) - elapsed)
+        configured_remaining = (client.config.timeout_ms / 1000) - elapsed
+        history_wait_seconds = max(30.0, configured_remaining)
+
         response, _history = await wait_for_new_assistant_message(
             client,
             session_key=run.session_key,
             baseline_count=run.baseline_assistant_count,
-            timeout_seconds=remaining,
+            timeout_seconds=history_wait_seconds,
         )
+
+        if not response:
+            raise OpenClawError(
+                "Gateway reached the reply path, but no new assistant message "
+                f"became visible in chat.history for session {run.session_key!r} "
+                f"within {history_wait_seconds:.1f}s. The run is not marked complete."
+            )
+
         run.response = response
         run.status = "complete"
     except Exception as exc:  # surfaced to the browser, never hidden
@@ -96,7 +110,7 @@ async def start_live_run(request: RunRequest) -> dict[str, Any]:
 
     # Live viewer semantics:
     # - No sessionKey in the request and no OPENCLAW_SESSION_KEY override means a
-    #   brand-new session is created for this Run.  Such a session cannot contain
+    #   brand-new session is created for this Run. Such a session cannot contain
     #   earlier assistant messages, so a preflight chat.history call is unnecessary.
     # - An explicit/fixed session may already contain replies, so only that path
     #   needs a baseline history count before chat.send.
@@ -165,4 +179,9 @@ async def poll_live_run(live_run_id: str) -> dict[str, Any]:
         "response": run.response or "",
         "trace": trace,
         "complete": run.status in {"complete", "error"},
+        "elapsedSeconds": round(time.monotonic() - run.started_at, 3),
+        "sendReturned": run.send_result is not None,
+        "assistantResponseObserved": bool(run.response),
+        "sessionKey": run.session_key,
+        "runId": run.run_id,
     }
