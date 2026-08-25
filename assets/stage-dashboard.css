@@ -23,14 +23,28 @@ body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisual
 .stageVisualMetricLabel{display:block;color:#7f8a94;font:650 8px/1.15 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}
 .stageVisualMetricValue{display:block;margin-top:6px;color:#dce3e8;font:750 14px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stageVisualMetricValue.small{font-size:10px;line-height:1.25}
+.stageVisualMetricSub{display:block;margin-top:4px;color:#6f7a83;font:600 7px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.04em}
 
-/* Input and Output are primary evidence. Never collapse them inside the Overview. */
-body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioInfo{min-height:0!important}
-body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioConcrete{overflow:visible!important}
-body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioValues{max-height:none!important;height:auto!important;overflow:visible!important;white-space:pre-wrap!important}
+/* Input / Output are the primary stage boundary and are permanently visible. */
+.stageIoAlwaysOpen{margin-top:10px;border:1px solid #46624f;border-radius:8px;background:#0f1512;overflow:hidden;box-shadow:inset 0 1px 0 rgba(142,197,158,.04)}
+.stageIoHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #304039;background:#111a15}
+.stageIoHeader>div{display:flex;align-items:baseline;gap:9px;min-width:0}.stageIoHeader strong{font-size:13px;color:#edf2ef}.stageIoKicker{font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#7f9b88;text-transform:uppercase;letter-spacing:.07em}
+.stageIoAlwaysBadge{border:1px solid #3f5e49;border-radius:4px;padding:3px 6px;color:#9bc8a8;background:#132019;font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.05em}
+.stageIoGrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#2c3831}
+.stageIoCard{min-width:0;background:#101417;padding:11px 12px}
+.stageIoCard.inputCard{box-shadow:inset 3px 0 0 #6e9a7a}.stageIoCard.outputCard{box-shadow:inset 3px 0 0 #7692a0}
+.stageIoCardHead{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#e0e6e3;font:800 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em}
+.stageIoCount{color:#77838b;font-size:7px;font-weight:700;letter-spacing:.02em}
+.stageIoAbstract{margin-top:7px;color:#d8dee2;font-size:10px;line-height:1.4}
+.stageIoEvidence{margin-top:7px;color:#789087;font:650 7px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.04em}
+.stageIoValues{margin:7px 0 0;padding:9px 10px;border:1px solid #2d3734;border-radius:5px;background:#0b0f0d;color:#dfe7e3;font:600 9px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;overflow:visible;word-break:break-word;min-height:48px}
 
-/* Make the four core sections read as a conventional engineering report. */
-body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary{gap:8px!important;background:transparent!important;padding:10px 14px 14px!important}
+/* Remove duplicate collapsed overview disclosures introduced by older helpers. */
+body.stageModalOpen .stageModalTarget .legacyOverviewDisclosure{display:none!important}
+
+/* Purpose / Observed trace remain concise secondary context beneath the I/O panel. */
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioInfo{display:none!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important;background:transparent!important;padding:10px 14px 14px!important}
 body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info{border:1px solid #2c343b;border-radius:7px;background:#12171b!important}
 body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info h4{font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;text-transform:uppercase!important;letter-spacing:.05em!important;color:#929da6!important}
 body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info p{color:#d9dfe4!important}
@@ -47,11 +61,20 @@ body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrim
   body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetricLabel{font-size:6px}
   body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetricValue{font-size:10px;margin-top:4px}
   body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetricValue.small{font-size:8px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetricSub{font-size:6px;margin-top:2px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoAlwaysOpen{margin-top:6px;border-radius:5px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoHeader{padding:6px 8px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoHeader strong{font-size:10px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoKicker{font-size:6px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCard{padding:7px 8px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCardHead{font-size:7px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoAbstract{font-size:8px;margin-top:5px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoEvidence{font-size:6px;margin-top:4px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoValues{font-size:8px;line-height:1.35;padding:7px 8px;margin-top:5px;min-height:40px}
   body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary{gap:5px!important;padding:6px 10px 10px!important}
   body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info{padding:8px 9px!important;border-radius:5px}
-  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioValues{font-size:8px!important;line-height:1.35!important;padding:7px 8px!important}
 }
 
 @media(max-width:760px){
-  .stageVisualHero{grid-template-columns:58px minmax(0,1fr);gap:10px}.stageVisualState{grid-column:1/-1}.stageVisualMetrics{grid-template-columns:1fr 1fr}
+  .stageVisualHero{grid-template-columns:58px minmax(0,1fr);gap:10px}.stageVisualState{grid-column:1/-1}.stageVisualMetrics{grid-template-columns:1fr 1fr}.stageIoGrid{grid-template-columns:1fr}
 }
