@@ -1,0 +1,57 @@
+/* Stage overview: factual dashboard visualization for expanded G stages.
+ * Uses only values already present in the selected trace. No synthetic score or
+ * inferred risk number is introduced.
+ */
+
+.stageVisualSummary{display:none;background:#101417;border-bottom:1px solid #2b3238;padding:12px 14px}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualSummary{display:block}
+
+.stageVisualHero{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid #355244;border-radius:8px;background:#111916;padding:12px 14px}
+.stageVisualHero.source{border-color:#4b4435;background:#17150f}
+.stageVisualHero.bad{border-color:#5b3737;background:#1a1212}
+.stageVisualCode{font:800 30px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.04em;color:#8fc9a1;text-align:center}
+.stageVisualHero.source .stageVisualCode{color:#c7ab76}.stageVisualHero.bad .stageVisualCode{color:#d68b8b}
+.stageVisualResult{font-size:17px;font-weight:700;color:#e8edf1;line-height:1.2;text-transform:none}
+.stageVisualNote{margin-top:4px;color:#8d98a2;font-size:10px;line-height:1.35}
+.stageVisualState{display:flex;align-items:center;gap:7px;white-space:nowrap;font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#9bc8a8;text-transform:uppercase;letter-spacing:.04em}
+.stageVisualState::before{content:"";width:9px;height:9px;border-radius:50%;background:#4faa68;box-shadow:0 0 0 3px rgba(79,170,104,.08)}
+.stageVisualHero.source .stageVisualState{color:#c4aa79}.stageVisualHero.source .stageVisualState::before{background:#b48c45}
+.stageVisualHero.bad .stageVisualState{color:#d99191}.stageVisualHero.bad .stageVisualState::before{background:#bf5a5a}
+
+.stageVisualMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:9px}
+.stageVisualMetric{min-width:0;border:1px solid #2c343b;border-radius:7px;background:#12171b;padding:9px 10px}
+.stageVisualMetricLabel{display:block;color:#7f8a94;font:650 8px/1.15 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}
+.stageVisualMetricValue{display:block;margin-top:6px;color:#dce3e8;font:750 14px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stageVisualMetricValue.small{font-size:10px;line-height:1.25}
+
+/* Input and Output are primary evidence. Never collapse them inside the Overview. */
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioInfo{min-height:0!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioConcrete{overflow:visible!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioValues{max-height:none!important;height:auto!important;overflow:visible!important;white-space:pre-wrap!important}
+
+/* Make the four core sections read as a conventional engineering report. */
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary{gap:8px!important;background:transparent!important;padding:10px 14px 14px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info{border:1px solid #2c343b;border-radius:7px;background:#12171b!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info h4{font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;text-transform:uppercase!important;letter-spacing:.05em!important;color:#929da6!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info p{color:#d9dfe4!important}
+
+@media(min-width:1041px){
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualSummary{padding:8px 10px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualHero{grid-template-columns:62px minmax(0,1fr) auto;gap:10px;padding:8px 10px;border-radius:6px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualCode{font-size:23px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualResult{font-size:13px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualNote{font-size:8px;margin-top:2px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualState{font-size:7px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetrics{gap:5px;margin-top:6px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetric{padding:6px 7px;border-radius:5px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetricLabel{font-size:6px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetricValue{font-size:10px;margin-top:4px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageVisualMetricValue.small{font-size:8px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary{gap:5px!important;padding:6px 10px 10px!important}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info{padding:8px 9px!important;border-radius:5px}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .ioValues{font-size:8px!important;line-height:1.35!important;padding:7px 8px!important}
+}
+
+@media(max-width:760px){
+  .stageVisualHero{grid-template-columns:58px minmax(0,1fr);gap:10px}.stageVisualState{grid-column:1/-1}.stageVisualMetrics{grid-template-columns:1fr 1fr}
+}
