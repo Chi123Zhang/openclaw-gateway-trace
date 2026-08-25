@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.1")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.2")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -143,15 +143,51 @@ def _event_stage(
     concrete_output = display_event(event)
     input_evidence = "REQUEST + SOURCE-DERIVED"
 
-    # G3 consumes the already-authenticated connection identity plus the current
-    # RPC method. These are runtime inputs to authorization, not outputs produced
-    # by G3. Keep the authorization decision itself on the output side.
+    # G3 consumes authenticated connection identity and the current RPC method.
+    # Keep those runtime inputs separate from the authorization decision.
     if stage == "G3":
         observed_input = _render_event_fields(event, ("method", "role", "scopes"))
         observed_output = _render_event_fields(event, ("result", "reason"))
         if observed_input:
             concrete_input = observed_input
             input_evidence = "RUNTIME"
+        if observed_output:
+            concrete_output = observed_output
+
+    # G4 validates the existing chat.send request. method/run/session/message are
+    # inputs already present before validation; G4 outputs only the validation
+    # decision and observed validation flags.
+    elif stage == "G4":
+        method = event.get("method")
+        input_lines = []
+        if method is not None:
+            input_lines.append(f"method = {method}")
+        input_lines.extend(
+            [
+                f"sessionKey = {session_key}",
+                f"message = {message!r}",
+                "attachments = none",
+                f"idempotencyKey / runId = {run_id}",
+            ]
+        )
+        concrete_input = "\n".join(input_lines)
+        input_evidence = "RUNTIME + REQUEST" if method is not None else "REQUEST"
+        observed_output = _render_event_fields(
+            event,
+            ("result", "hasPrivilegedFields", "hasExplicitOrigin"),
+        )
+        if observed_output:
+            concrete_output = observed_output
+
+    # G5 sanitizes/classifies the message. SessionKey/runId remain in the same
+    # handler scope, but they are not outputs of message sanitization.
+    elif stage == "G5":
+        concrete_input = f"message = {message!r}\nattachments = none"
+        input_evidence = "REQUEST"
+        observed_output = _render_event_fields(
+            event,
+            ("result", "messageLength", "messageChangedBySanitization"),
+        )
         if observed_output:
             concrete_output = observed_output
 
@@ -346,12 +382,6 @@ def _build_trace(
             )
         )
 
-    stages["G4"]["concreteInput"] = (
-        f"sessionKey = {session_key}\n"
-        f"message = {message!r}\n"
-        "attachments = none\n"
-        f"idempotencyKey / runId = {run_id}"
-    )
     stages["G11"]["concreteInput"] = f"runId = {run_id}\nSessionKey = {session_key}"
 
     observed = set(by_stage)
