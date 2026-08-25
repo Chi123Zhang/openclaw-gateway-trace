@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.2")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.3")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -142,6 +142,7 @@ def _event_stage(
     )
     concrete_output = display_event(event)
     input_evidence = "REQUEST + SOURCE-DERIVED"
+    output_evidence = "RUNTIME"
 
     # G3 consumes authenticated connection identity and the current RPC method.
     # Keep those runtime inputs separate from the authorization decision.
@@ -191,6 +192,21 @@ def _event_stage(
         if observed_output:
             concrete_output = observed_output
 
+    # G6 resolves the optional Agent override from the actual request/session.
+    # The collector's chat.send request does not send agentId, so explicit agentId
+    # is absent. For the generated non-global dashboard SessionKey, the pinned
+    # helper returns no requestedAgentId override. The trace event independently
+    # records that G6 completed with result=resolved.
+    elif stage == "G6":
+        concrete_input = f"sessionKey = {session_key}\nexplicit agentId = none"
+        input_evidence = "REQUEST"
+        observed_result = _render_event_fields(event, ("result",))
+        output_lines = ["requestedAgentId = none"]
+        if observed_result:
+            output_lines.append(observed_result)
+        concrete_output = "\n".join(output_lines)
+        output_evidence = "RUNTIME + SOURCE-DERIVED"
+
     return {
         "result": result,
         "evidence": ["runtime", "source"],
@@ -202,7 +218,7 @@ def _event_stage(
         "concreteInput": concrete_input,
         "concreteOutput": concrete_output,
         "concreteInputEvidence": input_evidence,
-        "concreteOutputEvidence": "RUNTIME",
+        "concreteOutputEvidence": output_evidence,
     }
 
 
