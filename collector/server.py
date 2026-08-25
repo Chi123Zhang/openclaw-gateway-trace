@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.6")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.7")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -247,6 +247,19 @@ def _event_stage(
         concrete_input = "\n".join(input_lines)
         input_evidence = "RUNTIME + SOURCE-DERIVED" if observed_session_key is not None else "REQUEST + SOURCE-DERIVED"
         observed_output = _render_event_fields(event, ("agentId", "result"))
+        if observed_output:
+            concrete_output = observed_output
+
+    # G10 evaluates Session send policy from cfg + SessionEntry + canonical
+    # sessionKey (+ channel/chatType from the SessionEntry). The runtime event
+    # carries agentId/runId for trace context, but neither is an input to
+    # resolveSendPolicy and neither is produced by G10. The observed policy
+    # decision is sendPolicy/result.
+    elif stage == "G10":
+        observed_session_key = event.get("sessionKey")
+        concrete_input = f"sessionKey = {observed_session_key or session_key}"
+        input_evidence = "RUNTIME" if observed_session_key is not None else "REQUEST"
+        observed_output = _render_event_fields(event, ("sendPolicy", "result"))
         if observed_output:
             concrete_output = observed_output
 
