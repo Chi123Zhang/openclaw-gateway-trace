@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.4")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.5")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -217,6 +217,22 @@ def _event_stage(
         concrete_input = f"rawSessionKey = {raw_session_key or session_key}"
         input_evidence = "RUNTIME" if raw_session_key is not None else "REQUEST"
         observed_output = _render_event_fields(event, ("canonicalSessionKey", "result"))
+        if observed_output:
+            concrete_output = observed_output
+
+    # G8 validates requested Agent selection against the resolved Session state.
+    # Source path: validateChatSelectedAgent receives requestedSessionKey +
+    # requestedAgentId, then deleted-Agent checks consume canonical sessionKey +
+    # SessionEntry. For this collector request no explicit agentId was supplied.
+    # The G8 runtime event exposes sessionKey + result; runId is correlation
+    # metadata, not a validation output.
+    elif stage == "G8":
+        observed_session_key = event.get("sessionKey")
+        input_lines = ["requestedAgentId = none"]
+        input_lines.append(f"canonicalSessionKey = {observed_session_key or session_key}")
+        concrete_input = "\n".join(input_lines)
+        input_evidence = "RUNTIME + SOURCE-DERIVED" if observed_session_key is not None else "REQUEST + SOURCE-DERIVED"
+        observed_output = _render_event_fields(event, ("result",))
         if observed_output:
             concrete_output = observed_output
 
