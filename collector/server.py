@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.7")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.8")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -263,6 +263,24 @@ def _event_stage(
         if observed_output:
             concrete_output = observed_output
 
+    # G11 uses the client run/idempotency key for cached, aborted, pending,
+    # active-controller, and queued-turn guards; it also checks current Session
+    # routing/archived state before a new dispatch. Runtime observes runId and
+    # sessionKey as inputs. agentId in the event is trace context, not a value
+    # produced by G11. If none of the terminal guards return, the instrumented
+    # event records dedupeDecision=new_dispatch and result=pass.
+    elif stage == "G11":
+        observed_run_id = event.get("runId")
+        observed_session_key = event.get("sessionKey")
+        concrete_input = (
+            f"runId = {observed_run_id or run_id}\n"
+            f"sessionKey = {observed_session_key or session_key}"
+        )
+        input_evidence = "RUNTIME" if observed_run_id is not None or observed_session_key is not None else "REQUEST"
+        observed_output = _render_event_fields(event, ("dedupeDecision", "result"))
+        if observed_output:
+            concrete_output = observed_output
+
     return {
         "result": result,
         "evidence": ["runtime", "source"],
@@ -453,8 +471,6 @@ def _build_trace(
                 run_id=run_id,
             )
         )
-
-    stages["G11"]["concreteInput"] = f"runId = {run_id}\nSessionKey = {session_key}"
 
     observed = set(by_stage)
     return {
