@@ -14,6 +14,7 @@ Flow:
 
 from __future__ import annotations
 
+import json
 import os
 import time
 import uuid
@@ -32,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.0")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.1")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -81,6 +82,20 @@ def _known_input(stage: str, *, message: str, session_key: str, run_id: str) -> 
     return "\n".join(lines)
 
 
+def _render_event_fields(event: dict[str, Any], keys: tuple[str, ...]) -> str:
+    lines: list[str] = []
+    for key in keys:
+        value = event.get(key)
+        if value is None:
+            continue
+        if isinstance(value, (dict, list)):
+            rendered = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+        else:
+            rendered = str(value)
+        lines.append(f"{key} = {rendered}")
+    return "\n".join(lines)
+
+
 def _default_stage(
     stage: str,
     *,
@@ -118,6 +133,28 @@ def _event_stage(
 ) -> dict[str, Any]:
     result = event_result(stage, event)
     timestamp = event.get("ts")
+
+    concrete_input = _known_input(
+        stage,
+        message=message,
+        session_key=session_key,
+        run_id=run_id,
+    )
+    concrete_output = display_event(event)
+    input_evidence = "REQUEST + SOURCE-DERIVED"
+
+    # G3 consumes the already-authenticated connection identity plus the current
+    # RPC method. These are runtime inputs to authorization, not outputs produced
+    # by G3. Keep the authorization decision itself on the output side.
+    if stage == "G3":
+        observed_input = _render_event_fields(event, ("method", "role", "scopes"))
+        observed_output = _render_event_fields(event, ("result", "reason"))
+        if observed_input:
+            concrete_input = observed_input
+            input_evidence = "RUNTIME"
+        if observed_output:
+            concrete_output = observed_output
+
     return {
         "result": result,
         "evidence": ["runtime", "source"],
@@ -126,14 +163,9 @@ def _event_stage(
         "time": f"event at {timestamp}" if timestamp else "runtime event observed",
         "tokens": "not observed",
         "risk": "Runtime event captured; no extra risk conclusion is added by the collector.",
-        "concreteInput": _known_input(
-            stage,
-            message=message,
-            session_key=session_key,
-            run_id=run_id,
-        ),
-        "concreteOutput": display_event(event),
-        "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+        "concreteInput": concrete_input,
+        "concreteOutput": concrete_output,
+        "concreteInputEvidence": input_evidence,
         "concreteOutputEvidence": "RUNTIME",
     }
 
