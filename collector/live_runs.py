@@ -1,9 +1,10 @@
 """Incremental live-run API for the Gateway trace viewer.
 
-The existing /api/run endpoint returns only after the request is complete. This
-module adds a two-phase API so the browser can clear stale results immediately,
-start the real chat.send call, and then poll TraceClaw while the Gateway is still
-executing the request.
+The browser starts a real ``chat.send`` request and polls TraceClaw while the
+Gateway runs it.  OpenClaw's ``chat.send`` RPC is ACK-oriented: the RPC can
+return before reply dispatch / Agent Runtime has finished.  Completion is
+therefore tracked with the source-native ``agent.wait`` RPC, and ``chat.history``
+is used only after the run is terminal to retrieve the final assistant text.
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ class LiveRun:
     started_at: float = field(default_factory=time.monotonic)
     raw_events: list[dict[str, Any]] = field(default_factory=list)
     send_result: Any = None
+    wait_result: Any = None
     response: str | None = None
     status: str = "starting"
     error: str | None = None
@@ -43,36 +45,104 @@ _RUNS: dict[str, LiveRun] = {}
 _RUNS_LOCK = asyncio.Lock()
 
 
+def _wait_status(payload: Any) -> str:
+    if not isinstance(payload, dict):
+        return ""
+    status = payload.get("status")
+    return str(status).strip().lower() if status is not None else ""
+
+
+def _compact_wait_result(payload: Any) -> dict[str, Any] | None:
+    """Expose only source-documented run-lifecycle fields to the local viewer."""
+    if not isinstance(payload, dict):
+        return None
+    keys = (
+        "runId",
+        "status",
+        "startedAt",
+        "endedAt",
+        "error",
+        "stopReason",
+        "livenessState",
+        "yielded",
+        "pendingError",
+        "timeoutPhase",
+        "providerStarted",
+    )
+    return {key: payload[key] for key in keys if key in payload}
+
+
+def _wait_failure(payload: Any) -> str | None:
+    """Return a readable terminal failure, or None for non-failure snapshots."""
+    if not isinstance(payload, dict):
+        return None
+
+    status = _wait_status(payload)
+    failure_statuses = {
+        "error",
+        "failed",
+        "failure",
+        "timeout",
+        "timed_out",
+        "killed",
+        "aborted",
+        "cancelled",
+        "canceled",
+    }
+    if status not in failure_statuses:
+        return None
+
+    details: list[str] = []
+    for key in ("error", "pendingError", "stopReason", "timeoutPhase", "livenessState"):
+        value = payload.get(key)
+        if value not in (None, "", False):
+            details.append(f"{key}={value}")
+    suffix = f" ({', '.join(details)})" if details else ""
+    return f"agent.wait returned terminal status {status!r}{suffix}"
+
+
 async def _execute(run: LiveRun) -> None:
     try:
         run.status = "sending"
+        # chat.send returns the Gateway ACK / run identity; it is not the reply
+        # completion signal in OpenClaw v2026.7.1-2.
         run.send_result = await client.send(
             run.message,
             session_key=run.session_key,
             run_id=run.run_id,
         )
+
+        run.status = "waiting_for_run"
+        run.wait_result = await client.call(
+            "agent.wait",
+            {
+                "runId": run.run_id,
+                "timeoutMs": client.config.timeout_ms,
+            },
+        )
+
+        wait_failure = _wait_failure(run.wait_result)
+        if wait_failure:
+            raise OpenClawError(wait_failure)
+
+        # agent.wait is the run-lifecycle boundary.  Once it returns a non-failure
+        # terminal snapshot, allow a short persistence window for chat.history to
+        # expose the assistant message that the UI should render.
         run.status = "waiting_for_reply"
-
-        # chat.send and assistant-history visibility are separate boundaries. Do
-        # not declare the live run complete merely because chat.send returned.
-        # Give chat.history a useful minimum observation window even when the
-        # gateway call itself consumed most of OPENCLAW_TIMEOUT_MS.
-        elapsed = time.monotonic() - run.started_at
-        configured_remaining = (client.config.timeout_ms / 1000) - elapsed
-        history_wait_seconds = max(30.0, configured_remaining)
-
         response, _history = await wait_for_new_assistant_message(
             client,
             session_key=run.session_key,
             baseline_count=run.baseline_assistant_count,
-            timeout_seconds=history_wait_seconds,
+            timeout_seconds=20.0,
+            poll_seconds=0.5,
         )
 
         if not response:
+            status = _wait_status(run.wait_result) or "terminal"
             raise OpenClawError(
-                "Gateway reached the reply path, but no new assistant message "
-                f"became visible in chat.history for session {run.session_key!r} "
-                f"within {history_wait_seconds:.1f}s. The run is not marked complete."
+                "agent.wait finished the run "
+                f"with status {status!r}, but no new assistant message became "
+                f"visible in chat.history for session {run.session_key!r} within 20s."
             )
 
         run.response = response
@@ -108,12 +178,9 @@ async def start_live_run(request: RunRequest) -> dict[str, Any]:
     if not message:
         raise HTTPException(status_code=400, detail="message must not be empty")
 
-    # Live viewer semantics:
-    # - No sessionKey in the request and no OPENCLAW_SESSION_KEY override means a
-    #   brand-new session is created for this Run. Such a session cannot contain
-    #   earlier assistant messages, so a preflight chat.history call is unnecessary.
-    # - An explicit/fixed session may already contain replies, so only that path
-    #   needs a baseline history count before chat.send.
+    # A generated dashboard SessionKey is new, so there can be no earlier
+    # assistant response to baseline. Explicit/fixed sessions retain the existing
+    # preflight history count so response detection stays correct on reused chats.
     existing_session_key = request.sessionKey or client.config.fixed_session_key
     if existing_session_key:
         session_key = existing_session_key
@@ -128,8 +195,8 @@ async def start_live_run(request: RunRequest) -> dict[str, Any]:
 
     run_id = str(uuid.uuid4())
 
-    # Take the trace cursor immediately before launching chat.send so the live
-    # stream starts at the request boundary rather than after an observer RPC.
+    # Start the trace cursor immediately before chat.send so no request-stage
+    # TraceClaw evidence is lost.
     cursor = trace_log.cursor()
     live_id = uuid.uuid4().hex
     run = LiveRun(
@@ -173,6 +240,7 @@ async def poll_live_run(live_run_id: str) -> dict[str, Any]:
         send_result=run.send_result,
     )
 
+    compact_wait = _compact_wait_result(run.wait_result)
     return {
         "status": run.status,
         "error": run.error,
@@ -181,6 +249,9 @@ async def poll_live_run(live_run_id: str) -> dict[str, Any]:
         "complete": run.status in {"complete", "error"},
         "elapsedSeconds": round(time.monotonic() - run.started_at, 3),
         "sendReturned": run.send_result is not None,
+        "agentWaitObserved": run.wait_result is not None,
+        "agentWaitStatus": _wait_status(run.wait_result) or None,
+        "agentWait": compact_wait,
         "assistantResponseObserved": bool(run.response),
         "sessionKey": run.session_key,
         "runId": run.run_id,
