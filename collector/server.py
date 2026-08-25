@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.5")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.6")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -233,6 +233,20 @@ def _event_stage(
         concrete_input = "\n".join(input_lines)
         input_evidence = "RUNTIME + SOURCE-DERIVED" if observed_session_key is not None else "REQUEST + SOURCE-DERIVED"
         observed_output = _render_event_fields(event, ("result",))
+        if observed_output:
+            concrete_output = observed_output
+
+    # G9 resolves the effective Agent from canonical Session state plus the
+    # validated selected-Agent override. In this run selectedAgent.agentId is
+    # absent, so resolveSessionAgentId parses the Agent from the canonical
+    # SessionKey. Runtime confirms agentId=main. runId is correlation metadata,
+    # and sessionKey is an input rather than a G9 output.
+    elif stage == "G9":
+        observed_session_key = event.get("sessionKey")
+        input_lines = [f"canonicalSessionKey = {observed_session_key or session_key}", "selectedAgentId = none"]
+        concrete_input = "\n".join(input_lines)
+        input_evidence = "RUNTIME + SOURCE-DERIVED" if observed_session_key is not None else "REQUEST + SOURCE-DERIVED"
+        observed_output = _render_event_fields(event, ("agentId", "result"))
         if observed_output:
             concrete_output = observed_output
 
