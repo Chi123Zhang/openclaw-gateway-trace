@@ -10,6 +10,7 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 
 from server import app
+import stage_io_overrides  # noqa: F401  # source-align stage-level live Input/Output
 import runtime_detail  # noqa: F401  # enriches _build_trace with raw runtime evidence
 import live_runs  # noqa: F401  # registers incremental live-run routes after enrichment
 
