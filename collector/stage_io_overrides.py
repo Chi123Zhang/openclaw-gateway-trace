@@ -87,6 +87,70 @@ def _g13_stage_io(
     return "\n".join(input_lines), "\n".join(output_lines)
 
 
+def _g17_stage_io(
+    event: dict[str, Any],
+    *,
+    session_key: str,
+) -> tuple[str, str]:
+    """Render the actual G17 internal Agent re-resolution boundary.
+
+    Source (dispatch-from-config.ts:1422-1427):
+      resolveSessionAgentId({
+        sessionKey: acpDispatchSessionKey,
+        config: cfg,
+        fallbackAgentId: ctx.AgentId,
+      })
+      sessionAgentCfg = resolveAgentConfig(cfg, sessionAgentId)
+
+    The TraceClaw event observes sessionKey, agentId and downstreamAgentId. We map
+    those observations to the source variable names, while leaving the full Agent
+    config object unasserted because it is not captured by the event.
+    """
+
+    observed_session_key = event.get("sessionKey") or session_key
+    fallback_agent_id = event.get("agentId")
+    session_agent_id = event.get("downstreamAgentId") or event.get("agentId")
+
+    input_lines = [f"acpDispatchSessionKey = {observed_session_key}"]
+    if fallback_agent_id is not None:
+        input_lines.append(f"fallback ctx.AgentId = {_render_value(fallback_agent_id)}")
+
+    output_lines: list[str] = []
+    if session_agent_id is not None:
+        output_lines.append(f"sessionAgentId = {_render_value(session_agent_id)}")
+    output_lines.append("sessionAgentCfg = not separately observed")
+
+    return "\n".join(input_lines), "\n".join(output_lines)
+
+
+def _g18_stage_io(
+    event: dict[str, Any],
+    *,
+    session_key: str,
+) -> tuple[str, str]:
+    """Render the G18 reply-resolver invocation boundary.
+
+    G18 consumes the finalized ctx plus prepared replyOptions/replyConfig and an
+    optional custom resolver. The current TraceClaw event records resolver
+    selection, but not the resolver's returned replyResult. Therefore selection
+    evidence belongs to Observed trace, while the stage-level concrete Output is
+    explicitly limited to the unobserved replyResult.
+    """
+
+    observed_session_key = event.get("sessionKey") or session_key
+    observed_agent_id = event.get("agentId")
+
+    input_lines = [f"ctx.SessionKey = {observed_session_key}"]
+    if observed_agent_id is not None:
+        input_lines.append(f"ctx.AgentId = {_render_value(observed_agent_id)}")
+
+    resolver_source = event.get("resolverSource")
+    if resolver_source == "default_getReplyFromConfig":
+        input_lines.append("custom replyResolver = none")
+
+    return "\n".join(input_lines), "replyResult = not separately observed"
+
+
 def _event_stage(
     stage: str,
     event: dict[str, Any],
@@ -103,31 +167,46 @@ def _event_stage(
         run_id=run_id,
     )
 
-    if stage != "G13":
+    if stage == "G13":
+        concrete_input, concrete_output = _g13_stage_io(
+            event,
+            message=message,
+            session_key=session_key,
+            run_id=run_id,
+        )
+        payload["concreteInput"] = concrete_input
+        payload["concreteOutput"] = concrete_output
+        payload["concreteInputEvidence"] = "RUNTIME + REQUEST + SOURCE-MAPPED"
+        payload["concreteOutputEvidence"] = "RUNTIME + SOURCE-MAPPED"
         return payload
 
-    concrete_input, concrete_output = _g13_stage_io(
-        event,
-        message=message,
-        session_key=session_key,
-        run_id=run_id,
-    )
-    payload["concreteInput"] = concrete_input
-    payload["concreteOutput"] = concrete_output
-    payload["concreteInputEvidence"] = "RUNTIME + REQUEST + SOURCE-MAPPED"
-    payload["concreteOutputEvidence"] = "RUNTIME + SOURCE-MAPPED"
+    if stage == "G17":
+        concrete_input, concrete_output = _g17_stage_io(
+            event,
+            session_key=session_key,
+        )
+        payload["concreteInput"] = concrete_input
+        payload["concreteOutput"] = concrete_output
+        payload["concreteInputEvidence"] = "RUNTIME + SOURCE-MAPPED"
+        payload["concreteOutputEvidence"] = "RUNTIME + SOURCE-MAPPED / OBSERVATION LIMIT"
+        return payload
+
+    if stage == "G18":
+        concrete_input, concrete_output = _g18_stage_io(
+            event,
+            session_key=session_key,
+        )
+        payload["concreteInput"] = concrete_input
+        payload["concreteOutput"] = concrete_output
+        payload["concreteInputEvidence"] = "RUNTIME + SOURCE-MAPPED"
+        payload["concreteOutputEvidence"] = "SOURCE / OBSERVATION LIMIT"
+        return payload
+
     return payload
 
 
 def _source_mapped_msg_context_input(trace: dict[str, Any]) -> str:
-    """Project the G13 MsgContext fields that are handed into G14/G15.
-
-    G14 receives the G13 ctx as params.ctx. Inside G14, G15 is invoked as
-    finalizeInboundContext(params.ctx). G14/G15 do not have standalone TraceClaw
-    events in the current instrumentation, so these are explicitly source-mapped
-    from the already observed G13/current-run metadata rather than labelled as
-    direct G14/G15 runtime observations.
-    """
+    """Project the MsgContext fields handed across G14/G15/G16 boundaries."""
 
     meta = trace.get("meta") if isinstance(trace, dict) else None
     if not isinstance(meta, dict):
@@ -145,7 +224,8 @@ def _source_mapped_msg_context_input(trace: dict[str, Any]) -> str:
         lines.append(f"ctx.SessionKey = {session_key}")
     if agent_id:
         lines.append(f"ctx.AgentId = {agent_id}")
-    # G13 fixes ChatType to direct on the Gateway chat.send path.
+    # G13 fixes ChatType to direct on the Gateway chat.send path, and G15
+    # canonicalizes rather than replacing it for this ordinary direct turn.
     lines.append("ctx.ChatType = direct")
     if run_id:
         lines.append(f"ctx.MessageSid = {run_id}")
@@ -187,14 +267,36 @@ def _build_trace(
         g14["concreteInput"] = mapped_input
         g14["concreteInputEvidence"] = "SOURCE-MAPPED FROM G13"
 
-    # G15 is nested inside G14: finalizeInboundContext(params.ctx). It therefore
-    # receives the same MsgContext at this boundary, not generic message/session/
-    # run fields. Its FinalizedMsgContext return value is still not separately
-    # observed by current instrumentation, so the concrete Output stays limited.
+    # G15 is nested inside G14: finalizeInboundContext(params.ctx). It receives
+    # that MsgContext and returns a FinalizedMsgContext. The current instrumentation
+    # does not capture the returned object fields as a standalone G15 event.
     g15 = stages.get("G15")
     if isinstance(g15, dict) and not g15.get("runtimeObserved"):
         g15["concreteInput"] = mapped_input
         g15["concreteInputEvidence"] = "SOURCE-MAPPED FROM G13"
+
+    # G16 receives the finalized context returned by G15. For this ordinary direct
+    # text path, the key identity/body fields remain stable through G15. The full
+    # cfg/dispatcher/replyOptions values are intentionally left in the abstract
+    # Input description because they are not independently observed here.
+    g16 = stages.get("G16")
+    if isinstance(g16, dict) and not g16.get("runtimeObserved"):
+        g16["concreteInput"] = mapped_input
+        g16["concreteInputEvidence"] = "SOURCE-MAPPED THROUGH G15"
+        # Observed G17/G18 in the same run proves traversal through the surrounding
+        # G16 source path, but it still does not expose G16's final result object.
+        g17 = stages.get("G17")
+        g18 = stages.get("G18")
+        downstream_observed = any(
+            isinstance(item, dict) and "runtime" in item.get("evidence", [])
+            for item in (g17, g18)
+        )
+        if downstream_observed:
+            g16["case2"] = (
+                "Traversal of G16 is runtime-supported by downstream G17/G18 "
+                "events in this run; no standalone TraceClaw G16 event was captured."
+            )
+            g16["evidence"] = ["source", "derived"]
 
     return trace
 
