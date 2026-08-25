@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.3")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.4")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -206,6 +206,19 @@ def _event_stage(
             output_lines.append(observed_result)
         concrete_output = "\n".join(output_lines)
         output_evidence = "RUNTIME + SOURCE-DERIVED"
+
+    # G7 loads/resolves the persistent Session from the raw Session key. The
+    # runtime event observes rawSessionKey and canonicalSessionKey; runId is only
+    # trace correlation/timing metadata and message is not an input to Session
+    # resolution. SessionEntry is source-level output but is not asserted here
+    # unless instrumentation records it explicitly.
+    elif stage == "G7":
+        raw_session_key = event.get("rawSessionKey")
+        concrete_input = f"rawSessionKey = {raw_session_key or session_key}"
+        input_evidence = "RUNTIME" if raw_session_key is not None else "REQUEST"
+        observed_output = _render_event_fields(event, ("canonicalSessionKey", "result"))
+        if observed_output:
+            concrete_output = observed_output
 
     return {
         "result": result,
