@@ -33,7 +33,7 @@ from openclaw_client import (
 from trace_parser import TraceLog, display_event, event_result, latest_event_by_stage
 
 
-app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.8")
+app = FastAPI(title="OpenClaw Gateway Trace Collector", version="0.3.9")
 
 origins = [
     "https://chi123zhang.github.io",
@@ -278,6 +278,27 @@ def _event_stage(
         )
         input_evidence = "RUNTIME" if observed_run_id is not None or observed_session_key is not None else "REQUEST"
         observed_output = _render_event_fields(event, ("dedupeDecision", "result"))
+        if observed_output:
+            concrete_output = observed_output
+
+    # G12 reserves Session work and revalidates the latest Session state before
+    # dispatch. Source uses the client run id, canonical Session key, store scope,
+    # backing Session identity, pending reservation, lifecycle generation, and a
+    # freshly loaded SessionEntry. The current runtime event directly exposes
+    # runId/sessionKey plus the admission decision; agentId is trace context, not
+    # an output produced by admission.
+    elif stage == "G12":
+        observed_run_id = event.get("runId")
+        observed_session_key = event.get("sessionKey")
+        concrete_input = (
+            f"runId = {observed_run_id or run_id}\n"
+            f"sessionKey = {observed_session_key or session_key}"
+        )
+        input_evidence = "RUNTIME" if observed_run_id is not None or observed_session_key is not None else "REQUEST"
+        observed_output = _render_event_fields(
+            event,
+            ("admissionDecision", "result", "reason"),
+        )
         if observed_output:
             concrete_output = observed_output
 
