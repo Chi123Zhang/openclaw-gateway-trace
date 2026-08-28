@@ -7,9 +7,8 @@
   if (!primary) return;
 
   /*
-   * Human-readable one-line summaries are allowed here because they explain the
-   * stage boundary. Concrete field names below remain exactly as recorded by the
-   * runtime/source mapping; they are never renamed for presentation.
+   * Human-readable summaries explain the stage boundary. Concrete field names
+   * below stay exactly as recorded or source-mapped; they are never renamed.
    */
   const FRIENDLY_BOUNDARY = {
     G0: {
@@ -69,24 +68,24 @@
       output: "One message context that carries everything needed by the reply path."
     },
     G14: {
-      input: "The message context from G13 together with the reply settings.",
-      output: "The result returned by the inbound message dispatch path."
+      input: "The message context from G13 and the settings needed to start reply handling.",
+      output: "G14 hands back a DispatchInboundResult after the inbound reply path finishes. This run confirms the path was entered and completed; the object's internal fields were not logged one by one."
     },
     G15: {
       input: "The message context created in G13.",
-      output: "A finalized message context that is ready for reply dispatch."
+      output: "G15 cleans and finalizes that context, then hands the FinalizedMsgContext to G16. The values shown below are mapped from the source for this run, not a separate G15 snapshot."
     },
     G16: {
-      input: "The finalized message context together with the reply settings.",
-      output: "The reply-dispatch result returned to the caller."
+      input: "The finalized message context and the settings used to run the reply path.",
+      output: "G16 runs the main reply flow and returns a DispatchFromConfigResult. The same run reached G17/G18 and later produced the assistant response, so the path completed even though the result object's fields were not logged separately."
     },
     G17: {
       input: "The current session and the Agent selected earlier in the flow.",
-      output: "The Agent confirmed for the deeper reply run."
+      output: "G17 checks the Agent again before the deeper reply run. In this run the Agent stayed the same."
     },
     G18: {
-      input: "The finalized message context and the settings used to produce a reply.",
-      output: "The reply result after the selected reply path runs."
+      input: "The finalized message context and the settings used to choose the reply path.",
+      output: "G18 selects the reply resolver and hands its replyResult back to G16. The resolver choice is logged directly; the full replyResult object is not logged at this boundary."
     }
   };
 
@@ -164,13 +163,10 @@
     return concreteLines(value).filter(line => {
       const match = line.match(/^([^=]+?)\s*=\s*(.*)$/);
       if (!match) return false;
-      const key = match[1].trim().toLowerCase();
       const val = match[2].trim().toLowerCase();
 
-      if (/not captured|not separately observed/.test(val)) return false;
-      if (val === "returned") return false;
-      if (key === "result fields" || key === "remaining fields") return false;
-      if (key.endsWith(" contents")) return false;
+      if (/not captured|not separately observed|not directly logged/.test(val)) return false;
+      if (/^returned(?:\s+to\s+g16)?$/.test(val)) return false;
       return true;
     });
   }
@@ -179,8 +175,15 @@
     return supportedFieldLines(value).length;
   }
 
-  function hasObservationLimit(value) {
-    return /not captured|not separately observed/i.test(String(value || ""));
+  function hasObservationLimit(value, evidence) {
+    return /not captured|not separately observed|not directly logged|observation limit|not directly logged/i.test(
+      `${String(value || "")} ${String(evidence || "")}`
+    );
+  }
+
+  function hasReturnedResultObject(stageId, value) {
+    if (!["G14", "G16", "G18"].includes(String(stageId || ""))) return false;
+    return /=\s*returned(?:\s+to\s+G16)?\s*$/im.test(String(value || ""));
   }
 
   function currentStageData() {
@@ -212,18 +215,30 @@
 
   function friendlyEvidence(value) {
     const raw = String(value || "").toUpperCase();
-    if (!raw || raw === "—") return "Source: not available";
+    if (!raw || raw === "—") return "Evidence not available";
+
+    const runtimeSupported = raw.includes("RUNTIME-SUPPORTED");
+    const observationLimit = raw.includes("OBSERVATION LIMIT") || raw.includes("NOT DIRECTLY LOGGED");
+    const hasNative = raw.includes("NATIVE");
     const hasRuntime = raw.includes("RUNTIME");
     const hasRequest = raw.includes("REQUEST");
     const hasSource = raw.includes("SOURCE");
     const mapped = raw.includes("MAPPED") || raw.includes("DERIVED") || raw.includes("FIXED");
 
+    if (runtimeSupported && observationLimit) {
+      return "This run confirms the path completed · detailed return fields were not logged";
+    }
+    if (runtimeSupported && hasSource) {
+      return "This run confirms the path · checked against source";
+    }
+    if (hasNative && hasSource) return "Seen in native runtime · confirmed by source";
+    if (hasNative) return "Seen in native runtime";
     if (hasRuntime && hasSource) return mapped ? "Seen in this run · matched to source" : "Seen in this run · confirmed by source";
     if (hasRuntime) return "Seen in this run";
-    if (hasRequest && hasSource) return "From request · checked against source";
-    if (hasRequest) return "From request";
-    if (hasSource) return mapped ? "From source mapping" : "From source";
-    return `Source: ${String(value)}`;
+    if (hasRequest && hasSource) return "From this request · checked against source";
+    if (hasRequest) return "From this request";
+    if (hasSource) return mapped ? "Mapped from source for this run" : "From source";
+    return String(value);
   }
 
   function friendlyBoundaryText(stageId, side, fallback) {
@@ -298,23 +313,33 @@
     setText("stageVisualState", result === "—" ? "waiting" : "current state");
 
     const stageEvidence = Array.isArray(s.evidence) ? s.evidence.join(" + ") : "—";
-    setText("stageVisualEvidence", friendlyEvidence(stageEvidence).replace(/^Source:\s*/i, ""));
+    setText("stageVisualEvidence", friendlyEvidence(stageEvidence));
 
     const agent = stageAgent(s);
     setText("stageVisualAgent", agent.value);
     setText("stageVisualAgentSub", agent.note);
 
+    const stageId = s.id || activeStage;
     const inputCount = countConcrete(s.concreteInput);
-    const outputCount = countConcrete(s.concreteOutput);
+    const outputFieldCount = countConcrete(s.concreteOutput);
+    const outputObjectCount = hasReturnedResultObject(stageId, s.concreteOutput) ? 1 : outputFieldCount;
+
     setText("stageVisualInputs", inputCount);
-    setText("stageVisualOutputs", outputCount);
+    setText("stageVisualOutputs", outputObjectCount);
     setText("stageIoInputCount", `${inputCount} ${inputCount === 1 ? "field" : "fields"}`);
-    const outputCountLabel = hasObservationLimit(s.concreteOutput)
-      ? `${outputCount} supported ${outputCount === 1 ? "field" : "fields"}`
-      : `${outputCount} ${outputCount === 1 ? "field" : "fields"}`;
+
+    let outputCountLabel;
+    if (hasReturnedResultObject(stageId, s.concreteOutput)) {
+      outputCountLabel = "1 result object";
+    } else if (hasObservationLimit(s.concreteOutput, s.concreteOutputEvidence)) {
+      outputCountLabel = outputFieldCount > 0
+        ? `${outputFieldCount} shown ${outputFieldCount === 1 ? "field" : "fields"}`
+        : "details not logged";
+    } else {
+      outputCountLabel = `${outputFieldCount} ${outputFieldCount === 1 ? "field" : "fields"}`;
+    }
     setText("stageIoOutputCount", outputCountLabel);
 
-    const stageId = s.id || activeStage;
     setText("stageIoInputAbstract", friendlyBoundaryText(stageId, "input", s.input));
     setText("stageIoOutputAbstract", friendlyBoundaryText(stageId, "output", s.output));
     setText("stageIoInputEvidence", friendlyEvidence(s.concreteInputEvidence));
