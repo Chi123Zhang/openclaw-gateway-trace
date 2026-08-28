@@ -3,30 +3,31 @@
  * are untouched.
  */
 
-/* Orange/red engineering palette. Normal/observed states use orange; errors use red. */
+/* Blue = normal / observed / selected. Red = security emphasis / warning / error. */
 :root{
-  --good:#ffb15a;
-  --good2:#ff8a3d;
-  --warn:#ff6b45;
-  --bad:#ff4f4f;
-  --cyan:#ff9a45;
+  --good:#63a9ff;
+  --good2:#2f80ff;
+  --warn:#ff6b6b;
+  --bad:#ff4545;
+  --cyan:#78b7ff;
 }
 
 .pipeline .boundary[hidden]{display:none!important}
 
 @media (min-width:1041px){
-  /* Keep the response available, but do not let it consume the execution area. */
-  .responsePanel{margin-top:2px!important;padding-top:2px!important;border-top-color:#5a341d!important}
+  /* Response remains available without taking over the overview. */
+  .responsePanel{margin-top:2px!important;padding-top:2px!important;border-top-color:#24466d!important}
   .responseToolbar{margin-bottom:2px!important;min-height:16px!important}
-  .responseControl{height:19px!important;min-width:23px!important;padding:0 5px!important;font-size:7px!important;border-color:#6a4429!important;color:#ffc17d!important}
+  .responseControl{height:19px!important;min-width:23px!important;padding:0 5px!important;font-size:7px!important;border-color:#345d8d!important;color:#a9d1ff!important}
   .responsePanel.responseCollapsed #responseText{
     max-height:28px!important;
     min-height:0!important;
     overflow:hidden!important;
     padding:4px 7px!important;
     line-height:1.18!important;
-    border-color:#6a3f23!important;
-    border-left:3px solid #ff8a3d!important;
+    border-color:#315b8b!important;
+    border-left:3px solid #3d8dff!important;
+    background:#0d1623!important;
   }
   .responsePanel.responseCollapsed::after{height:7px!important}
   .responsePanel.responseExpanded #responseText{max-height:24vh!important;overflow:auto!important}
@@ -41,145 +42,179 @@
   .subflow>.subnode{padding:4px 6px!important;min-height:47px!important}
 
   /*
-   * G18 -> Agent Runtime is intentionally one horizontal fact strip.
-   * live.js rebuilds the second boundaryBox on every snapshot, so these selectors
-   * target the DOM structure directly instead of depending on helper classes.
+   * The remaining pipeline space is now used by a readable Deeper Agent Run panel
+   * instead of leaving a large empty rectangle below G16-G18.
    */
   .pipeline .boundary{
     display:block!important;
-    flex:0 0 38px!important;
-    min-height:38px!important;
-    max-height:38px!important;
-    margin-top:3px!important;
-    padding:3px 5px!important;
+    flex:1 1 88px!important;
+    min-height:88px!important;
+    max-height:none!important;
+    margin-top:4px!important;
+    padding:7px!important;
     overflow:hidden!important;
-    border:1px solid #7a4426!important;
-    border-left:3px solid #ff7a35!important;
-    border-radius:5px!important;
-    background:#1b120d!important;
+    border:1px solid #315f96!important;
+    border-left:4px solid #3d8dff!important;
+    border-radius:6px!important;
+    background:#0b1320!important;
   }
   .pipeline .boundaryGrid{
     display:grid!important;
     grid-template-columns:1fr!important;
     gap:0!important;
+    width:100%!important;
     height:100%!important;
-    align-items:center!important;
+    min-height:0!important;
   }
-  /* The G18 source-side box and the large return arrow duplicate information
-     already visible in the G16-G18 subflow, so remove them from this compact band. */
   .pipeline .boundaryGrid>.boundaryBox:first-child,
   .pipeline .boundaryGrid>.returnArrow{
     display:none!important;
   }
   .pipeline .boundaryGrid>.boundaryBox:last-child{
-    display:flex!important;
-    align-items:center!important;
-    gap:10px!important;
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(105px,1fr))!important;
+    grid-auto-rows:min-content!important;
+    align-content:start!important;
+    gap:6px!important;
     width:100%!important;
+    height:100%!important;
     min-width:0!important;
     min-height:0!important;
-    height:30px!important;
-    padding:3px 7px!important;
+    padding:8px 10px 22px!important;
     overflow:hidden!important;
-    border:0!important;
-    border-radius:3px!important;
-    background:#21150e!important;
+    border:1px solid #213d60!important;
+    border-radius:5px!important;
+    background:#0e1826!important;
   }
   .pipeline .boundaryGrid>.boundaryBox:last-child>strong{
+    grid-column:1/-1!important;
     display:block!important;
-    flex:0 0 auto!important;
-    margin:0 7px 0 0!important;
-    padding-right:10px!important;
-    border-right:1px solid #6b4028!important;
-    color:#ffd0a3!important;
-    font-size:7px!important;
-    line-height:1!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    color:#9bcaff!important;
+    font-size:10px!important;
+    line-height:1.15!important;
     white-space:nowrap!important;
+    letter-spacing:.01em!important;
   }
-  /* live.js creates Agent / Resolver / Provider / Model / Tools as direct divs. */
+  .pipeline .boundaryGrid>.boundaryBox:last-child>.runtimeIntro{
+    grid-column:1/-1!important;
+    display:block!important;
+    margin:0 0 2px!important;
+    color:#7294bb!important;
+    font-size:7px!important;
+    line-height:1.2!important;
+  }
   .pipeline .boundaryGrid>.boundaryBox:last-child>div{
-    display:inline-flex!important;
-    grid-template-columns:none!important;
-    align-items:center!important;
-    flex:0 1 auto!important;
+    display:block!important;
     min-width:0!important;
     margin:0!important;
-    padding:2px 5px!important;
-    gap:4px!important;
-    border:1px solid #59351f!important;
-    border-radius:3px!important;
-    background:#130e0a!important;
+    padding:6px 7px!important;
+    border:1px solid #294a73!important;
+    border-radius:4px!important;
+    background:#111e2f!important;
   }
   .pipeline .boundaryGrid>.boundaryBox:last-child>div>span{
-    display:inline!important;
-    flex:0 0 auto!important;
-    color:#b98c6a!important;
+    display:block!important;
+    margin-bottom:3px!important;
+    color:#7899bf!important;
+    font-size:6px!important;
+    line-height:1!important;
+    text-transform:uppercase!important;
+    letter-spacing:.06em!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div>code{
+    display:block!important;
+    min-width:0!important;
+    max-width:none!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    color:#c9e3ff!important;
+    font-size:8px!important;
+    line-height:1.15!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div.runtimeDetailUnavailable{
+    display:block!important;
+    border-style:dashed!important;
+    border-color:#2a3c53!important;
+    background:#0d1622!important;
+    opacity:.72!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div.runtimeDetailUnavailable>code{
+    color:#70869f!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child::after{
+    content:"Only values captured in this trace are shown as runtime facts.";
+    position:absolute!important;
+    left:10px!important;
+    bottom:6px!important;
+    color:#627f9f!important;
     font-size:6px!important;
     line-height:1!important;
   }
-  .pipeline .boundaryGrid>.boundaryBox:last-child>div>code{
-    display:inline!important;
-    min-width:0!important;
-    max-width:220px!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-    white-space:nowrap!important;
-    color:#ffad66!important;
-    font-size:7px!important;
-    line-height:1!important;
-  }
-  .pipeline .boundaryGrid>.boundaryBox:last-child>div.runtimeDetailUnavailable{display:none!important}
   .pipeline .returnNote{display:none!important}
 
-  /* Bottom response/status strip is always visible. */
+  /* Bottom response/status strip stays visible. */
   .output{
     flex:0 0 27px!important;
     min-height:27px!important;
     max-height:27px!important;
     padding:4px 7px!important;
     overflow:hidden!important;
-    border-color:#7a4426!important;
-    border-left:3px solid #ff7a35!important;
-    background:#1b120d!important;
+    border-color:#315f96!important;
+    border-left:3px solid #3d8dff!important;
+    background:#0d1623!important;
   }
   .output .kicker{margin-bottom:1px!important;font-size:6px!important}
   .output strong,.output .finish{font-size:8px!important;line-height:1.1!important}
-  .output .finish{color:#ffad66!important}
+  .output .finish{color:#8fc4ff!important}
 
-  /* Orange/red module accents: vivid but still a plain engineering console. */
-  .moduleFlowRow>.module{border-color:#3c3530!important;background:#161310!important}
-  .moduleFlowRow>.module[data-id="M1"]{border-left:3px solid #ff9a45!important}
-  .moduleFlowRow>.module[data-id="M2"]{border-left:3px solid #ff7d3b!important}
-  .moduleFlowRow>.module[data-id="M3"]{border-left:3px solid #ffb347!important}
-  .moduleFlowRow>.module[data-id="M4"]{border-left:3px solid #f06a3e!important}
-  .moduleFlowRow>.module[data-id="M5"]{border-left:3px solid #ff5f3d!important}
+  /* Main modules: blue for normal flow, red reserved for security emphasis/errors. */
+  .moduleFlowRow>.module{border-color:#2c3a4b!important;background:#111821!important}
+  .moduleFlowRow>.module[data-id="M1"]{border-left:3px solid #4b9aff!important}
+  .moduleFlowRow>.module[data-id="M2"]{border-left:3px solid #2f80ff!important}
+  .moduleFlowRow>.module[data-id="M3"]{border-left:3px solid #ff5e63!important}
+  .moduleFlowRow>.module[data-id="M4"]{border-left:3px solid #4b9aff!important}
+  .moduleFlowRow>.module[data-id="M5"]{border-left:3px solid #2f80ff!important}
   .moduleFlowRow>.module.running,
   .moduleFlowRow>.module.active,
-  .moduleFlowRow>.module.selected{border-color:#ff8a3d!important;background:#21150e!important}
-  .moduleConnectorArrow{color:#ff9b48!important}
-  .moduleConnectorReturnArrow{color:#ff6a45!important}
-  .moduleConnectorType{border-color:#68462e!important;background:#1c1510!important;color:#e7b68d!important}
+  .moduleFlowRow>.module.selected{border-color:#3d8dff!important;background:#12233a!important}
+  .moduleConnectorArrow{color:#66adff!important}
+  .moduleConnectorReturnArrow{color:#ff6a6a!important}
+  .moduleConnectorType{border-color:#345477!important;background:#111b28!important;color:#9cb9d8!important}
 
-  .archTag{border-color:#47372d!important;background:#17120f!important;color:#bba494!important}
-  .archTag.security{border-color:#8a512b!important;background:#24170f!important;color:#ffc06a!important}
+  .archTag{border-color:#33475e!important;background:#111923!important;color:#9aaabd!important}
+  .archTag.security{border-color:#8b3b42!important;background:#241315!important;color:#ff9b9f!important}
 
-  .connFlow .stageCard{border-color:#45372e!important}
-  .connFlow .stageCard.running,.connFlow .stageCard.active,.connFlow .stageCard.selected{border-color:#ff8a3d!important;background:#21150e!important}
-  .ready{border-color:#8b4c28!important;background:#24170f!important;color:#ffb15a!important}
+  .connFlow .stageCard{border-color:#30445b!important;background:#111821!important}
+  .connFlow .stageCard.running,.connFlow .stageCard.active,.connFlow .stageCard.selected{border-color:#3d8dff!important;background:#12233a!important}
+  .ready{border-color:#3d8dff!important;background:#10233b!important;color:#9bcaff!important}
 
-  .compactSideItem{border-color:#49382d!important;background:#17120f!important}
-  #compactStage{color:#ff9a45!important}
-  #compactPolicy{color:#ffb347!important}
-  #compactOverall{color:#ff9a45!important}
+  .compactSideItem{border-color:#31465f!important;background:#101923!important}
+  #compactStage{color:#77b8ff!important}
+  #compactPolicy{color:#77b8ff!important}
+  #compactOverall{color:#77b8ff!important}
 
-  /* Existing success chips/checks used var(--good); with the root override they
-     become orange. Warnings/errors remain the stronger red family. */
-  .stateChip.good,.echip.runtime{border-color:#7f4728!important;background:#21150e!important;color:#ffb15a!important}
-  .stateChip.warn{border-color:#8d3028!important;background:#25100e!important;color:#ff6b45!important}
-  .stageCard.done::after,.module.done::after,.subnode.done::after{color:#ff9a45!important}
+  /* Existing success chips become blue; warning/error states remain red. */
+  .stateChip.good,.echip.runtime{border-color:#315f96!important;background:#10233b!important;color:#91c6ff!important}
+  .stateChip.warn{border-color:#8e3539!important;background:#281214!important;color:#ff8f93!important}
+  .stageCard.done::after,.module.done::after,.subnode.done::after{color:#68adff!important}
 
-  /* Runtime Context: remove the decorative right-side status pillar and show the
-     actual SessionKey text in full. These are presentation-only overrides. */
+  /* Selected cards and overview summaries. */
+  .compactSideSummary .compactSideItem,
+  .sidebar .overallMetric,
+  .sidebar .metric,
+  .sidebar .kv{
+    border-color:#2b3f56!important;
+  }
+  .sidebar b[style*="var(--good)"]{color:#78b7ff!important}
+
+  /* Runtime Context: remove the decorative right-side status pillar and show
+     SessionKey values completely instead of ellipsis truncation. */
   .sidebar .contextBlock .stateChip{
     display:none!important;
   }
@@ -204,5 +239,27 @@
     overflow-wrap:anywhere!important;
     word-break:break-all!important;
     line-height:1.28!important;
+  }
+
+  /* Catch remaining common green/orange success accents from earlier layers. */
+  .finish,
+  .sresult,
+  .mresult,
+  .collectorState.connected,
+  .requestState,
+  .state.good{
+    color:#78b7ff!important;
+  }
+  .runner,
+  .barFill,
+  .progressFill{
+    background:#3d8dff!important;
+  }
+  .stateChip.bad,
+  .collectorState.error,
+  .state.bad{
+    color:#ff6b6b!important;
+    border-color:#8e3539!important;
+    background:#281214!important;
   }
 }
