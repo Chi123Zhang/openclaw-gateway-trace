@@ -1,0 +1,49 @@
+/* Final viewport balancing layer.
+ * Presentation only: does not alter trace data, stage mappings, Input/Output,
+ * or assistant response content.
+ */
+
+@media (min-width:1041px){
+  /* A completed response should remain visible as a one-line preview by default. */
+  .responsePanel{margin-top:3px!important;padding-top:3px!important}
+  .responseToolbar{margin-bottom:2px!important;min-height:18px!important}
+  .responseControl{height:20px!important;min-width:24px!important;padding:0 5px!important;font-size:7px!important}
+  .responsePanel.responseCollapsed #responseText{
+    max-height:34px!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding:5px 7px!important;
+    line-height:1.25!important;
+  }
+  .responsePanel.responseCollapsed::after{height:11px!important}
+  .responsePanel.responseExpanded #responseText{max-height:24vh!important}
+
+  /* M5's deeper-runtime box shows observed facts only. This keeps the last
+     pipeline band inside the viewport instead of letting unavailable rows
+     push the bottom Output strip below the fold. */
+  .pipeline .boundary{margin-top:3px!important;padding:4px 5px!important}
+  .pipeline .boundaryGrid{grid-template-columns:1fr 22px 1fr!important;gap:3px!important}
+  .pipeline .boundaryBox{padding:4px 5px!important;min-height:0!important}
+  .pipeline .boundaryBox strong{font-size:7px!important;line-height:1.1!important;margin-bottom:0!important}
+  .pipeline .boundaryBox span,
+  .pipeline .boundaryBox code{font-size:6px!important;line-height:1.12!important}
+  .pipeline .boundaryBox .runtimeCompactRow{margin-top:2px!important;grid-template-columns:52px 1fr!important;gap:5px!important}
+  .pipeline .boundaryBox .runtimeDetailUnavailable{display:none!important}
+  .pipeline .returnNote{display:none!important}
+  .pipeline .returnArrow{font-size:8px!important;line-height:1!important}
+
+  /* Preserve a guaranteed bottom status strip. */
+  .output{
+    flex:0 0 27px!important;
+    min-height:27px!important;
+    max-height:27px!important;
+    padding:4px 7px!important;
+    overflow:hidden!important;
+  }
+  .output .kicker{margin-bottom:1px!important;font-size:6px!important}
+  .output strong,.output .finish{font-size:8px!important;line-height:1.1!important}
+
+  /* Give the pipeline a little more usable room after the response/boundary trim. */
+  .main{gap:4px!important}
+  .pipeline{padding-top:6px!important;padding-bottom:6px!important}
+}
