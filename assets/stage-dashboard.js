@@ -154,13 +154,33 @@
 
   function concreteLines(value) {
     const text = String(value || "").trim();
-    if (!text || text === "—" || /not separately observed/i.test(text)) return [];
+    if (!text || text === "—") return [];
+    if (/^not separately observed$/i.test(text)) return [];
     if (/^No request-specific input field/i.test(text)) return [];
     return text.split(/\n+/).map(line => line.trim()).filter(Boolean);
   }
 
+  function supportedFieldLines(value) {
+    return concreteLines(value).filter(line => {
+      const match = line.match(/^([^=]+?)\s*=\s*(.*)$/);
+      if (!match) return false;
+      const key = match[1].trim().toLowerCase();
+      const val = match[2].trim().toLowerCase();
+
+      if (/not captured|not separately observed/.test(val)) return false;
+      if (val === "returned") return false;
+      if (key === "result fields" || key === "remaining fields") return false;
+      if (key.endsWith(" contents")) return false;
+      return true;
+    });
+  }
+
   function countConcrete(value) {
-    return concreteLines(value).length;
+    return supportedFieldLines(value).length;
+  }
+
+  function hasObservationLimit(value) {
+    return /not captured|not separately observed/i.test(String(value || ""));
   }
 
   function currentStageData() {
@@ -289,7 +309,10 @@
     setText("stageVisualInputs", inputCount);
     setText("stageVisualOutputs", outputCount);
     setText("stageIoInputCount", `${inputCount} ${inputCount === 1 ? "field" : "fields"}`);
-    setText("stageIoOutputCount", `${outputCount} ${outputCount === 1 ? "field" : "fields"}`);
+    const outputCountLabel = hasObservationLimit(s.concreteOutput)
+      ? `${outputCount} supported ${outputCount === 1 ? "field" : "fields"}`
+      : `${outputCount} ${outputCount === 1 ? "field" : "fields"}`;
+    setText("stageIoOutputCount", outputCountLabel);
 
     const stageId = s.id || activeStage;
     setText("stageIoInputAbstract", friendlyBoundaryText(stageId, "input", s.input));
