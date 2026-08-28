@@ -1,18 +1,25 @@
 """Incremental live-run API for the Gateway trace viewer.
 
 The browser starts a real ``chat.send`` request and polls TraceClaw while the
-Gateway runs it.  OpenClaw's ``chat.send`` RPC is ACK-oriented: the RPC can
-return before reply dispatch / Agent Runtime has finished.  Completion is
+Gateway runs it. OpenClaw's ``chat.send`` RPC is ACK-oriented: the RPC can
+return before reply dispatch / Agent Runtime has finished. Completion is
 therefore tracked with the source-native ``agent.wait`` RPC, and ``chat.history``
 is used only after the run is terminal to retrieve the final assistant text.
+
+Completed (and failed) live runs are also persisted as JSON under
+``collector/runs`` so restarting the collector does not erase run history.
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
+import os
 import time
 import uuid
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from fastapi import HTTPException
@@ -20,6 +27,14 @@ from fastapi import HTTPException
 from openclaw_client import OpenClawError, assistant_messages, wait_for_new_assistant_message
 from server import RunRequest, _build_trace, app, client, trace_log
 from trace_parser import TraceCursor, correlate_events
+
+
+_RUN_ARCHIVE_DIR = Path(
+    os.environ.get(
+        "TRACECLAW_RUN_ARCHIVE_DIR",
+        str(Path(__file__).resolve().parent / "runs"),
+    )
+).expanduser()
 
 
 @dataclass
@@ -32,6 +47,9 @@ class LiveRun:
     cursor: TraceCursor | None
     scan_cursor: TraceCursor | None
     started_at: float = field(default_factory=time.monotonic)
+    started_at_iso: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     raw_events: list[dict[str, Any]] = field(default_factory=list)
     send_result: Any = None
     wait_result: Any = None
@@ -39,6 +57,9 @@ class LiveRun:
     status: str = "starting"
     error: str | None = None
     task: asyncio.Task[Any] | None = None
+    archive_id: str | None = None
+    archive_path: str | None = None
+    archive_error: str | None = None
 
 
 _RUNS: dict[str, LiveRun] = {}
@@ -125,7 +146,7 @@ async def _execute(run: LiveRun) -> None:
         if wait_failure:
             raise OpenClawError(wait_failure)
 
-        # agent.wait is the run-lifecycle boundary.  Once it returns a non-failure
+        # agent.wait is the run-lifecycle boundary. Once it returns a non-failure
         # terminal snapshot, allow a short persistence window for chat.history to
         # expose the assistant message that the UI should render.
         run.status = "waiting_for_reply"
@@ -167,6 +188,91 @@ def _correlated(run: LiveRun) -> list[dict[str, Any]]:
         run_id=run.run_id,
         session_key=run.session_key,
     )
+
+
+def _archive_payload(run: LiveRun, *, trace: dict[str, Any], events: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build one self-contained, human-inspectable saved-run record."""
+    return {
+        "schemaVersion": "traceclaw.saved-run.v1",
+        "savedAt": datetime.now(timezone.utc).isoformat(),
+        "startedAt": run.started_at_iso,
+        "liveRunId": run.id,
+        "runId": run.run_id,
+        "sessionKey": run.session_key,
+        "prompt": run.message,
+        "status": run.status,
+        "error": run.error,
+        "response": run.response or "",
+        "sendResult": run.send_result,
+        "agentWait": _compact_wait_result(run.wait_result),
+        "assistantResponseObserved": bool(run.response),
+        "trace": trace,
+        # Keep the correlated runtime evidence for later source/runtime audits.
+        "runtimeEvents": events,
+    }
+
+
+def _persist_run(run: LiveRun, *, trace: dict[str, Any], events: list[dict[str, Any]]) -> None:
+    """Atomically persist one terminal run. Repeated polls do not duplicate it."""
+    if run.archive_id or run.archive_error:
+        return
+
+    try:
+        _RUN_ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        archive_id = f"{stamp}_{run.run_id}"
+        final_path = _RUN_ARCHIVE_DIR / f"{archive_id}.json"
+        temp_path = _RUN_ARCHIVE_DIR / f".{archive_id}.json.tmp"
+        payload = _archive_payload(run, trace=trace, events=events)
+        temp_path.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2, default=str),
+            encoding="utf-8",
+        )
+        temp_path.replace(final_path)
+        run.archive_id = archive_id
+        run.archive_path = str(final_path)
+    except Exception as exc:
+        run.archive_error = str(exc)
+
+
+def _archive_file(archive_id: str) -> Path:
+    if not archive_id or Path(archive_id).name != archive_id:
+        raise HTTPException(status_code=400, detail="invalid archive id")
+    path = _RUN_ARCHIVE_DIR / f"{archive_id}.json"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="saved run not found")
+    return path
+
+
+def _read_archive(path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"could not read saved run: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=500, detail="saved run has invalid format")
+    return payload
+
+
+def _archive_summary(path: Path) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    response = str(payload.get("response") or "").strip().replace("\n", " ")
+    return {
+        "id": path.stem,
+        "savedAt": payload.get("savedAt"),
+        "startedAt": payload.get("startedAt"),
+        "prompt": payload.get("prompt") or "",
+        "status": payload.get("status") or "",
+        "runId": payload.get("runId") or "",
+        "sessionKey": payload.get("sessionKey") or "",
+        "responsePreview": response[:160],
+        "assistantResponseObserved": bool(payload.get("assistantResponseObserved")),
+    }
 
 
 @app.post("/api/live/start")
@@ -240,6 +346,9 @@ async def poll_live_run(live_run_id: str) -> dict[str, Any]:
         send_result=run.send_result,
     )
 
+    if run.status in {"complete", "error"}:
+        _persist_run(run, trace=trace, events=events)
+
     compact_wait = _compact_wait_result(run.wait_result)
     return {
         "status": run.status,
@@ -255,4 +364,35 @@ async def poll_live_run(live_run_id: str) -> dict[str, Any]:
         "assistantResponseObserved": bool(run.response),
         "sessionKey": run.session_key,
         "runId": run.run_id,
+        "archiveId": run.archive_id,
+        "archiveSaved": bool(run.archive_id),
+        "archiveError": run.archive_error,
     }
+
+
+@app.get("/api/runs")
+async def list_saved_runs(limit: int = 30) -> dict[str, Any]:
+    """List recent persisted runs without loading every full trace into the UI."""
+    safe_limit = max(1, min(int(limit), 100))
+    if not _RUN_ARCHIVE_DIR.exists():
+        return {"runs": [], "archiveDir": str(_RUN_ARCHIVE_DIR)}
+
+    items: list[dict[str, Any]] = []
+    paths = sorted(
+        _RUN_ARCHIVE_DIR.glob("*.json"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    for path in paths:
+        summary = _archive_summary(path)
+        if summary is not None:
+            items.append(summary)
+        if len(items) >= safe_limit:
+            break
+    return {"runs": items, "archiveDir": str(_RUN_ARCHIVE_DIR)}
+
+
+@app.get("/api/runs/{archive_id}")
+async def get_saved_run(archive_id: str) -> dict[str, Any]:
+    """Return one full persisted run, including trace, events, and final reply."""
+    return _read_archive(_archive_file(archive_id))
