@@ -6,6 +6,11 @@
   const primary = [...detail.children].find(node => node.classList?.contains("summaryGrid"));
   if (!primary) return;
 
+  /*
+   * Human-readable one-line summaries are allowed here because they explain the
+   * stage boundary. Concrete field names below remain exactly as recorded by the
+   * runtime/source mapping; they are never renamed for presentation.
+   */
   const FRIENDLY_BOUNDARY = {
     G0: {
       input: "Gateway authentication settings and the connection identity information.",
@@ -83,44 +88,6 @@
       input: "The finalized message context and the settings used to produce a reply.",
       output: "The reply result after the selected reply path runs."
     }
-  };
-
-  const FRIENDLY_FIELDS = {
-    "ctx.SessionKey": "Session",
-    "ctx.AgentId": "Agent",
-    "custom replyResolver": "Custom reply method",
-    "sessionKey": "Session",
-    "canonicalSessionKey": "Canonical session",
-    "rawSessionKey": "Raw session",
-    "runId": "Run ID",
-    "agentId": "Agent",
-    "requestedAgentId": "Requested Agent",
-    "sessionAgentId": "Session Agent",
-    "downstreamAgentId": "Confirmed Agent",
-    "resolverSource": "Reply method",
-    "replyResult": "Reply result",
-    "result": "Result",
-    "reason": "Reason",
-    "message": "Message",
-    "attachments": "Attachments",
-    "method": "Requested action",
-    "role": "Role",
-    "scopes": "Permissions",
-    "authMode": "Authentication mode",
-    "authMethod": "Authentication method",
-    "clientMode": "Client type",
-    "hasDeviceIdentity": "Device identity present",
-    "sharedAuthProvided": "Shared credential provided",
-    "sharedAuthOk": "Shared credential accepted",
-    "hasBootstrapTokenCandidate": "Bootstrap token present",
-    "hasDeviceTokenCandidate": "Device token present",
-    "hasPrivilegedFields": "Privileged fields present",
-    "hasExplicitOrigin": "Explicit origin provided",
-    "messageLength": "Message length",
-    "messageChangedBySanitization": "Message changed during cleaning",
-    "sendPolicy": "Send policy",
-    "dedupeDecision": "Duplicate check",
-    "admissionDecision": "Admission decision"
   };
 
   const panel = document.createElement("section");
@@ -239,17 +206,6 @@
     return `Source: ${String(value)}`;
   }
 
-  function friendlyFieldLabel(raw) {
-    const key = String(raw || "").trim();
-    if (FRIENDLY_FIELDS[key]) return FRIENDLY_FIELDS[key];
-    return key
-      .replace(/^ctx\./, "")
-      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-      .replace(/[_.]/g, " ")
-      .replace(/\s+/g, " ")
-      .replace(/^./, c => c.toUpperCase());
-  }
-
   function friendlyBoundaryText(stageId, side, fallback) {
     const mapped = FRIENDLY_BOUNDARY[stageId]?.[side];
     return mapped || fallback || "—";
@@ -273,8 +229,8 @@
       const rawKey = match[1].trim();
       const key = document.createElement("span");
       key.className = "stageIoKey";
-      key.textContent = friendlyFieldLabel(rawKey);
-      key.title = rawKey;
+      /* Preserve the exact runtime/source field name. */
+      key.textContent = rawKey;
       const val = document.createElement("span");
       val.className = "stageIoValue";
       val.textContent = match[2].trim() || "—";
