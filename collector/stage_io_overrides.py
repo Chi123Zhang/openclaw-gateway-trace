@@ -29,6 +29,17 @@ def _render_value(value: Any) -> str:
     return str(value)
 
 
+def _has_runtime_evidence(stage: Any) -> bool:
+    if not isinstance(stage, dict):
+        return False
+    if stage.get("runtimeObserved"):
+        return True
+    evidence = stage.get("evidence")
+    if not isinstance(evidence, list):
+        return False
+    return any(str(item).strip().lower() == "runtime" for item in evidence)
+
+
 def _g13_stage_io(
     event: dict[str, Any],
     *,
@@ -118,7 +129,7 @@ def _g17_stage_io(
     output_lines: list[str] = []
     if session_agent_id is not None:
         output_lines.append(f"sessionAgentId = {_render_value(session_agent_id)}")
-    output_lines.append("sessionAgentCfg = not separately observed")
+    output_lines.append("sessionAgentCfg = not captured")
 
     return "\n".join(input_lines), "\n".join(output_lines)
 
@@ -132,9 +143,9 @@ def _g18_stage_io(
 
     G18 consumes the finalized ctx plus prepared replyOptions/replyConfig and an
     optional custom resolver. The current TraceClaw event records resolver
-    selection, but not the resolver's returned replyResult. Therefore selection
-    evidence belongs to Observed trace, while the stage-level concrete Output is
-    explicitly limited to the unobserved replyResult.
+    selection, but not the resolver's returned replyResult. A later successful
+    run may runtime-support that a value returned, while its contents still
+    remain uncaptured.
     """
 
     observed_session_key = event.get("sessionKey") or session_key
@@ -148,7 +159,7 @@ def _g18_stage_io(
     if resolver_source == "default_getReplyFromConfig":
         input_lines.append("custom replyResolver = none")
 
-    return "\n".join(input_lines), "replyResult = not separately observed"
+    return "\n".join(input_lines), "replyResult contents = not captured"
 
 
 def _event_stage(
@@ -232,6 +243,25 @@ def _source_mapped_msg_context_input(trace: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _finalized_context_runtime_supported_output(trace: dict[str, Any]) -> str:
+    """Render only G15 output fields supported by downstream runtime evidence."""
+
+    meta = trace.get("meta") if isinstance(trace, dict) else None
+    if not isinstance(meta, dict):
+        meta = {}
+
+    session_key = meta.get("canonicalSessionKey") or meta.get("rawSessionKey") or ""
+    agent_id = meta.get("agent") or ""
+
+    lines = ["FinalizedMsgContext = returned"]
+    if session_key:
+        lines.append(f"FinalizedMsgContext.SessionKey = {session_key}")
+    if agent_id:
+        lines.append(f"FinalizedMsgContext.AgentId = {agent_id}")
+    lines.append("remaining fields = not captured")
+    return "\n".join(lines)
+
+
 def _build_trace(
     *,
     message: str,
@@ -258,45 +288,100 @@ def _build_trace(
     if not mapped_input:
         return trace
 
-    # G14 signature: dispatchInboundMessage({ ctx, cfg, dispatcher, ... }).
-    # Concrete values shown here are only the current-run ctx fields that can be
-    # source-mapped from G13. cfg/dispatcher/replyOptions remain in the abstract
-    # Input description because they are not standalone runtime observations.
     g14 = stages.get("G14")
+    g15 = stages.get("G15")
+    g16 = stages.get("G16")
+    g17 = stages.get("G17")
+    g18 = stages.get("G18")
+
+    g17_observed = _has_runtime_evidence(g17)
+    g18_observed = _has_runtime_evidence(g18)
+    downstream_observed = g17_observed or g18_observed
+    response_captured = isinstance(response, str) and bool(response.strip())
+    successful_reply_completion = g18_observed and response_captured
+
+    # G14 signature: dispatchInboundMessage({ ctx, cfg, dispatcher, ... }).
+    # The concrete input fields are source-mapped from the actual G13 context.
     if isinstance(g14, dict) and not g14.get("runtimeObserved"):
         g14["concreteInput"] = mapped_input
         g14["concreteInputEvidence"] = "SOURCE-MAPPED FROM G13"
+        if successful_reply_completion:
+            # v2026.7.1-2 returns DispatchInboundResult from dispatchInboundMessage.
+            # The completed current run supports that the return boundary was
+            # reached, but TraceClaw does not record the result object's fields.
+            g14["concreteOutput"] = (
+                "DispatchInboundResult = returned\n"
+                "result fields = not captured"
+            )
+            g14["concreteOutputEvidence"] = (
+                "SOURCE + RUNTIME-SUPPORTED / OBSERVATION LIMIT"
+            )
+            g14["case2"] = (
+                "G14 completed in this run: downstream G17/G18 were reached and "
+                "an assistant response was captured. No standalone G14 return "
+                "event exposed the DispatchInboundResult fields."
+            )
+            g14["evidence"] = ["source", "derived"]
 
-    # G15 is nested inside G14: finalizeInboundContext(params.ctx). It receives
-    # that MsgContext and returns a FinalizedMsgContext. The current instrumentation
-    # does not capture the returned object fields as a standalone G15 event.
-    g15 = stages.get("G15")
+    # G15 is nested inside G14: finalizeInboundContext(params.ctx). Reaching G16
+    # (and therefore G17/G18) proves that G15 returned a FinalizedMsgContext.
+    # Only SessionKey/AgentId are shown because those identities are supported by
+    # downstream runtime evidence; the rest of the object remains uncaptured.
     if isinstance(g15, dict) and not g15.get("runtimeObserved"):
         g15["concreteInput"] = mapped_input
         g15["concreteInputEvidence"] = "SOURCE-MAPPED FROM G13"
+        if downstream_observed:
+            g15["concreteOutput"] = _finalized_context_runtime_supported_output(trace)
+            g15["concreteOutputEvidence"] = (
+                "SOURCE-MAPPED + RUNTIME-SUPPORTED / OBSERVATION LIMIT"
+            )
+            g15["case2"] = (
+                "G15 returned in this run because execution continued into G16 "
+                "and downstream G17/G18. The complete FinalizedMsgContext object "
+                "was not captured as a standalone event."
+            )
+            g15["evidence"] = ["source", "derived"]
 
     # G16 receives the finalized context returned by G15. For this ordinary direct
-    # text path, the key identity/body fields remain stable through G15. The full
-    # cfg/dispatcher/replyOptions values are intentionally left in the abstract
-    # Input description because they are not independently observed here.
-    g16 = stages.get("G16")
+    # text path, the key identity/body fields remain stable through G15. A captured
+    # assistant response after observed G18 supports normal completion of G16, but
+    # does not expose the DispatchFromConfigResult object fields.
     if isinstance(g16, dict) and not g16.get("runtimeObserved"):
         g16["concreteInput"] = mapped_input
         g16["concreteInputEvidence"] = "SOURCE-MAPPED THROUGH G15"
-        # Observed G17/G18 in the same run proves traversal through the surrounding
-        # G16 source path, but it still does not expose G16's final result object.
-        g17 = stages.get("G17")
-        g18 = stages.get("G18")
-        downstream_observed = any(
-            isinstance(item, dict) and "runtime" in item.get("evidence", [])
-            for item in (g17, g18)
-        )
-        if downstream_observed:
+        if successful_reply_completion:
+            g16["concreteOutput"] = (
+                "DispatchFromConfigResult = returned\n"
+                "result fields = not captured"
+            )
+            g16["concreteOutputEvidence"] = (
+                "SOURCE + RUNTIME-SUPPORTED / OBSERVATION LIMIT"
+            )
             g16["case2"] = (
-                "Traversal of G16 is runtime-supported by downstream G17/G18 "
-                "events in this run; no standalone TraceClaw G16 event was captured."
+                "G16 completed in this run: G17/G18 were observed and the final "
+                "assistant response was captured. The DispatchFromConfigResult "
+                "fields were not recorded by a standalone TraceClaw G16 event."
             )
             g16["evidence"] = ["source", "derived"]
+        elif downstream_observed:
+            g16["case2"] = (
+                "Traversal of G16 is runtime-supported by downstream G17/G18 "
+                "events in this run; no standalone TraceClaw G16 return event "
+                "was captured."
+            )
+            g16["evidence"] = ["source", "derived"]
+
+    # G18's event directly observes resolver selection, not the replyResult. When
+    # this same run later produces the assistant response, the resolver return is
+    # runtime-supported even though the replyResult contents remain uncaptured.
+    if isinstance(g18, dict) and successful_reply_completion:
+        g18["concreteOutput"] = (
+            "replyResult = returned\n"
+            "replyResult contents = not captured"
+        )
+        g18["concreteOutputEvidence"] = (
+            "SOURCE + RUNTIME-SUPPORTED / OBSERVATION LIMIT"
+        )
 
     return trace
 
