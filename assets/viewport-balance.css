@@ -3,47 +3,144 @@
  * or assistant response content.
  */
 
+/* Keep hidden source sections truly hidden even when other layout rules target
+   the same class. In particular, the G18/Agent Runtime band is only relevant
+   while M5 is selected. */
+.pipeline .boundary[hidden]{display:none!important}
+
 @media (min-width:1041px){
-  /* A completed response should remain visible as a one-line preview by default. */
-  .responsePanel{margin-top:3px!important;padding-top:3px!important}
-  .responseToolbar{margin-bottom:2px!important;min-height:18px!important}
-  .responseControl{height:20px!important;min-width:24px!important;padding:0 5px!important;font-size:7px!important}
+  /* Completed response: one compact preview line. Full text remains available
+     through Expand, but it no longer competes with the execution path. */
+  .responsePanel{margin-top:2px!important;padding-top:2px!important;border-top-color:#234052!important}
+  .responseToolbar{margin-bottom:2px!important;min-height:16px!important}
+  .responseControl{height:19px!important;min-width:23px!important;padding:0 5px!important;font-size:7px!important;border-color:#3c5968!important}
   .responsePanel.responseCollapsed #responseText{
-    max-height:34px!important;
+    max-height:29px!important;
     min-height:0!important;
     overflow:hidden!important;
-    padding:5px 7px!important;
-    line-height:1.25!important;
+    padding:4px 7px!important;
+    line-height:1.2!important;
+    border-color:#234b60!important;
+    border-left:3px solid #2aa8d6!important;
   }
-  .responsePanel.responseCollapsed::after{height:11px!important}
-  .responsePanel.responseExpanded #responseText{max-height:24vh!important}
+  .responsePanel.responseCollapsed::after{height:8px!important}
+  .responsePanel.responseExpanded #responseText{max-height:24vh!important;overflow:auto!important}
 
-  /* M5's deeper-runtime box shows observed facts only. This keeps the last
-     pipeline band inside the viewport instead of letting unavailable rows
-     push the bottom Output strip below the fold. */
-  .pipeline .boundary{margin-top:3px!important;padding:4px 5px!important}
-  .pipeline .boundaryGrid{grid-template-columns:1fr 22px 1fr!important;gap:3px!important}
-  .pipeline .boundaryBox{padding:4px 5px!important;min-height:0!important}
-  .pipeline .boundaryBox strong{font-size:7px!important;line-height:1.1!important;margin-bottom:0!important}
-  .pipeline .boundaryBox span,
-  .pipeline .boundaryBox code{font-size:6px!important;line-height:1.12!important}
-  .pipeline .boundaryBox .runtimeCompactRow{margin-top:2px!important;grid-template-columns:52px 1fr!important;gap:5px!important}
+  /* Give the execution panel predictable room. */
+  .main{gap:3px!important}
+  .pipeline{padding:5px 7px!important;overflow:hidden!important}
+  .archBand{margin-top:3px!important}
+  .moduleWrap{margin-top:4px!important}
+  .expand{margin-top:4px!important;padding-top:4px!important}
+  .expandHead{margin-bottom:3px!important}
+  .subflow{padding:1px 0 2px!important}
+  .subflow>.subnode{padding:4px 6px!important;min-height:47px!important}
+
+  /* Deeper Reply / Agent Runtime: compact horizontal fact band. The previous
+     vertical rows could fall below the viewport; observed values now stay in
+     one visible row. */
+  .pipeline .boundary{
+    flex:0 0 auto!important;
+    margin-top:3px!important;
+    padding:4px 5px!important;
+    max-height:72px!important;
+    overflow:hidden!important;
+    border-color:#2d596b!important;
+    background:#0d1519!important;
+  }
+  .pipeline .boundaryGrid{
+    grid-template-columns:minmax(0,.8fr) 22px minmax(0,1.2fr)!important;
+    gap:4px!important;
+    align-items:stretch!important;
+  }
+  .pipeline .boundaryBox{
+    padding:5px 7px!important;
+    min-height:0!important;
+    border-color:#31505d!important;
+    background:#101a1f!important;
+  }
+  .pipeline .boundaryBox:first-child{border-left:3px solid #2aa8d6!important}
+  .pipeline .boundaryBox:last-child{
+    border-left:3px solid #38b779!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    column-gap:10px!important;
+    align-content:start!important;
+  }
+  .pipeline .boundaryBox:last-child>strong{
+    grid-column:1/-1!important;
+    color:#e8f4ee!important;
+    margin-bottom:3px!important;
+  }
+  .pipeline .boundaryBox strong{font-size:7px!important;line-height:1.1!important;margin-bottom:1px!important}
+  .pipeline .boundaryBox>span{font-size:6px!important;line-height:1.12!important;color:#9bb0ba!important}
+  .pipeline .boundaryBox .runtimeCompactRow{
+    display:flex!important;
+    align-items:center!important;
+    min-width:0!important;
+    margin-top:1px!important;
+    gap:5px!important;
+    padding:2px 4px!important;
+    border:1px solid #263c46!important;
+    background:#0c1317!important;
+    border-radius:3px!important;
+  }
+  .pipeline .boundaryBox .runtimeCompactRow span{
+    flex:0 0 auto!important;
+    font-size:6px!important;
+    color:#8299a4!important;
+  }
+  .pipeline .boundaryBox .runtimeCompactRow code{
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    font-size:7px!important;
+    color:#65d1a0!important;
+  }
   .pipeline .boundaryBox .runtimeDetailUnavailable{display:none!important}
   .pipeline .returnNote{display:none!important}
-  .pipeline .returnArrow{font-size:8px!important;line-height:1!important}
+  .pipeline .returnArrow{font-size:9px!important;line-height:1!important;color:#54bfe3!important}
 
-  /* Preserve a guaranteed bottom status strip. */
+  /* Bottom status is always visible and clearly separated from the pipeline. */
   .output{
     flex:0 0 27px!important;
     min-height:27px!important;
     max-height:27px!important;
     padding:4px 7px!important;
     overflow:hidden!important;
+    border-color:#294f3a!important;
+    border-left:3px solid #38b779!important;
+    background:#101713!important;
   }
   .output .kicker{margin-bottom:1px!important;font-size:6px!important}
   .output strong,.output .finish{font-size:8px!important;line-height:1.1!important}
+  .output .finish{color:#65d198!important}
 
-  /* Give the pipeline a little more usable room after the response/boundary trim. */
-  .main{gap:4px!important}
-  .pipeline{padding-top:6px!important;padding-bottom:6px!important}
+  /* Restrained but clearer module palette. Solid accent bars read more like an
+     engineering console than decorative AI cards. */
+  .moduleFlowRow>.module{border-color:#303b43!important;background:#12181c!important}
+  .moduleFlowRow>.module[data-id="M1"]{border-left:3px solid #328bd1!important}
+  .moduleFlowRow>.module[data-id="M2"]{border-left:3px solid #2aa8d6!important}
+  .moduleFlowRow>.module[data-id="M3"]{border-left:3px solid #d59b35!important}
+  .moduleFlowRow>.module[data-id="M4"]{border-left:3px solid #8d76d6!important}
+  .moduleFlowRow>.module[data-id="M5"]{border-left:3px solid #38b779!important}
+  .moduleFlowRow>.module.running,
+  .moduleFlowRow>.module.active{border-color:#65c993!important;background:#132019!important}
+  .moduleConnectorArrow{color:#5dbfdc!important}
+  .moduleConnectorReturnArrow{color:#b49ae9!important}
+  .moduleConnectorType{border-color:#52616b!important;background:#151c21!important;color:#b9c5cc!important}
+
+  .archTag{border-color:#32434c!important;background:#12191d!important;color:#a8bac4!important}
+  .archTag.security{border-color:#6a5428!important;background:#1c180f!important;color:#e0b85e!important}
+
+  .connFlow .stageCard{border-color:#31414a!important}
+  .connFlow .stageCard.running,.connFlow .stageCard.active{border-color:#4bbf80!important;background:#132019!important}
+  .ready{border-color:#2f6546!important;background:#102218!important;color:#6bd49a!important}
+
+  /* Sidebar gets small color anchors without additional widgets. */
+  .compactSideItem{border-color:#31404a!important;background:#11181c!important}
+  #compactStage{color:#5dc0df!important}
+  #compactPolicy{color:#e0b85e!important}
+  #compactOverall{color:#65d198!important}
 }
