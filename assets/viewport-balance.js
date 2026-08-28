@@ -29,6 +29,12 @@
     collapseResponse();
   }
 
+  function friendlyLabel(key) {
+    if (key === "Agent") return "Route";
+    if (key === "Resolver") return "Reply path";
+    return key;
+  }
+
   function compactRuntimeBoundary() {
     const boundary = document.querySelector(".pipeline .boundary");
     if (!boundary) return;
@@ -49,9 +55,17 @@
 
     runtimeBox.classList.add("runtimeBoundaryFacts");
     const title = runtimeBox.querySelector(":scope > strong");
-    if (title && title.textContent !== "Reply execution") {
-      title.textContent = "Reply execution";
+    if (title && title.textContent !== "Deeper Agent Run") {
+      title.textContent = "Deeper Agent Run";
       title.title = "Deeper Reply / Agent Runtime";
+    }
+
+    let intro = runtimeBox.querySelector(":scope > .runtimeIntro");
+    if (!intro && title) {
+      intro = document.createElement("span");
+      intro.className = "runtimeIntro";
+      intro.textContent = "Reply handling after G18 · current run";
+      title.insertAdjacentElement("afterend", intro);
     }
 
     [...runtimeBox.children].forEach(node => {
@@ -62,45 +76,46 @@
       const code = node.querySelector("code");
       key?.classList.add("runtimeFactKey");
       code?.classList.add("runtimeFactValue");
+      if (!key || !code) return;
 
-      const rawKey = (key?.textContent || "").trim();
-      const rawValue = (code?.textContent || "").trim();
-      const normalized = rawValue.toLowerCase();
+      const sourceKey = node.dataset.runtimeSourceKey || key.textContent.trim();
+      node.dataset.runtimeSourceKey = sourceKey;
+      const rawValue = node.dataset.runtimeSourceValue || code.textContent.trim();
+      if (!node.dataset.runtimeSourceValue) node.dataset.runtimeSourceValue = rawValue;
 
-      node.classList.toggle(
-        "runtimeDetailUnavailable",
-        !rawValue || normalized === "not observed yet" || rawValue === "—"
-      );
+      const unavailable = !rawValue || rawValue.toLowerCase() === "not observed yet" || rawValue === "—";
+      node.classList.toggle("runtimeDetailUnavailable", unavailable);
 
-      if (!key || !code || node.classList.contains("runtimeDetailUnavailable")) return;
+      const label = friendlyLabel(sourceKey);
+      if (key.textContent !== label) key.textContent = label;
 
-      if (rawKey === "Agent") {
-        const technicalValue = rawValue;
-        let friendlyValue = rawValue;
+      if (unavailable) {
+        if (code.textContent !== "Not captured") code.textContent = "Not captured";
+        node.title = `No ${sourceKey.toLowerCase()} value was captured in this run.`;
+        return;
+      }
+
+      if (sourceKey === "Agent") {
         const parts = rawValue.split(/\s*→\s*/).filter(Boolean);
+        let friendlyValue = rawValue;
         if (parts.length === 2 && parts[0] === parts[1]) {
           friendlyValue = `${parts[0]} · unchanged`;
         } else if (parts.length === 2) {
           friendlyValue = `${parts[0]} → ${parts[1]}`;
         }
-        key.textContent = "Agent";
         if (code.textContent !== friendlyValue) code.textContent = friendlyValue;
-        node.title = `Resolved Agent: ${technicalValue}`;
+        node.title = `Resolved Agent: ${rawValue}`;
+        return;
       }
 
-      if (rawKey === "Resolver") {
-        const technicalValue = rawValue;
-        key.textContent = "Reply method";
-        const friendlyValue = technicalValue === "default_getReplyFromConfig"
-          ? "Default"
-          : technicalValue;
+      if (sourceKey === "Resolver") {
+        const friendlyValue = rawValue === "default_getReplyFromConfig" ? "Default" : rawValue;
         if (code.textContent !== friendlyValue) code.textContent = friendlyValue;
-        node.title = `Resolver: ${technicalValue}`;
+        node.title = `Resolver: ${rawValue}`;
+        return;
       }
 
-      if (rawKey === "Provider") key.textContent = "Provider";
-      if (rawKey === "Model") key.textContent = "Model";
-      if (rawKey === "Tools") key.textContent = "Tools";
+      if (code.textContent !== rawValue) code.textContent = rawValue;
     });
   }
 
