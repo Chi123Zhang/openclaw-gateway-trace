@@ -171,6 +171,26 @@ async def _execute(run: LiveRun) -> None:
     except Exception as exc:  # surfaced to the browser, never hidden
         run.error = str(exc)
         run.status = "error"
+    finally:
+        # Persistence is server-side, not browser-driven. Even if the page closes
+        # before the final poll, a terminal run is still archived. Give the trace
+        # writer a brief flush window, then capture the final correlated evidence.
+        try:
+            await asyncio.sleep(0.1)
+            _scan_new_events(run)
+            events = _correlated(run)
+            trace = _build_trace(
+                message=run.message,
+                session_key=run.session_key,
+                run_id=run.run_id,
+                events=events,
+                response=run.response,
+                send_result=run.send_result,
+            )
+            _persist_run(run, trace=trace, events=events)
+        except Exception as archive_exc:
+            if not run.archive_error:
+                run.archive_error = str(archive_exc)
 
 
 def _scan_new_events(run: LiveRun) -> None:
