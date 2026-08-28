@@ -19,28 +19,45 @@
       <div class="stageVisualState" id="stageVisualState">waiting</div>
     </div>
     <div class="stageVisualMetrics">
-      <div class="stageVisualMetric"><span class="stageVisualMetricLabel">Evidence</span><b class="stageVisualMetricValue small" id="stageVisualEvidence">—</b></div>
+      <div class="stageVisualMetric"><span class="stageVisualMetricLabel">Seen in</span><b class="stageVisualMetricValue small" id="stageVisualEvidence">—</b></div>
       <div class="stageVisualMetric"><span class="stageVisualMetricLabel">Agent</span><b class="stageVisualMetricValue" id="stageVisualAgent">—</b><span class="stageVisualMetricSub" id="stageVisualAgentSub">not resolved yet</span></div>
-      <div class="stageVisualMetric"><span class="stageVisualMetricLabel">Input fields</span><b class="stageVisualMetricValue" id="stageVisualInputs">0</b></div>
-      <div class="stageVisualMetric"><span class="stageVisualMetricLabel">Output fields</span><b class="stageVisualMetricValue" id="stageVisualOutputs">0</b></div>
+      <div class="stageVisualMetric"><span class="stageVisualMetricLabel">Inputs</span><b class="stageVisualMetricValue" id="stageVisualInputs">0</b></div>
+      <div class="stageVisualMetric"><span class="stageVisualMetricLabel">Outputs</span><b class="stageVisualMetricValue" id="stageVisualOutputs">0</b></div>
     </div>
     <section class="stageIoAlwaysOpen" id="stageIoAlwaysOpen" aria-label="Stage input and output">
       <div class="stageIoHeader">
-        <div><span class="stageIoKicker">Stage boundary</span><strong>Input / Output</strong></div>
-        <span class="stageIoAlwaysBadge">ALWAYS OPEN</span>
+        <div>
+          <strong>Input &amp; Output</strong>
+          <span class="stageIoHeaderNote">What this step receives and what it produces</span>
+        </div>
       </div>
       <div class="stageIoGrid">
         <article class="stageIoCard inputCard">
-          <div class="stageIoCardHead"><span>INPUT</span><span class="stageIoCount" id="stageIoInputCount">0 fields</span></div>
-          <div class="stageIoAbstract" id="stageIoInputAbstract">—</div>
-          <div class="stageIoEvidence" id="stageIoInputEvidence">—</div>
-          <pre class="stageIoValues" id="stageIoInputValues">—</pre>
+          <div class="stageIoVisualMark" aria-hidden="true">IN</div>
+          <div class="stageIoCardBody">
+            <div class="stageIoCardHead">
+              <div><span class="stageIoEyebrow">INPUT</span><strong>What comes in</strong></div>
+              <span class="stageIoCount" id="stageIoInputCount">0 fields</span>
+            </div>
+            <div class="stageIoAbstract" id="stageIoInputAbstract">—</div>
+            <div class="stageIoSource" id="stageIoInputEvidence">—</div>
+            <div class="stageIoRows" id="stageIoInputRows"></div>
+            <pre class="stageIoValues" id="stageIoInputValues">—</pre>
+          </div>
         </article>
+        <div class="stageIoArrow" aria-hidden="true"><span>→</span></div>
         <article class="stageIoCard outputCard">
-          <div class="stageIoCardHead"><span>OUTPUT</span><span class="stageIoCount" id="stageIoOutputCount">0 fields</span></div>
-          <div class="stageIoAbstract" id="stageIoOutputAbstract">—</div>
-          <div class="stageIoEvidence" id="stageIoOutputEvidence">—</div>
-          <pre class="stageIoValues" id="stageIoOutputValues">—</pre>
+          <div class="stageIoVisualMark" aria-hidden="true">OUT</div>
+          <div class="stageIoCardBody">
+            <div class="stageIoCardHead">
+              <div><span class="stageIoEyebrow">OUTPUT</span><strong>What goes out</strong></div>
+              <span class="stageIoCount" id="stageIoOutputCount">0 fields</span>
+            </div>
+            <div class="stageIoAbstract" id="stageIoOutputAbstract">—</div>
+            <div class="stageIoSource" id="stageIoOutputEvidence">—</div>
+            <div class="stageIoRows" id="stageIoOutputRows"></div>
+            <pre class="stageIoValues" id="stageIoOutputValues">—</pre>
+          </div>
         </article>
       </div>
     </section>`;
@@ -51,11 +68,15 @@
     return match ? Number(match[1]) : -1;
   }
 
-  function countConcrete(value) {
+  function concreteLines(value) {
     const text = String(value || "").trim();
-    if (!text || text === "—" || /not separately observed/i.test(text)) return 0;
-    if (/^No request-specific input field/i.test(text)) return 0;
-    return text.split(/\n+/).map(line => line.trim()).filter(Boolean).length;
+    if (!text || text === "—" || /not separately observed/i.test(text)) return [];
+    if (/^No request-specific input field/i.test(text)) return [];
+    return text.split(/\n+/).map(line => line.trim()).filter(Boolean);
+  }
+
+  function countConcrete(value) {
+    return concreteLines(value).length;
   }
 
   function currentStageData() {
@@ -64,8 +85,6 @@
 
   function stageAgent(s) {
     const n = stageNumber(s?.id || activeStage);
-    // OpenClaw source flow resolves the effective Agent at G9.  Showing the
-    // final run Agent on G0-G8 would leak a later-stage fact backwards in time.
     if (n < 9) return { value: "—", note: "resolved at G9" };
 
     try {
@@ -87,10 +106,54 @@
     if (el) el.textContent = value == null || value === "" ? "—" : String(value);
   }
 
+  function friendlyEvidence(value) {
+    const raw = String(value || "").toUpperCase();
+    if (!raw || raw === "—") return "Source: not available";
+    const hasRuntime = raw.includes("RUNTIME");
+    const hasRequest = raw.includes("REQUEST");
+    const hasSource = raw.includes("SOURCE");
+    const mapped = raw.includes("MAPPED") || raw.includes("DERIVED") || raw.includes("FIXED");
+
+    if (hasRuntime && hasSource) return mapped ? "Seen in this run · matched to source" : "Seen in this run · confirmed by source";
+    if (hasRuntime) return "Seen in this run";
+    if (hasRequest && hasSource) return "From request · checked against source";
+    if (hasRequest) return "From request";
+    if (hasSource) return mapped ? "From source mapping" : "From source";
+    return `Source: ${String(value)}`;
+  }
+
+  function renderRows(containerId, fallbackId, value) {
+    const container = document.getElementById(containerId);
+    const fallback = document.getElementById(fallbackId);
+    if (!container || !fallback) return;
+
+    container.replaceChildren();
+    const lines = concreteLines(value);
+    let parsed = 0;
+
+    for (const line of lines) {
+      const match = line.match(/^([^=]+?)\s*=\s*(.*)$/);
+      if (!match) continue;
+      parsed += 1;
+      const row = document.createElement("div");
+      row.className = "stageIoRow";
+      const key = document.createElement("span");
+      key.className = "stageIoKey";
+      key.textContent = match[1].trim();
+      const val = document.createElement("span");
+      val.className = "stageIoValue";
+      val.textContent = match[2].trim() || "—";
+      row.append(key, val);
+      container.append(row);
+    }
+
+    const useRows = parsed > 0 && parsed === lines.length;
+    container.hidden = !useRows;
+    fallback.hidden = useRows;
+    fallback.textContent = value || "—";
+  }
+
   function hideLegacyOverviewRows() {
-    // Older presentation helpers may inject collapsed 'Stage-level input / output'
-    // and 'Technical details' disclosure rows.  The new Overview has a permanent
-    // I/O panel and dedicated tabs, so those duplicate rows are removed from view.
     detail.querySelectorAll("button,summary,div,section").forEach(node => {
       if (node.id === "stageIoAlwaysOpen" || node.closest?.("#stageIoAlwaysOpen")) return;
       const text = (node.textContent || "").trim().replace(/\s+/g, " ");
@@ -104,9 +167,6 @@
     const s = currentStageData();
     if (!s) return;
 
-    const evidence = Array.isArray(s.evidence)
-      ? s.evidence.map(x => String(x).toUpperCase()).join(" + ")
-      : "—";
     const result = String(s.result || "—");
     const hero = document.getElementById("stageVisualHero");
     hero?.classList.toggle("source", result.includes("SOURCE"));
@@ -116,7 +176,9 @@
     setText("stageVisualResult", result);
     setText("stageVisualNote", s.title || "Current selected Gateway stage");
     setText("stageVisualState", result === "—" ? "waiting" : "current state");
-    setText("stageVisualEvidence", evidence || "—");
+
+    const stageEvidence = Array.isArray(s.evidence) ? s.evidence.join(" + ") : "—";
+    setText("stageVisualEvidence", friendlyEvidence(stageEvidence).replace(/^Source:\s*/i, ""));
 
     const agent = stageAgent(s);
     setText("stageVisualAgent", agent.value);
@@ -129,14 +191,12 @@
     setText("stageIoInputCount", `${inputCount} ${inputCount === 1 ? "field" : "fields"}`);
     setText("stageIoOutputCount", `${outputCount} ${outputCount === 1 ? "field" : "fields"}`);
 
-    // These are the actual stage-boundary values already computed by the source-
-    // aligned collector.  They are mirrored here, never re-inferred in the UI.
     setText("stageIoInputAbstract", s.input || "—");
     setText("stageIoOutputAbstract", s.output || "—");
-    setText("stageIoInputEvidence", s.concreteInputEvidence || "—");
-    setText("stageIoOutputEvidence", s.concreteOutputEvidence || "—");
-    setText("stageIoInputValues", s.concreteInput || "—");
-    setText("stageIoOutputValues", s.concreteOutput || "—");
+    setText("stageIoInputEvidence", friendlyEvidence(s.concreteInputEvidence));
+    setText("stageIoOutputEvidence", friendlyEvidence(s.concreteOutputEvidence));
+    renderRows("stageIoInputRows", "stageIoInputValues", s.concreteInput || "—");
+    renderRows("stageIoOutputRows", "stageIoOutputValues", s.concreteOutput || "—");
 
     hideLegacyOverviewRows();
   }
@@ -155,7 +215,5 @@
     });
   });
 
-  // Some inspector helpers render after this script. Keep the duplicate disclosure
-  // cleanup idempotent so Input / Output cannot become collapsible again.
   new MutationObserver(() => hideLegacyOverviewRows()).observe(detail, { childList:true, subtree:true });
 })();
