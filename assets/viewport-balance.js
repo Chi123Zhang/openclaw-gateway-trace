@@ -49,11 +49,9 @@
 
     runtimeBox.classList.add("runtimeBoundaryFacts");
     const title = runtimeBox.querySelector(":scope > strong");
-    // Important: do not rewrite textContent when the value is already correct.
-    // This function is called from a MutationObserver; an unconditional write
-    // creates a childList mutation and can keep the browser in a microtask loop.
-    if (title && title.textContent !== "Agent Runtime") {
-      title.textContent = "Agent Runtime";
+    if (title && title.textContent !== "Reply execution") {
+      title.textContent = "Reply execution";
+      title.title = "Deeper Reply / Agent Runtime";
     }
 
     [...runtimeBox.children].forEach(node => {
@@ -65,11 +63,44 @@
       key?.classList.add("runtimeFactKey");
       code?.classList.add("runtimeFactValue");
 
-      const value = (code?.textContent || "").trim().toLowerCase();
+      const rawKey = (key?.textContent || "").trim();
+      const rawValue = (code?.textContent || "").trim();
+      const normalized = rawValue.toLowerCase();
+
       node.classList.toggle(
         "runtimeDetailUnavailable",
-        !value || value === "not observed yet" || value === "—"
+        !rawValue || normalized === "not observed yet" || rawValue === "—"
       );
+
+      if (!key || !code || node.classList.contains("runtimeDetailUnavailable")) return;
+
+      if (rawKey === "Agent") {
+        const technicalValue = rawValue;
+        let friendlyValue = rawValue;
+        const parts = rawValue.split(/\s*→\s*/).filter(Boolean);
+        if (parts.length === 2 && parts[0] === parts[1]) {
+          friendlyValue = `${parts[0]} · unchanged`;
+        } else if (parts.length === 2) {
+          friendlyValue = `${parts[0]} → ${parts[1]}`;
+        }
+        key.textContent = "Agent";
+        if (code.textContent !== friendlyValue) code.textContent = friendlyValue;
+        node.title = `Resolved Agent: ${technicalValue}`;
+      }
+
+      if (rawKey === "Resolver") {
+        const technicalValue = rawValue;
+        key.textContent = "Reply method";
+        const friendlyValue = technicalValue === "default_getReplyFromConfig"
+          ? "Default"
+          : technicalValue;
+        if (code.textContent !== friendlyValue) code.textContent = friendlyValue;
+        node.title = `Resolver: ${technicalValue}`;
+      }
+
+      if (rawKey === "Provider") key.textContent = "Provider";
+      if (rawKey === "Model") key.textContent = "Model";
+      if (rawKey === "Tools") key.textContent = "Tools";
     });
   }
 
@@ -85,9 +116,6 @@
       });
     };
 
-    // live.js rebuilds the boundary by adding/removing child nodes. Observing
-    // childList is sufficient; observing characterData here made self-triggered
-    // mutations much easier to create and offered no extra runtime evidence.
     new MutationObserver(scheduleCompact).observe(pipeline, {
       childList:true,
       subtree:true
