@@ -6,6 +6,123 @@
   const primary = [...detail.children].find(node => node.classList?.contains("summaryGrid"));
   if (!primary) return;
 
+  const FRIENDLY_BOUNDARY = {
+    G0: {
+      input: "Gateway authentication settings and the connection identity information.",
+      output: "The initial authentication decision for this connection."
+    },
+    G1: {
+      input: "The authentication method being used for this connection.",
+      output: "Whether the shared credential is accepted."
+    },
+    G2: {
+      input: "The authentication result, client role, and allowed permissions.",
+      output: "A connection that is authenticated and ready to send requests."
+    },
+    G3: {
+      input: "The requested action together with the caller's role and permissions.",
+      output: "Whether this action is allowed to continue."
+    },
+    G4: {
+      input: "The chat request: session, message, attachments, and request ID.",
+      output: "A checked request that is ready for message processing."
+    },
+    G5: {
+      input: "The user's message and any attached files.",
+      output: "A cleaned message that is ready for routing."
+    },
+    G6: {
+      input: "The session from the request and any Agent explicitly requested by the caller.",
+      output: "Which Agent was requested, if one was specified."
+    },
+    G7: {
+      input: "The raw session name supplied with the request.",
+      output: "The canonical session the Gateway will use from this point on."
+    },
+    G8: {
+      input: "The resolved session and the requested Agent, if any.",
+      output: "Confirmation that the session and Agent combination is valid."
+    },
+    G9: {
+      input: "The resolved session and any requested Agent.",
+      output: "The Agent that will handle this request."
+    },
+    G10: {
+      input: "The resolved session and the rules that control whether it may send.",
+      output: "Whether this session is allowed to continue."
+    },
+    G11: {
+      input: "This request's run ID and current session.",
+      output: "Whether this is a new run or a duplicate of one already being handled."
+    },
+    G12: {
+      input: "The latest session and run information immediately before execution.",
+      output: "Whether the request is admitted to run now."
+    },
+    G13: {
+      input: "The prepared message, session, Agent, request ID, and client permissions.",
+      output: "One message context that carries everything needed by the reply path."
+    },
+    G14: {
+      input: "The message context from G13 together with the reply settings.",
+      output: "The result returned by the inbound message dispatch path."
+    },
+    G15: {
+      input: "The message context created in G13.",
+      output: "A finalized message context that is ready for reply dispatch."
+    },
+    G16: {
+      input: "The finalized message context together with the reply settings.",
+      output: "The reply-dispatch result returned to the caller."
+    },
+    G17: {
+      input: "The current session and the Agent selected earlier in the flow.",
+      output: "The Agent confirmed for the deeper reply run."
+    },
+    G18: {
+      input: "The finalized message context and the settings used to produce a reply.",
+      output: "The reply result after the selected reply path runs."
+    }
+  };
+
+  const FRIENDLY_FIELDS = {
+    "ctx.SessionKey": "Session",
+    "ctx.AgentId": "Agent",
+    "custom replyResolver": "Custom reply method",
+    "sessionKey": "Session",
+    "canonicalSessionKey": "Canonical session",
+    "rawSessionKey": "Raw session",
+    "runId": "Run ID",
+    "agentId": "Agent",
+    "requestedAgentId": "Requested Agent",
+    "sessionAgentId": "Session Agent",
+    "downstreamAgentId": "Confirmed Agent",
+    "resolverSource": "Reply method",
+    "replyResult": "Reply result",
+    "result": "Result",
+    "reason": "Reason",
+    "message": "Message",
+    "attachments": "Attachments",
+    "method": "Requested action",
+    "role": "Role",
+    "scopes": "Permissions",
+    "authMode": "Authentication mode",
+    "authMethod": "Authentication method",
+    "clientMode": "Client type",
+    "hasDeviceIdentity": "Device identity present",
+    "sharedAuthProvided": "Shared credential provided",
+    "sharedAuthOk": "Shared credential accepted",
+    "hasBootstrapTokenCandidate": "Bootstrap token present",
+    "hasDeviceTokenCandidate": "Device token present",
+    "hasPrivilegedFields": "Privileged fields present",
+    "hasExplicitOrigin": "Explicit origin provided",
+    "messageLength": "Message length",
+    "messageChangedBySanitization": "Message changed during cleaning",
+    "sendPolicy": "Send policy",
+    "dedupeDecision": "Duplicate check",
+    "admissionDecision": "Admission decision"
+  };
+
   const panel = document.createElement("section");
   panel.className = "stageVisualSummary";
   panel.id = "stageVisualSummary";
@@ -122,6 +239,22 @@
     return `Source: ${String(value)}`;
   }
 
+  function friendlyFieldLabel(raw) {
+    const key = String(raw || "").trim();
+    if (FRIENDLY_FIELDS[key]) return FRIENDLY_FIELDS[key];
+    return key
+      .replace(/^ctx\./, "")
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .replace(/[_.]/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/^./, c => c.toUpperCase());
+  }
+
+  function friendlyBoundaryText(stageId, side, fallback) {
+    const mapped = FRIENDLY_BOUNDARY[stageId]?.[side];
+    return mapped || fallback || "—";
+  }
+
   function renderRows(containerId, fallbackId, value) {
     const container = document.getElementById(containerId);
     const fallback = document.getElementById(fallbackId);
@@ -137,9 +270,11 @@
       parsed += 1;
       const row = document.createElement("div");
       row.className = "stageIoRow";
+      const rawKey = match[1].trim();
       const key = document.createElement("span");
       key.className = "stageIoKey";
-      key.textContent = match[1].trim();
+      key.textContent = friendlyFieldLabel(rawKey);
+      key.title = rawKey;
       const val = document.createElement("span");
       val.className = "stageIoValue";
       val.textContent = match[2].trim() || "—";
@@ -153,7 +288,16 @@
     fallback.textContent = value || "—";
   }
 
+  function removeDiagnosticsTab() {
+    detail.querySelectorAll('[data-stage-page="diagnostics"]').forEach(node => node.remove());
+    if (detail.dataset.compactPage === "diagnostics") {
+      detail.dataset.compactPage = "overview";
+      detail.querySelector('[data-stage-page="overview"]')?.classList.add("active");
+    }
+  }
+
   function hideLegacyOverviewRows() {
+    removeDiagnosticsTab();
     detail.querySelectorAll("button,summary,div,section").forEach(node => {
       if (node.id === "stageIoAlwaysOpen" || node.closest?.("#stageIoAlwaysOpen")) return;
       const text = (node.textContent || "").trim().replace(/\s+/g, " ");
@@ -191,8 +335,9 @@
     setText("stageIoInputCount", `${inputCount} ${inputCount === 1 ? "field" : "fields"}`);
     setText("stageIoOutputCount", `${outputCount} ${outputCount === 1 ? "field" : "fields"}`);
 
-    setText("stageIoInputAbstract", s.input || "—");
-    setText("stageIoOutputAbstract", s.output || "—");
+    const stageId = s.id || activeStage;
+    setText("stageIoInputAbstract", friendlyBoundaryText(stageId, "input", s.input));
+    setText("stageIoOutputAbstract", friendlyBoundaryText(stageId, "output", s.output));
     setText("stageIoInputEvidence", friendlyEvidence(s.concreteInputEvidence));
     setText("stageIoOutputEvidence", friendlyEvidence(s.concreteOutputEvidence));
     renderRows("stageIoInputRows", "stageIoInputValues", s.concreteInput || "—");
