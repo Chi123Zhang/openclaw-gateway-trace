@@ -131,6 +131,33 @@
   }
 
   function sourcePathStage(stage) {
+    /*
+     * G14-G16 have no standalone TraceClaw event in the current instrumentation,
+     * but the backend can still attach run-specific, source-aligned facts once the
+     * same run reaches downstream G17/G18. Never erase those facts merely because
+     * the playback item itself is a source bridge.
+     */
+    const result = String(stage?.result || "").trim();
+    const concreteOutput = String(stage?.concreteOutput || "").trim();
+    const hasRunSupportedResult = Boolean(result && result !== "—" && result !== "SOURCE PATH");
+    const hasRunSupportedOutput = Boolean(
+      concreteOutput &&
+      concreteOutput !== "—" &&
+      !/^not separately observed$/i.test(concreteOutput)
+    );
+
+    if (hasRunSupportedResult || hasRunSupportedOutput) {
+      return {
+        ...stage,
+        evidence: Array.isArray(stage?.evidence) && stage.evidence.length
+          ? stage.evidence
+          : ["source", "derived"],
+        tone: stage?.tone || "good",
+        time: stage?.time || "not separately observed",
+        tokens: stage?.tokens || "not observed"
+      };
+    }
+
     return {
       ...stage,
       result: "SOURCE PATH",
@@ -203,7 +230,8 @@
       if (module.id === "M1" && observed.has("G5")) result = "PASS";
       if (module.id === "M2" && observed.has("G9")) result = meta.agent || "RESOLVED";
       if (module.id === "M3" && observed.has("G12")) result = meta.admissionDecision || "OBSERVED";
-      if (module.id === "M4" && (revealedSourceStages.has("G15") || stageNumber(focusStage) > 15)) result = "SOURCE PATH COMPLETE";
+      if (module.id === "M4" && caseData?.stages?.G15?.result === "finalized") result = "READY";
+      else if (module.id === "M4" && (revealedSourceStages.has("G15") || stageNumber(focusStage) > 15)) result = "SOURCE-MAPPED";
       if (module.id === "M5" && observed.has("G18")) result = "G18 OBSERVED";
 
       return { ...module, result };
@@ -460,8 +488,16 @@
     document.getElementById("requestState").textContent = visualPaused ? `PAUSED · ${item.stage}` : "RUNNING";
 
     if (item.sourceOnly) {
-      setCollectorState(`SOURCE PATH · ${item.stage}`, "connected");
-      message.textContent = `${item.stage} · source-confirmed continuation · no standalone runtime event for this stage`;
+      const stageData = fullCaseSnapshot?.stages?.[item.stage] || {};
+      const stageResult = String(stageData.result || "").trim();
+      const hasRunSupportedResult = Boolean(stageResult && stageResult !== "—" && stageResult !== "SOURCE PATH");
+      if (hasRunSupportedResult) {
+        setCollectorState(`${item.stage} · ${stageResult}`, "connected");
+        message.textContent = `${item.stage} · ${stageResult} · supported by this run's downstream runtime and the verified source path`;
+      } else {
+        setCollectorState(`SOURCE PATH · ${item.stage}`, "connected");
+        message.textContent = `${item.stage} · source-confirmed continuation · no standalone runtime event for this stage`;
+      }
     } else {
       setCollectorState(`LIVE · ${item.stage}`, "connected");
       message.textContent = `${moduleText} · ${item.stage} · ${item.event || "observed"}`;
