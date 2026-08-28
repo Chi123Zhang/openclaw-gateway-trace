@@ -3,3 +3,7 @@
 
 __pycache__/
 *.py[cod]
+
+# Local live-run archives are runtime data, not repository source.
+collector/runs/*.json
+collector/runs/*.tmp
