@@ -177,4 +177,32 @@
   .stateChip.good,.echip.runtime{border-color:#7f4728!important;background:#21150e!important;color:#ffb15a!important}
   .stateChip.warn{border-color:#8d3028!important;background:#25100e!important;color:#ff6b45!important}
   .stageCard.done::after,.module.done::after,.subnode.done::after{color:#ff9a45!important}
+
+  /* Runtime Context: remove the decorative right-side status pillar and show the
+     actual SessionKey text in full. These are presentation-only overrides. */
+  .sidebar .contextBlock .stateChip{
+    display:none!important;
+  }
+  .sidebar .contextBlock .ctxRow{
+    display:block!important;
+    min-height:0!important;
+    padding:6px 7px!important;
+  }
+  .sidebar .contextBlock .ctxRight{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+  }
+  .sidebar .contextBlock .ctxValue{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    overflow-wrap:anywhere!important;
+    word-break:break-all!important;
+    line-height:1.28!important;
+  }
 }
