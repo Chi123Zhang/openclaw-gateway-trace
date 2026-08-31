@@ -1,7 +1,7 @@
 (() => {
-  /* Safe teacher-review polish.
-   * Presentation only: no trace/source data changes.
-   * Avoids document-wide MutationObserver loops; binds only after the dashboard exists.
+  /* Teacher-review presentation polish.
+   * Presentation only: trace/source data and field names are never changed.
+   * Modules open in a panel; stage I/O stays fully visible but is laid out inline.
    */
 
   const MODULE_EXPLAIN = {
@@ -180,104 +180,40 @@
     }, true);
   }
 
-  const SIDES = [
-    { rows: "stageIoInputRows", values: "stageIoInputValues", button: "stageIoInputMore" },
-    { rows: "stageIoOutputRows", values: "stageIoOutputValues", button: "stageIoOutputMore" }
-  ];
+  const IO_ROWS = ["stageIoInputRows", "stageIoOutputRows"];
+  const MORE_BUTTONS = ["stageIoInputMore", "stageIoOutputMore"];
 
-  function ensureMoreButton(spec) {
-    const rows = document.getElementById(spec.rows);
-    if (!rows) return null;
-    let button = document.getElementById(spec.button);
-    if (button) return button;
+  function keepIoComplete() {
+    MORE_BUTTONS.forEach(id => document.getElementById(id)?.remove());
 
-    button = document.createElement("button");
-    button.id = spec.button;
-    button.type = "button";
-    button.className = "stageIoMoreButton";
-    button.hidden = true;
-    rows.parentElement?.append(button);
-    button.addEventListener("click", () => {
-      const expanded = rows.dataset.compactExpanded === "1";
-      rows.dataset.compactExpanded = expanded ? "0" : "1";
-      compactSide(spec);
-    });
-    return button;
-  }
+    IO_ROWS.forEach(id => {
+      const rows = document.getElementById(id);
+      if (!rows) return;
+      rows.dataset.ioCompactInline = "1";
+      rows.querySelectorAll(":scope > .stageIoRow").forEach(row => {
+        row.hidden = false;
+        row.classList.remove("compactIoHidden");
+        row.style.removeProperty("display");
+      });
 
-  function compactSide(spec) {
-    const rows = document.getElementById(spec.rows);
-    const values = document.getElementById(spec.values);
-    const button = ensureMoreButton(spec);
-    if (!rows || !values || !button) return;
-
-    const expanded = rows.dataset.compactExpanded === "1";
-    const rowList = [...rows.querySelectorAll(":scope > .stageIoRow")];
-    const valueLines = String(values.textContent || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-    const rowsAreVisible = !rows.hidden && rowList.length > 0;
-
-    rowList.forEach((row, index) => {
-      const hide = !expanded && index >= 2;
-      row.classList.toggle("compactIoHidden", hide);
-      row.hidden = hide;
-      row.style.display = hide ? "none" : "";
-    });
-    values.classList.add("compactIoClamp");
-    values.classList.toggle("compactIoExpanded", expanded);
-
-    const total = rowsAreVisible ? rowList.length : valueLines.length;
-    const hasExtra = total > 2;
-    button.hidden = !hasExtra;
-    if (hasExtra) {
-      button.textContent = expanded ? "Show less" : `Show ${total - 2} more`;
-      button.setAttribute("aria-expanded", String(expanded));
-    }
-  }
-
-  function bindCompactIoOnce() {
-    const ready = SIDES.every(spec => document.getElementById(spec.rows) && document.getElementById(spec.values));
-    if (!ready) return false;
-
-    SIDES.forEach(spec => {
-      const rows = document.getElementById(spec.rows);
-      const values = document.getElementById(spec.values);
-      ensureMoreButton(spec);
-      rows.dataset.compactExpanded = "0";
-
-      if (rows.dataset.compactIoObserved !== "1") {
-        rows.dataset.compactIoObserved = "1";
-        new MutationObserver(() => compactSide(spec)).observe(rows, { childList: true });
+      if (rows.dataset.ioCompleteObserved !== "1") {
+        rows.dataset.ioCompleteObserved = "1";
+        new MutationObserver(() => keepIoComplete()).observe(rows, { childList: true });
       }
-      if (values.dataset.compactIoObserved !== "1") {
-        values.dataset.compactIoObserved = "1";
-        new MutationObserver(() => compactSide(spec)).observe(values, {
-          childList: true,
-          subtree: true,
-          characterData: true
-        });
-      }
-      compactSide(spec);
     });
 
-    const title = document.getElementById("detailTitle");
-    if (title && title.dataset.compactIoTitleObserved !== "1") {
-      title.dataset.compactIoTitleObserved = "1";
-      new MutationObserver(() => {
-        SIDES.forEach(spec => {
-          const rows = document.getElementById(spec.rows);
-          if (rows) rows.dataset.compactExpanded = "0";
-          compactSide(spec);
-        });
-      }).observe(title, { childList: true, subtree: true });
-    }
-    return true;
+    document.querySelectorAll(".stageIoValues").forEach(values => {
+      values.classList.remove("compactIoClamp", "compactIoExpanded");
+    });
   }
 
   function boot(attempt = 0) {
     bindModuleInteractions();
     buildModulePanel();
-    if (bindCompactIoOnce()) return;
-    if (attempt < 80) setTimeout(() => boot(attempt + 1), 50);
+    keepIoComplete();
+
+    const ready = IO_ROWS.every(id => document.getElementById(id));
+    if (!ready && attempt < 80) setTimeout(() => boot(attempt + 1), 50);
   }
 
   if (document.readyState === "loading") {
