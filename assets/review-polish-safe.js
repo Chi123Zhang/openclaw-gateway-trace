@@ -222,3 +222,49 @@
     boot();
   }
 })();
+
+(() => {
+  /* Keep the G-stage inspector at the viewport center and always open it at
+   * the beginning of the selected page. Presentation only; stage data is untouched.
+   */
+  const detail = document.querySelector("section.detail.stageModalTarget");
+  if (!detail) return;
+
+  function enforceFrame() {
+    detail.style.setProperty("position", "fixed", "important");
+    detail.style.setProperty("inset", "auto", "important");
+    detail.style.setProperty("left", "50%", "important");
+    detail.style.setProperty("top", "50%", "important");
+    detail.style.setProperty("transform", "translate(-50%, -50%)", "important");
+    detail.style.setProperty("margin", "0", "important");
+  }
+
+  function resetPanel() {
+    if (!document.body.classList.contains("stageModalOpen")) return;
+    enforceFrame();
+    detail.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }
+
+  let wasOpen = document.body.classList.contains("stageModalOpen");
+  const classObserver = new MutationObserver(() => {
+    const isOpen = document.body.classList.contains("stageModalOpen");
+    if (isOpen && !wasOpen) {
+      requestAnimationFrame(() => {
+        resetPanel();
+        requestAnimationFrame(resetPanel);
+      });
+    }
+    wasOpen = isOpen;
+  });
+  classObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+  document.addEventListener("click", event => {
+    const stageTrigger = event.target.closest?.('[data-id^="G"]');
+    const pageTrigger = event.target.closest?.(".stagePageTab");
+    if (!stageTrigger && !pageTrigger) return;
+    requestAnimationFrame(() => {
+      resetPanel();
+      requestAnimationFrame(resetPanel);
+    });
+  });
+})();
