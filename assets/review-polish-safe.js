@@ -216,7 +216,12 @@
     const valueLines = String(values.textContent || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
     const rowsAreVisible = !rows.hidden && rowList.length > 0;
 
-    rowList.forEach((row, index) => row.classList.toggle("compactIoHidden", !expanded && index >= 2));
+    rowList.forEach((row, index) => {
+      const hide = !expanded && index >= 2;
+      row.classList.toggle("compactIoHidden", hide);
+      row.hidden = hide;
+      row.style.display = hide ? "none" : "";
+    });
     values.classList.add("compactIoClamp");
     values.classList.toggle("compactIoExpanded", expanded);
 
