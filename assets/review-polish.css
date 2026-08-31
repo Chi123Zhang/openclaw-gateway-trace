@@ -1,0 +1,73 @@
+/* Teacher-review polish: keep the main dashboard stable, inspect modules in a panel,
+ * and keep stage input/output concise by default. This file changes presentation only.
+ */
+
+/* ---------- Module inspection panel ---------- */
+.modulePanelBackdrop{position:fixed;inset:0;z-index:88;background:rgba(4,7,9,.58);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .14s ease}
+.modulePanel{position:fixed;z-index:89;top:50%;left:50%;width:min(720px,calc(100vw - 36px));max-height:min(78vh,720px);overflow:auto;transform:translate(-50%,-48%) scale(.985);opacity:0;pointer-events:none;border:1px solid #35414a;border-radius:12px;background:#101519;box-shadow:0 24px 70px rgba(0,0,0,.42);transition:opacity .14s ease,transform .14s ease;color:#e8edf1}
+body.modulePanelOpen{overflow:hidden}
+body.modulePanelOpen .modulePanelBackdrop{opacity:1;pointer-events:auto}
+body.modulePanelOpen .modulePanel{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.modulePanelHeader{position:sticky;top:0;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:15px 17px 13px;border-bottom:1px solid #2a3239;background:rgba(16,21,25,.96);backdrop-filter:blur(8px)}
+.modulePanelKicker{color:#7f8b95;font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase}
+.modulePanelTitle{margin-top:5px;font-size:18px;font-weight:760;line-height:1.2;color:#f0f4f6}
+.modulePanelClose{flex:0 0 auto;width:31px;height:31px;border:1px solid #39444d;border-radius:7px;background:#151b20;color:#aeb8c0;font-size:20px;line-height:1;cursor:pointer}
+.modulePanelClose:hover{border-color:#60707c;color:#fff;background:#1c242a}
+.modulePanelBody{padding:14px 17px 17px}
+.modulePanelIntro{display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:10px}
+.modulePanelPurpose,.modulePanelStatus{border:1px solid #2c363e;border-radius:8px;background:#12181c;padding:11px 12px}
+.modulePanelLabel{display:block;margin-bottom:6px;color:#7f8b95;font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}
+.modulePanelPurpose p{margin:0;color:#d9e0e4;font-size:12px;line-height:1.5}
+.modulePanelArch{margin-top:6px;color:#78858e;font:600 8px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace}
+.modulePanelStatus strong{display:block;color:#78b7ff;font:800 13px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modulePanelStatus small{display:block;margin-top:5px;color:#7f8b95;font:600 8px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace}
+.modulePanelSectionTitle{margin:14px 0 7px;color:#8f9ba4;font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.07em}
+.modulePanelStages{display:grid;gap:6px}
+.modulePanelStage{width:100%;display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;padding:9px 10px;border:1px solid #2c363e;border-radius:7px;background:#11171b;color:inherit;cursor:pointer}
+.modulePanelStage:hover{border-color:#4d6374;background:#141d23}
+.modulePanelStage:focus-visible,.modulePanelClose:focus-visible{outline:2px solid #6e9dc2;outline-offset:2px}
+.modulePanelStageId{color:#78b7ff;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.modulePanelStageMain{min-width:0}
+.modulePanelStageTitle{display:block;color:#e4e9ed;font-size:11px;font-weight:720;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modulePanelStageNote{display:block;margin-top:3px;color:#78848d;font-size:8px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modulePanelStageResult{max-width:130px;color:#9abfe0;font:750 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modulePanelHint{margin-top:9px;color:#6f7c85;font:600 8px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+.module.modulePanelInspecting{outline:1px solid #6b95b7;outline-offset:2px}
+
+/* ---------- Stage I/O: show only what fits in one or two lines ---------- */
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoAlwaysOpen{margin-top:5px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoHeader{padding:6px 8px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoHeaderNote{display:none}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoGrid{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)!important;gap:5px!important;padding:6px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCard{grid-template-columns:34px minmax(0,1fr)!important;gap:6px!important;padding:6px 7px!important;border-radius:6px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoVisualMark{width:30px!important;height:30px!important;border-radius:8px!important;font-size:9px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCardHead{align-items:center}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCardHead strong{font-size:9px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCount{font-size:6px!important;padding:2px 4px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoAbstract{margin-top:4px!important;font-size:7px!important;line-height:1.35!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoSource{margin-top:3px!important;font-size:6px!important;line-height:1.25!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRows{gap:3px!important;margin-top:4px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRow{grid-template-columns:minmax(84px,.8fr) minmax(0,1.2fr)!important;gap:5px!important;padding:4px 5px!important;border-radius:4px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoKey{font-size:6px!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoValue{font-size:7px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRow.compactIoHidden{display:none!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoValues{margin-top:4px!important;padding:5px 6px!important;min-height:0!important;font-size:7px!important;line-height:1.35!important;max-height:2.8em;overflow:hidden!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoValues.compactIoExpanded{max-height:none;overflow:visible!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoMoreButton{display:inline-flex;align-items:center;margin-top:4px;padding:0;border:0;background:transparent;color:#7196b3;font:700 7px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;cursor:pointer}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoMoreButton:hover{color:#9cc5e6}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoMoreButton[hidden]{display:none!important}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoArrow span{width:20px!important;height:20px!important;font-size:10px!important}
+
+@media(max-width:900px){
+  .modulePanelIntro{grid-template-columns:1fr}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoGrid{grid-template-columns:1fr!important}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoArrow{height:16px;transform:rotate(90deg)}
+}
+@media(max-width:620px){
+  .modulePanel{width:calc(100vw - 18px)}
+  .modulePanelHeader{padding:12px}
+  .modulePanelBody{padding:11px 12px 13px}
+  .modulePanelStage{grid-template-columns:36px minmax(0,1fr)}
+  .modulePanelStageResult{grid-column:2;max-width:none}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCard{grid-template-columns:30px minmax(0,1fr)!important}
+}
