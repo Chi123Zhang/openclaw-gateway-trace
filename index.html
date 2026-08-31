@@ -96,7 +96,6 @@
 </section>
 <section class="card output"><div><div class="kicker" style="margin-bottom:5px">Output</div><strong>Awaiting run</strong></div><div class="finish">IDLE</div></section>
 </main>
-
 <aside class="card sidebar">
   <div class="sideTitle">Selected</div><div class="kv"><span>Stage</span><b id="sideStage">G3</b></div><div class="kv"><span>Result</span><b id="sideResult" style="color:var(--good)">allow</b></div><div class="kv"><span>Agent</span><b id="sideAgent" class="pendingValue">—</b></div><div class="kv"><span>Resolver</span><b id="sideResolver" class="pendingValue">—</b></div><div class="kv"><span>Provider</span><b id="sideProvider" class="pendingValue">—</b></div><div class="kv"><span>Model</span><b id="sideModel" class="pendingValue">—</b></div><div class="kv"><span>Tools</span><b id="sideTools" class="pendingValue">—</b></div>
   <div class="sep"></div><div class="sideTitle">Runtime Context</div>
@@ -111,7 +110,7 @@
     <div class="ctxRow"><div class="ctxLabel"><span>Downstream Agent</span><small>re-confirmed at G17</small></div><div class="ctxRight"><b id="ctxDownstreamAgent" class="ctxValue pendingValue">—</b><span id="ctxDownstreamAgentState" class="stateChip neutral">—</span></div></div>
   </div><div class="contextNote">Shown after the relevant stage is reached.</div>
   <div class="sep"></div><div class="sideTitle">Runtime</div><div class="kv"><span>ACK</span><b id="ackValue">—</b></div><div class="kv"><span>Title sync</span><b id="titleSyncValue">—</b></div><div class="kv"><span>Stage time</span><b id="sideTime">—</b></div><div class="kv"><span>Token cost</span><b id="sideTokens">—</b></div>
-  <div class="sep"></div><div class="sideTitle">State</div><div class="metric"><span>Authentication</span><b id="riskAuth" class="stateChip neutral">—</b></div><div class="metric"><span>Policy</span><b id="riskPolicy" class="stateChip neutral">—</b></div><div class="metric"><span>Runtime</span><b id="riskRuntime" class="stateChip neutral">—</b></div><div class="metric"><span>Routing</span><b id="riskRouting" class="stateChip neutral">—</b></div><div class="metric overallMetric"><span>Overall</span><b id="riskOverall" class="stateChip good">NO ALERT</b></div><div class="kv"><span>Evidence</span><b id="coverageText">—</b></div><div class="barRow"><div class="barHead"><span>Progress</span><span id="progressText">0%</span></div><div class="barTrack"><div class="barFill progressFill" id="progressBar" style="width:0"></div></div></div><div class="log" id="log"></div><div class="note">Context and state follow the selected stage. Trace-specific values come from the selected case file.</div>
+  <div class="sep"></div><div class="sideTitle">State</div><div class="metric"><span>Authentication</span><b id="riskAuth" class="stateChip neutral">—</b></div><div class="metric"><span>Policy</span><b id="riskPolicy" class="stateChip neutral">—</b></div><div class="metric"><span>Runtime</span><b id="riskRuntime" class="stateChip neutral">—</b></div><div class="metric"><span>Routing</span><b id="riskRouting" class="stateChip neutral">—</b></div><div class="metric overallMetric"><span>Overall</span><b id="riskOverall" class="stateChip good">NO ALERT</b></div><div class="kv"><span>Evidence</span><b id="coverageText">—</b></div><div class="barRow"><div class="barHead"><span>Progress</span><span id="progressText">0%</span></div><div class="barTrack"><div class="barFill progressFill" id="progressBar" style="width:0"></div></div></div><div class="log" id="log"></div><div class="note">Runtime values come only from the selected run snapshot; source structure comes from the fixed v2026.7.1-2 catalog.</div>
 </aside></div>
 
 <script src="config.js"></script>
@@ -119,6 +118,7 @@
 <script src="data/stages/part1.js"></script>
 <script src="data/stages/part2.js"></script>
 <script src="data/stages/part3.js"></script>
+<script src="assets/current-run-catalog-policy.js?v=20260831-1"></script>
 <script src="data/cases/index.js?v=20260831-3"></script>
 <script src="assets/app.js"></script>
 <script src="assets/step-evidence.js"></script>
