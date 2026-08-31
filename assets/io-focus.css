@@ -1,0 +1,146 @@
+/* Concrete stage I/O should be the visual focus.
+ * Presentation only: values and field names are unchanged.
+ */
+
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoHeaderNote,
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoSource,
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCount{
+  display:none!important;
+}
+
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoAlwaysOpen{
+  border-color:#34424c!important;
+  background:#101519!important;
+  box-shadow:none!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoHeader{
+  padding:6px 9px!important;
+  background:#11171b!important;
+  border-bottom-color:#2d3740!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoHeader strong{
+  font-size:10px!important;
+  font-weight:700!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoGrid{
+  gap:7px!important;
+  padding:7px!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCard{
+  padding:8px 9px!important;
+  border-radius:6px!important;
+  background:#10161a!important;
+  box-shadow:none!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCard.inputCard{
+  border-color:#36556a!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCard.outputCard{
+  border-color:#3d5969!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoCardHead strong{
+  font-size:10px!important;
+  font-weight:720!important;
+  color:#e6edf2!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoEyebrow{
+  font-size:6px!important;
+  color:#71808b!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoAbstract{
+  margin-top:3px!important;
+  font-size:6px!important;
+  line-height:1.3!important;
+  color:#78858f!important;
+}
+
+/* Each concrete field/value pair is a compact outlined block. */
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRows{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin-top:7px!important;
+  line-height:1!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRow,
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRow[hidden],
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRow.compactIoHidden{
+  display:inline-flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-width:0!important;
+  max-width:100%!important;
+  padding:5px 7px!important;
+  border:1px solid #41515d!important;
+  border-radius:5px!important;
+  background:#0d1317!important;
+  box-shadow:inset 2px 0 0 #5e91b5!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .inputCard .stageIoRow{
+  border-color:#3c5668!important;
+  box-shadow:inset 2px 0 0 #6498be!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .outputCard .stageIoRow{
+  border-color:#405b6b!important;
+  box-shadow:inset 2px 0 0 #6c9cba!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRow + .stageIoRow::before{
+  content:none!important;
+  display:none!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoKey{
+  font-size:7px!important;
+  line-height:1.15!important;
+  color:#8d9aa4!important;
+  font-weight:650!important;
+  white-space:nowrap!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoValue{
+  font-size:9px!important;
+  line-height:1.15!important;
+  color:#eef4f7!important;
+  font-weight:800!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoValues{
+  margin-top:7px!important;
+  padding:6px 7px!important;
+  border:1px solid #3d4e5a!important;
+  border-radius:5px!important;
+  background:#0d1317!important;
+  color:#edf3f6!important;
+  font-size:8px!important;
+  line-height:1.35!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoArrow span{
+  color:#75838d!important;
+}
+
+/* Secondary overview text stays available but visually quiet. */
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary{
+  gap:5px!important;
+  padding:5px 7px 7px!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info{
+  padding:7px 8px!important;
+  border-color:#2a333a!important;
+  background:#11161a!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info h4{
+  font-size:7px!important;
+  color:#7c8993!important;
+}
+body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .compactPrimarySummary .info p{
+  font-size:8px!important;
+  line-height:1.35!important;
+  color:#aeb8c0!important;
+}
+
+@media(max-width:620px){
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRows{gap:5px!important}
+  body.stageModalOpen .stageModalTarget[data-compact-page="overview"] .stageIoRow{padding:5px 6px!important}
+}
