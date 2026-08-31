@@ -1,11 +1,11 @@
 /* Stage inspector panel: keep the main trace visible and inspect G0–G18 in place. */
 .detail.stageModalTarget{display:none;margin:0}
 
-.stageModalBackdrop{position:fixed;inset:0;z-index:900;background:rgba(5,8,10,.36);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .14s ease}
+.stageModalBackdrop{position:fixed;inset:0;z-index:900;background:rgba(5,8,10,.34);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .14s ease}
 body.stageModalOpen .stageModalBackdrop{opacity:1;pointer-events:auto}
 body.stageModalOpen{overflow:hidden}
 
-/* Desktop: force the inspector to the true viewport center. */
+/* Desktop: a compact inspector in the true viewport center. */
 body.stageModalOpen .detail.stageModalTarget{
   display:block;
   position:fixed;
@@ -15,22 +15,23 @@ body.stageModalOpen .detail.stageModalTarget{
   top:50%!important;
   transform:translate(-50%,-50%)!important;
   margin:0!important;
-  width:min(940px,calc(100vw - 80px))!important;
-  height:auto;
-  max-height:min(76vh,720px)!important;
-  overflow-y:auto;
+  width:min(820px,calc(100vw - 140px))!important;
+  height:auto!important;
+  max-height:min(70vh,640px)!important;
+  overflow-y:auto!important;
   overscroll-behavior:contain;
+  scrollbar-gutter:stable;
   background:#14181c;
   border:1px solid #39424a;
   border-radius:7px;
-  box-shadow:0 12px 34px rgba(0,0,0,.28)
+  box-shadow:0 12px 34px rgba(0,0,0,.26)
 }
 
 body.stageModalOpen .detail.stageModalTarget::-webkit-scrollbar{width:8px}
 body.stageModalOpen .detail.stageModalTarget::-webkit-scrollbar-track{background:#111417}
 body.stageModalOpen .detail.stageModalTarget::-webkit-scrollbar-thumb{background:#333b43;border-radius:8px;border:2px solid #111417}
 
-.stageModalTarget .detailHead{position:sticky;top:0;z-index:8;background:rgba(20,24,28,.98);backdrop-filter:blur(6px);border-bottom:1px solid #2f363d;padding:11px 48px 10px 14px}
+.stageModalTarget .detailHead{position:sticky!important;top:0!important;z-index:8;background:rgba(20,24,28,.99);backdrop-filter:blur(6px);border-bottom:1px solid #2f363d;padding:11px 48px 10px 14px}
 .stageModalTarget .detailHead::after{content:"Stage inspector · current run";display:block;margin-top:3px;font-size:8px;font-weight:500;color:#727e87;letter-spacing:.01em}
 
 .stageModalClose{position:absolute;right:12px;top:10px;width:28px;height:28px;border:1px solid #39424a;border-radius:5px;background:#171b20;color:#aeb7bf;font-size:17px;line-height:26px;cursor:pointer;display:grid;place-items:center;transition:background .12s ease,border-color .12s ease,color .12s ease}
@@ -38,7 +39,7 @@ body.stageModalOpen .detail.stageModalTarget::-webkit-scrollbar-thumb{background
 .stageModalClose:focus-visible{outline:2px solid #78908a;outline-offset:2px}
 
 /* G-neighbour navigation remains inside the same inspector. */
-body.stageModalOpen .stageModalTarget .tabs{position:sticky;top:58px;z-index:7;background:#14181c;border-bottom:1px solid #292f35;overflow-x:auto;flex-wrap:nowrap;padding-top:6px;padding-bottom:6px}
+body.stageModalOpen .stageModalTarget .tabs{position:sticky!important;top:58px!important;z-index:7;background:#14181c;border-bottom:1px solid #292f35;overflow-x:auto;flex-wrap:nowrap;padding-top:6px;padding-bottom:6px}
 body.stageModalOpen .stageModalTarget .tab{flex:0 0 auto;min-width:118px;cursor:pointer}
 body.stageModalOpen .stageModalTarget .detailBreadcrumb{position:static!important;top:auto!important;background:#12161a;border-bottom:1px solid #292f35}
 
@@ -47,7 +48,7 @@ body.stageModalOpen .stageModalTarget .detailBreadcrumb{position:static!importan
 body.stageModalOpen .stageModalTarget .stagePageTabs{
   position:sticky!important;
   top:100px!important;
-  z-index:6!important;
+  z-index:9!important;
   display:flex!important;
   align-items:flex-end!important;
   gap:18px!important;
@@ -100,14 +101,14 @@ body.stageModalOpen .stageModalTarget .sourceToggle{margin-top:10px}
 .stageCard[data-id^="G"]:hover,.subnode[data-id^="G"]:hover{border-color:#66727c;background:#1a1f24}
 
 @media(max-width:1050px){
-  body.stageModalOpen .detail.stageModalTarget{width:calc(100vw - 36px)!important;max-height:82vh!important}
+  body.stageModalOpen .detail.stageModalTarget{width:min(820px,calc(100vw - 44px))!important;max-height:76vh!important}
 }
 
 @media(max-width:900px){
-  body.stageModalOpen .detail.stageModalTarget{width:calc(100vw - 24px)!important;max-height:88vh!important;border-radius:7px}
+  body.stageModalOpen .detail.stageModalTarget{width:calc(100vw - 28px)!important;max-height:84vh!important;border-radius:7px}
   body.stageModalOpen .stageModalTarget .summaryGrid{grid-template-columns:1fr}
   body.stageModalOpen .stageModalTarget .compactSteps{grid-template-columns:1fr}
-  body.stageModalOpen .stageModalTarget .tabs{top:56px}
+  body.stageModalOpen .stageModalTarget .tabs{top:56px!important}
   body.stageModalOpen .stageModalTarget .stagePageTabs{top:96px!important}
 }
 
