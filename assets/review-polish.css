@@ -48,3 +48,6 @@ body.modulePanelOpen .modulePanel{opacity:1;pointer-events:auto;transform:transl
   .modulePanelStage{grid-template-columns:36px minmax(0,1fr)}
   .modulePanelStageResult{grid-column:2;max-width:none}
 }
+
+/* final-presentation.css already indents the output container for its step marker. */
+@media(min-width:1041px){.output strong{padding-left:0!important}}
