@@ -64,3 +64,59 @@
 
   sync();
 })();
+
+(() => {
+  /* Presentation-only cleanup for the overview. No trace values are changed.
+   * Observers are limited to the selected-module title and Runtime Context block.
+   */
+  const normalizeText = value => String(value || "").trim();
+
+  function updateExpandedModulePresentation() {
+    const expand = document.querySelector(".pipeline .expand");
+    const title = document.getElementById("expandTitle");
+    if (!expand || !title) return;
+    const text = normalizeText(title.textContent).toUpperCase();
+    const redundantConnection = text.startsWith("CONN") || text.includes("CONNECTION");
+    expand.classList.toggle("presentationRedundantConnection", redundantConnection);
+  }
+
+  function updateRuntimeContextPresentation() {
+    const sidebar = document.querySelector(".sidebar");
+    const block = sidebar?.querySelector(".contextBlock");
+    if (!sidebar || !block) return;
+
+    let visibleRows = 0;
+    block.querySelectorAll(".ctxRow").forEach(row => {
+      const value = normalizeText(row.querySelector(".ctxValue")?.textContent);
+      const empty = !value || value === "—" || value.toLowerCase() === "not captured";
+      row.classList.toggle("presentationEmptyContext", empty);
+      if (!empty) visibleRows += 1;
+    });
+
+    sidebar.classList.toggle("presentationContextEmpty", visibleRows === 0);
+    [...sidebar.querySelectorAll(".sideTitle")]
+      .filter(node => normalizeText(node.textContent).toLowerCase() === "runtime context")
+      .forEach(node => node.classList.add("presentationContextTitle"));
+  }
+
+  const expandTitle = document.getElementById("expandTitle");
+  if (expandTitle) {
+    new MutationObserver(updateExpandedModulePresentation).observe(expandTitle, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+
+  const contextBlock = document.querySelector(".sidebar .contextBlock");
+  if (contextBlock) {
+    new MutationObserver(updateRuntimeContextPresentation).observe(contextBlock, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+
+  updateExpandedModulePresentation();
+  updateRuntimeContextPresentation();
+})();
