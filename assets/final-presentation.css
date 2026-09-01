@@ -1,0 +1,569 @@
+/* Final presentation polish for the overview.
+ * Presentation only: trace values, stage data, evidence, source mapping and modal content are untouched.
+ * Goal: make the main run story readable to a first-time viewer in a few seconds.
+ */
+
+:root{
+  --fp-bg:#0a0f14;
+  --fp-panel:#10171d;
+  --fp-panel-2:#0d141a;
+  --fp-line:#263542;
+  --fp-line-strong:#36546d;
+  --fp-text:#e8eef3;
+  --fp-muted:#82909c;
+  --fp-blue:#58a6ff;
+  --fp-blue-soft:#13263a;
+  --fp-green:#63c58a;
+  --fp-red:#ff6b70;
+}
+
+@media (min-width:1041px){
+  body{
+    background:
+      radial-gradient(circle at 34% -20%,rgba(35,91,143,.10),transparent 38%),
+      var(--fp-bg)!important;
+    color:var(--fp-text)!important;
+  }
+
+  /* ---------- Header: quiet product chrome ---------- */
+  header{
+    height:44px!important;
+    min-height:44px!important;
+    padding:6px 13px!important;
+    border-bottom:1px solid #1e2b35!important;
+    background:rgba(9,14,19,.96)!important;
+    backdrop-filter:blur(10px);
+  }
+  .brand{
+    font-size:12px!important;
+    font-weight:760!important;
+    letter-spacing:-.01em!important;
+  }
+  .brandDot{
+    width:7px!important;
+    height:7px!important;
+    box-shadow:none!important;
+  }
+  .controls{
+    gap:6px!important;
+    opacity:.92;
+  }
+  header .badge,
+  header .speed,
+  header .btn,
+  .casePicker{
+    border-radius:6px!important;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    height:calc(100vh - 44px)!important;
+    grid-template-columns:minmax(0,1fr) 218px!important;
+    gap:8px!important;
+    padding:8px 10px 9px!important;
+  }
+  .main{
+    gap:5px!important;
+  }
+  .card{
+    border-color:#24323d!important;
+    border-radius:8px!important;
+    background:linear-gradient(180deg,#10171d 0%,#0e151a 100%)!important;
+    box-shadow:none!important;
+  }
+  .kicker{
+    color:#75828d!important;
+    font-size:7px!important;
+    letter-spacing:.08em!important;
+  }
+  .sectionTitle{
+    color:#edf2f5!important;
+    font-size:12px!important;
+    font-weight:720!important;
+    letter-spacing:-.01em!important;
+  }
+
+  /* ---------- A simple four-part story ---------- */
+  .askPanel,
+  .conn,
+  .pipeline,
+  .output{
+    position:relative!important;
+  }
+  .askPanel::before,
+  .conn::before,
+  .pipeline::before,
+  .output::before{
+    position:absolute;
+    z-index:2;
+    display:grid;
+    place-items:center;
+    width:17px;
+    height:17px;
+    border:1px solid #356791;
+    border-radius:50%;
+    background:#10243a;
+    color:#9bcaff;
+    font:800 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .askPanel::before{content:"1";left:8px;top:7px}
+  .conn::before{content:"2";left:8px;top:7px}
+  .pipeline::before{content:"3";left:7px;top:7px}
+  .output::before{content:"4";left:7px;top:5px}
+
+  .askPanel .askHead,
+  .conn>.kicker,
+  .conn>.sectionTitle,
+  .pipeline>.kicker,
+  .pipeline>.sectionTitle,
+  .output>div:first-child{
+    padding-left:23px!important;
+  }
+
+  /* ---------- 1 · Ask / response ---------- */
+  .askPanel{
+    padding:7px 9px!important;
+    border-left:2px solid #315b80!important;
+  }
+  .askHead{
+    margin-bottom:4px!important;
+  }
+  .askLabel{
+    display:none!important;
+  }
+  .askRow{
+    gap:6px!important;
+  }
+  #promptInput{
+    height:31px!important;
+    min-height:31px!important;
+    padding:6px 9px!important;
+    border-color:#2b3c49!important;
+    border-radius:6px!important;
+    background:#0b1218!important;
+    color:#eef3f6!important;
+    font-size:10px!important;
+    line-height:1.2!important;
+  }
+  #promptInput:focus{
+    border-color:#4b83b0!important;
+    box-shadow:0 0 0 2px rgba(67,132,187,.10)!important;
+  }
+  .runTraceBtn{
+    min-width:82px!important;
+    border-color:#356992!important;
+    background:#12304b!important;
+    color:#d9ecff!important;
+    font-weight:720!important;
+  }
+  .collectorState{
+    padding:3px 7px!important;
+    border-radius:999px!important;
+  }
+  .responsePanel{
+    margin-top:4px!important;
+    padding-top:4px!important;
+  }
+  #responseText{
+    border-radius:5px!important;
+    background:#0b1420!important;
+  }
+
+  /* ---------- 2 · Authentication as a clean stepper ---------- */
+  .conn{
+    padding:7px 9px 8px!important;
+    border-left:2px solid #315b80!important;
+  }
+  .connFlow{
+    margin-top:5px!important;
+    align-items:stretch!important;
+  }
+  .connFlow .stageCard{
+    min-height:50px!important;
+    padding:7px 9px!important;
+    border:1px solid #2d4353!important;
+    border-radius:7px!important;
+    background:#0f171d!important;
+  }
+  .connFlow .stageCard.running,
+  .connFlow .stageCard.active,
+  .connFlow .stageCard.selected{
+    border-color:#4c89ba!important;
+    background:#122131!important;
+  }
+  .stageCard .sid{
+    color:#71808c!important;
+    font-size:7px!important;
+  }
+  .stageCard .stitle{
+    margin-top:2px!important;
+    color:#e3eaee!important;
+    font-size:9px!important;
+    font-weight:710!important;
+  }
+  .stageCard .sresult{
+    display:inline-flex!important;
+    width:auto!important;
+    margin-top:4px!important;
+    padding:2px 6px!important;
+    border:1px solid #315348!important;
+    border-radius:999px!important;
+    background:#102019!important;
+    color:#89d1a4!important;
+    font-size:7px!important;
+    line-height:1!important;
+  }
+  .connFlow>.arrow{
+    flex-basis:38px!important;
+    min-width:38px!important;
+    opacity:.75;
+  }
+  .ready{
+    align-self:stretch!important;
+    min-width:73px!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:7px!important;
+    font-weight:800!important;
+    letter-spacing:.04em!important;
+  }
+
+  /* Prerequisite strip is useful but should not compete with the main story. */
+  .handoffStrip,
+  .query{
+    border-color:#22313c!important;
+    background:#0c1318!important;
+  }
+  .query{
+    min-height:31px!important;
+    padding:5px 8px!important;
+  }
+  .query .kicker{
+    display:inline-block!important;
+    margin-right:7px!important;
+  }
+  .query code{
+    color:#dce5ea!important;
+    font-size:9px!important;
+  }
+  .query .state{
+    border-radius:999px!important;
+    background:#102019!important;
+    color:#89d1a4!important;
+    border-color:#315348!important;
+  }
+
+  /* ---------- 3 · Gateway path: this is the visual center ---------- */
+  .pipeline{
+    flex:0 0 auto!important;
+    min-height:0!important;
+    padding:7px!important;
+    border-left:2px solid #315b80!important;
+    overflow:visible!important;
+  }
+  .archBand{
+    display:none!important;
+  }
+  .moduleWrap{
+    margin-top:7px!important;
+  }
+  .moduleFlowRow{
+    grid-template-columns:
+      minmax(0,1fr) 44px
+      minmax(0,1fr) 44px
+      minmax(0,1fr) 44px
+      minmax(0,1fr) 48px
+      minmax(0,1fr)!important;
+  }
+  .moduleFlowRow>.module{
+    height:88px!important;
+    min-height:88px!important;
+    padding:8px 9px!important;
+    border:1px solid #2d4050!important;
+    border-left-width:2px!important;
+    border-radius:8px!important;
+    background:#0f171e!important;
+    transition:border-color .12s ease,background .12s ease,transform .12s ease!important;
+  }
+  .moduleFlowRow>.module:hover{
+    border-color:#49667c!important;
+    background:#111d26!important;
+    transform:translateY(-1px);
+  }
+  .moduleFlowRow>.module.running,
+  .moduleFlowRow>.module.active,
+  .moduleFlowRow>.module.selected{
+    border-color:#4b91ca!important;
+    background:#112338!important;
+  }
+  .moduleFlowRow>.module[data-id="M3"]{
+    border-left-color:#e65b62!important;
+  }
+  .module .mid{
+    color:#7d8a94!important;
+    font-size:7px!important;
+  }
+  .module h3{
+    margin:3px 0 4px!important;
+    color:#edf2f5!important;
+    font-size:10px!important;
+    font-weight:740!important;
+    letter-spacing:-.01em!important;
+  }
+  .module p{
+    color:#9aa7b0!important;
+    font-size:8px!important;
+    line-height:1.3!important;
+    -webkit-line-clamp:2!important;
+  }
+  .module .arch{
+    display:none!important;
+  }
+  .module .mresult{
+    left:9px!important;
+    bottom:7px!important;
+    display:inline-flex!important;
+    width:auto!important;
+    max-width:calc(100% - 18px)!important;
+    padding:2px 6px!important;
+    border:1px solid #315474!important;
+    border-radius:999px!important;
+    background:#101f2e!important;
+    color:#9bcaff!important;
+    font-size:7px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .moduleConnector{
+    padding:22px 4px 0!important;
+  }
+  .moduleConnectorType{
+    top:2px!important;
+    border:0!important;
+    background:transparent!important;
+    color:#73828e!important;
+    font-size:6px!important;
+    letter-spacing:.05em!important;
+  }
+  .moduleConnectorLabel,
+  .moduleConnectorReturnLabel{
+    display:none!important;
+  }
+  .moduleConnectorArrow{
+    color:#6f8799!important;
+    font-size:14px!important;
+  }
+  .moduleConnectorReturn{
+    margin-top:9px!important;
+    opacity:.65;
+  }
+
+  /* Selected G-stage strip: compact drill-down, not a second dashboard. */
+  .expand{
+    margin-top:6px!important;
+    padding-top:5px!important;
+    border-top:1px solid #22313b!important;
+  }
+  .expandHead{
+    margin-bottom:4px!important;
+    min-height:14px!important;
+  }
+  .expandHead .kicker{
+    color:#697781!important;
+  }
+  .expandTitle{
+    color:#c6d0d6!important;
+    font-size:8px!important;
+    font-weight:680!important;
+  }
+  #expandCount{
+    border:0!important;
+    background:transparent!important;
+    color:#6f7d87!important;
+  }
+  .subflow>.subnode{
+    min-height:43px!important;
+    padding:5px 7px!important;
+    border-radius:6px!important;
+    border-color:#293b49!important;
+    background:#0d151a!important;
+  }
+  .subnode .stitle{
+    color:#d6dfe4!important;
+    font-size:8px!important;
+  }
+  .subnode .sresult{
+    color:#8fbce2!important;
+  }
+
+  /* Agent runtime should read as one compact handoff, not a large empty panel. */
+  .pipeline .boundary{
+    flex:0 0 auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin-top:6px!important;
+    padding:6px 7px!important;
+    border:1px solid #294761!important;
+    border-left:2px solid #467fac!important;
+    border-radius:7px!important;
+    background:#0d1822!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child{
+    display:grid!important;
+    grid-template-columns:150px repeat(5,minmax(82px,1fr))!important;
+    align-items:center!important;
+    gap:5px!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>strong{
+    grid-column:1!important;
+    grid-row:1!important;
+    align-self:center!important;
+    color:#b9d8f2!important;
+    font-size:9px!important;
+    white-space:normal!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>.runtimeIntro{
+    display:none!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div{
+    grid-row:1!important;
+    margin:0!important;
+    padding:5px 6px!important;
+    border:1px solid #263d50!important;
+    border-radius:6px!important;
+    background:#101c25!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div>span{
+    margin-bottom:2px!important;
+    color:#708492!important;
+    font-size:5px!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div>code{
+    color:#c9ddea!important;
+    font-size:7px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div.runtimeDetailUnavailable{
+    opacity:.46!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child::after{
+    display:none!important;
+  }
+
+  /* ---------- 4 · Final result ---------- */
+  .output{
+    flex:0 0 28px!important;
+    min-height:28px!important;
+    max-height:28px!important;
+    padding:5px 7px!important;
+    border-left:2px solid #315b80!important;
+    background:#0d1720!important;
+  }
+  .output .kicker{
+    display:none!important;
+  }
+  .output strong{
+    display:block!important;
+    padding-left:23px!important;
+    color:#dce9f2!important;
+    font-size:8px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .output .finish{
+    border:0!important;
+    background:transparent!important;
+    color:#8fbce2!important;
+    font-size:7px!important;
+  }
+
+  /* ---------- Sidebar: only supporting context, never the visual focus ---------- */
+  .sidebar{
+    padding:8px!important;
+    border-color:#22313c!important;
+    background:#0d1419!important;
+  }
+  .sidebar .sideTitle{
+    margin-bottom:5px!important;
+    color:#72808b!important;
+    font-size:7px!important;
+    letter-spacing:.06em!important;
+  }
+  .compactSideSummary{
+    gap:4px!important;
+    margin:3px 0 6px!important;
+  }
+  .compactSideItem{
+    padding:5px 6px!important;
+    border:1px solid #293d4d!important;
+    border-radius:6px!important;
+    background:#0f181f!important;
+  }
+  .compactSideLabel{
+    color:#6f7f8b!important;
+    font-size:5px!important;
+  }
+  .compactSideValue{
+    color:#d2e5f5!important;
+    font-size:7px!important;
+  }
+  .sidebar .contextBlock{
+    border:0!important;
+    background:transparent!important;
+  }
+  .sidebar .ctxRow{
+    padding:5px 2px!important;
+    border-bottom:1px solid #1f2c35!important;
+  }
+  .sidebar .ctxLabel span{
+    color:#81909b!important;
+    font-size:7px!important;
+  }
+  .sidebar .ctxValue{
+    margin-top:2px!important;
+    color:#a9b8c2!important;
+    font-size:6px!important;
+    line-height:1.2!important;
+  }
+  .sidebar .metric{
+    padding:4px 1px!important;
+  }
+  .sidebar .stateChip.good{
+    border-color:#315348!important;
+    background:#102019!important;
+    color:#8dd2a7!important;
+  }
+  .sidebar .sep{
+    margin:6px 0!important;
+    border-color:#1f2c35!important;
+  }
+
+  /* Empty context rows are hidden by final-presentation.js. */
+  .sidebar .ctxRow.presentationEmptyContext{
+    display:none!important;
+  }
+  .sidebar.presentationContextEmpty .presentationContextTitle,
+  .sidebar.presentationContextEmpty .contextBlock{
+    display:none!important;
+  }
+
+  /* Duplicate connection drill-down is hidden by final-presentation.js because
+     the dedicated Handshake section already shows G0-G2. */
+  .expand.presentationRedundantConnection{
+    display:none!important;
+  }
+}
+
+@media (max-width:1040px){
+  .askPanel::before,.conn::before,.pipeline::before,.output::before{display:none!important}
+}
