@@ -16,7 +16,7 @@
     const isPublishedLive = caseId === "latest-live";
 
     const badge = document.querySelector("header .badge");
-    if (badge) badge.textContent = isPublishedLive ? "Published live trace" : "Saved reference";
+    if (badge) badge.textContent = isPublishedLive ? "Published trace" : "Saved trace";
 
     const brand = document.querySelector(".brand");
     if (brand) {
@@ -40,15 +40,13 @@
     const updateBanner = () => {
       const meta = (typeof ACTIVE_CASE !== "undefined" && ACTIVE_CASE?.meta) || {};
       const title = meta.title || meta.prompt || (isPublishedLive ? "Published live run" : "How to make a cake?");
-      const savedAt = meta.savedAt ? ` · saved ${meta.savedAt}` : "";
-      const publishedAt = meta.publishedAt ? ` · published ${meta.publishedAt}` : "";
       const note = isPublishedLive
-        ? `OpenClaw v2026.7.1-2 · static snapshot of a completed local live run${savedAt}${publishedAt}`
-        : "OpenClaw v2026.7.1-2 · source commit 0790d9f · verified reference trace.";
+        ? "OpenClaw v2026.7.1-2 · completed runtime snapshot"
+        : "OpenClaw v2026.7.1-2 · verified reference trace";
 
       banner.innerHTML = `
         <div>
-          <div class="kicker">${isPublishedLive ? "Published live trace" : "Saved trace"}</div>
+          <div class="kicker">${isPublishedLive ? "Completed trace" : "Saved trace"}</div>
           <strong></strong>
         </div>
         <div class="referenceMeta" style="max-width:720px;text-align:right;color:var(--muted);font:10px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace"></div>`;
