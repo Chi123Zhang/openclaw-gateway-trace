@@ -386,6 +386,15 @@
     buildModulePanel();
     keepIoComplete();
 
+    const requestState = document.getElementById("requestState");
+    if (requestState && requestState.dataset.stageFocusStateObserved !== "1") {
+      requestState.dataset.stageFocusStateObserved = "1";
+      new MutationObserver(() => {
+        decorateModuleColumns();
+        syncOpenModuleCurrentStage();
+      }).observe(requestState, { childList: true, subtree: true, characterData: true });
+    }
+
     const ready = IO_ROWS.every(id => document.getElementById(id));
     if (!ready && attempt < 80) setTimeout(() => boot(attempt + 1), 50);
   }
