@@ -13,8 +13,11 @@
   }
   .sidebar{display:none!important}
 
-  /* Connection now lives in pillar 1, so the old duplicate handshake strip is hidden. */
-  .conn{display:none!important}
+  /* Connection now lives in pillar 1, so the old duplicate handshake strip and
+     G2→G3 prerequisite band are hidden from the overview. Their facts remain in
+     the stage/source views. */
+  .conn,
+  .handoffStrip{display:none!important}
 
   .askPanel{
     border-radius:8px!important;
