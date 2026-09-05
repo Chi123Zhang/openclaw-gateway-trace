@@ -1,0 +1,442 @@
+/* Six-pillar overview for teacher review.
+ * Presentation only: no trace values, source mappings, stage results, or runtime
+ * evidence are changed. The main page gives a clean high-level story; clicking a
+ * pillar opens the existing module panel, and clicking a G-stage opens the existing
+ * detailed inspector.
+ */
+
+@media (min-width:1041px){
+  .layout{
+    grid-template-columns:minmax(0,1fr)!important;
+    max-width:none!important;
+    padding:8px 12px 10px!important;
+  }
+  .sidebar{display:none!important}
+
+  /* Connection now lives in pillar 1, so the old duplicate handshake strip is hidden. */
+  .conn{display:none!important}
+
+  .askPanel{
+    border-radius:8px!important;
+    padding:7px 10px!important;
+  }
+  .askPanel::before{display:none!important}
+  .askPanel .askHead{padding-left:0!important}
+  .askHead .sectionTitle{font-size:12px!important}
+  #promptInput{height:32px!important;min-height:32px!important}
+
+  .query{
+    min-height:29px!important;
+    padding:5px 9px!important;
+    border-radius:7px!important;
+  }
+
+  .pipeline{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    padding:9px 10px 8px!important;
+    border-radius:9px!important;
+    overflow:hidden!important;
+  }
+  .pipeline::before{display:none!important}
+  .pipeline>.kicker,
+  .pipeline>.sectionTitle{padding-left:0!important}
+  .pipeline>.sectionTitle{
+    font-size:13px!important;
+    margin-top:2px!important;
+  }
+  .archBand{display:none!important}
+
+  .moduleWrap{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    margin-top:8px!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+  .moduleFlowRow{
+    display:grid!important;
+    grid-template-columns:
+      minmax(0,1fr) 24px
+      minmax(0,1fr) 24px
+      minmax(0,1fr) 24px
+      minmax(0,1fr) 24px
+      minmax(0,1fr) 24px
+      minmax(0,1fr)!important;
+    gap:0!important;
+    align-items:stretch!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:245px!important;
+  }
+
+  /* The six vertical pillars. */
+  .moduleFlowRow>.module{
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:245px!important;
+    padding:12px 10px 10px!important;
+    border:1px solid #2d4252!important;
+    border-radius:10px!important;
+    background:linear-gradient(180deg,#101a22 0%,#0d151b 100%)!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+    cursor:pointer!important;
+    transition:border-color .12s ease,background .12s ease,transform .12s ease!important;
+  }
+  .moduleFlowRow>.module:hover{
+    border-color:#4e7593!important;
+    background:linear-gradient(180deg,#122332 0%,#0f1a22 100%)!important;
+    transform:translateY(-2px)!important;
+  }
+  .moduleFlowRow>.module.selected,
+  .moduleFlowRow>.module.running,
+  .moduleFlowRow>.module.modulePanelInspecting{
+    border-color:#4d9de0!important;
+    background:linear-gradient(180deg,#132b40 0%,#0f1d29 100%)!important;
+    box-shadow:inset 0 0 0 1px rgba(88,166,255,.12)!important;
+  }
+  .moduleFlowRow>.module[data-id="M3"]{
+    border-color:#5c3c43!important;
+  }
+  .moduleFlowRow>.module[data-id="M3"]:hover,
+  .moduleFlowRow>.module[data-id="M3"].selected,
+  .moduleFlowRow>.module[data-id="M3"].running{
+    border-color:#d25d67!important;
+  }
+
+  /* Number circles: presentation sequence only; technical IDs remain visible below. */
+  .moduleFlowRow>.module::before{
+    display:grid!important;
+    place-items:center!important;
+    width:34px!important;
+    height:34px!important;
+    margin:0 auto 8px!important;
+    border:1px solid #3d6d93!important;
+    border-radius:50%!important;
+    background:#10253a!important;
+    color:#b9dcff!important;
+    font:800 13px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+    box-shadow:none!important;
+  }
+  .moduleFlowRow>.module[data-id="CONN"]::before{content:"1"}
+  .moduleFlowRow>.module[data-id="M1"]::before{content:"2"}
+  .moduleFlowRow>.module[data-id="M2"]::before{content:"3"}
+  .moduleFlowRow>.module[data-id="M3"]::before{content:"4";border-color:#7a474d!important;background:#26171a!important;color:#ffb0b4!important}
+  .moduleFlowRow>.module[data-id="M4"]::before{content:"5"}
+  .moduleFlowRow>.module[data-id="M5"]::before{content:"6"}
+
+  .moduleFlowRow>.module>.mid{
+    position:absolute!important;
+    top:9px!important;
+    left:9px!important;
+    color:#6e7e89!important;
+    font-size:6px!important;
+    letter-spacing:.06em!important;
+  }
+  .moduleFlowRow>.module>h3{
+    margin:0!important;
+    min-height:30px!important;
+    color:#edf3f7!important;
+    font-size:11px!important;
+    line-height:1.25!important;
+    font-weight:750!important;
+    text-align:center!important;
+  }
+  .moduleFlowRow>.module>p{
+    margin:5px 0 0!important;
+    min-height:30px!important;
+    color:#8495a1!important;
+    font-size:7px!important;
+    line-height:1.35!important;
+    text-align:center!important;
+    display:block!important;
+    overflow:visible!important;
+  }
+  .moduleFlowRow>.module>.arch{display:none!important}
+
+  .moduleMiniStages{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:5px!important;
+    margin:10px 0 8px!important;
+    padding:8px!important;
+    border:1px solid #223746!important;
+    border-radius:7px!important;
+    background:#0b1318!important;
+  }
+  .moduleMiniStage{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:27px minmax(0,1fr)!important;
+    gap:6px!important;
+    align-items:center!important;
+    min-height:23px!important;
+    color:#aebbc4!important;
+    font-size:7px!important;
+    line-height:1.15!important;
+  }
+  .moduleMiniStage::before{
+    content:""!important;
+    position:absolute!important;
+    left:-1px!important;
+    top:50%!important;
+    width:5px!important;
+    height:5px!important;
+    border:1px solid #4e7898!important;
+    border-radius:50%!important;
+    background:#10202c!important;
+    transform:translateY(-50%)!important;
+  }
+  .moduleMiniStageId{
+    padding-left:9px!important;
+    color:#7baed5!important;
+    font:750 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  }
+  .moduleMiniStageTitle{
+    min-width:0!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    color:#b7c2c9!important;
+  }
+
+  .moduleFlowRow>.module>.mresult{
+    position:static!important;
+    display:inline-flex!important;
+    align-self:center!important;
+    width:auto!important;
+    max-width:100%!important;
+    margin-top:auto!important;
+    padding:3px 8px!important;
+    border:1px solid #315b78!important;
+    border-radius:999px!important;
+    background:#102233!important;
+    color:#9bcaff!important;
+    font-size:7px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .moduleFlowRow>.module[data-id="M3"]>.mresult{
+    border-color:#6d4247!important;
+    background:#231619!important;
+    color:#ff9fa4!important;
+  }
+  .moduleOpenHint{
+    display:block!important;
+    margin-top:8px!important;
+    padding-top:7px!important;
+    border-top:1px solid #21313c!important;
+    color:#79add2!important;
+    font-size:7px!important;
+    font-weight:700!important;
+    text-align:center!important;
+  }
+
+  /* Main overview connectors: only direction is shown. Detailed semantics stay in the panel/source pages. */
+  .moduleFlowRow>.moduleConnector{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-width:0!important;
+    padding:0 3px!important;
+  }
+  .moduleConnectorType,
+  .moduleConnectorLabel,
+  .moduleConnectorReturn,
+  .moduleConnectorReturnLabel,
+  .moduleConnectorProof{display:none!important}
+  .moduleConnectorForward{
+    display:flex!important;
+    width:100%!important;
+    align-items:center!important;
+  }
+  .moduleConnectorLine{
+    display:block!important;
+    flex:1 1 auto!important;
+    height:1px!important;
+    background:#38586d!important;
+  }
+  .moduleConnectorArrow{
+    color:#66a7d5!important;
+    font-size:13px!important;
+    line-height:1!important;
+  }
+
+  /* The inline duplicate subflow is removed: click a pillar to see its flow in the panel. */
+  .expand{display:none!important}
+
+  /* Agent handoff remains, but as a quiet single-line footer. */
+  .pipeline .boundary{
+    flex:0 0 auto!important;
+    min-height:48px!important;
+    margin-top:8px!important;
+    padding:6px 8px!important;
+    border:1px solid #28465b!important;
+    border-radius:7px!important;
+    background:#0c171f!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child{
+    grid-template-columns:125px repeat(5,minmax(76px,1fr))!important;
+    gap:5px!important;
+  }
+  .pipeline .boundaryGrid>.boundaryBox:last-child>strong{font-size:8px!important}
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div{padding:4px 6px!important}
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div>span{font-size:5px!important}
+  .pipeline .boundaryGrid>.boundaryBox:last-child>div>code{font-size:7px!important}
+
+  .output{
+    min-height:28px!important;
+    max-height:28px!important;
+    border-radius:7px!important;
+  }
+
+  /* ---------- Module flow panel ---------- */
+  .modulePanelBackdrop{
+    background:rgba(3,8,12,.68)!important;
+    backdrop-filter:blur(3px)!important;
+  }
+  .modulePanel{
+    width:min(980px,calc(100vw - 44px))!important;
+    max-height:min(74vh,700px)!important;
+    border:1px solid #334a5a!important;
+    border-radius:10px!important;
+    background:#0d1419!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.45)!important;
+  }
+  .modulePanelHeader{
+    padding:13px 16px 11px!important;
+    border-bottom-color:#263640!important;
+    background:#0d1419!important;
+  }
+  .modulePanelKicker{font-size:7px!important;color:#71808b!important}
+  .modulePanelTitle{font-size:17px!important;letter-spacing:-.01em!important}
+  .modulePanelBody{padding:13px 16px 15px!important}
+  .modulePanelIntro{
+    grid-template-columns:minmax(0,1fr) 130px!important;
+    gap:8px!important;
+  }
+  .modulePanelPurpose,
+  .modulePanelStatus{
+    padding:9px 10px!important;
+    border-color:#293b47!important;
+    border-radius:7px!important;
+    background:#10181e!important;
+  }
+  .modulePanelPurpose p{
+    font-size:10px!important;
+    line-height:1.4!important;
+  }
+  .modulePanelArch{display:none!important}
+  .modulePanelStatus strong{font-size:11px!important}
+  .modulePanelSectionTitle{
+    margin:13px 0 8px!important;
+    color:#8795a0!important;
+    font-size:7px!important;
+    letter-spacing:.08em!important;
+  }
+
+  .modulePanelStages{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:repeat(auto-fit,minmax(145px,1fr))!important;
+    gap:30px!important;
+    align-items:stretch!important;
+  }
+  .modulePanelStage{
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    min-width:0!important;
+    min-height:145px!important;
+    padding:13px 12px 11px!important;
+    border:1px solid #304655!important;
+    border-radius:8px!important;
+    background:#101920!important;
+    text-align:left!important;
+  }
+  .modulePanelStage:hover{
+    border-color:#4d83a8!important;
+    background:#122331!important;
+  }
+  .modulePanelStage:not(:last-child)::after{
+    content:"→"!important;
+    position:absolute!important;
+    right:-22px!important;
+    top:50%!important;
+    transform:translateY(-50%)!important;
+    color:#66a7d5!important;
+    font:800 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+    pointer-events:none!important;
+  }
+  .modulePanelStageId{
+    display:grid!important;
+    place-items:center!important;
+    width:34px!important;
+    height:34px!important;
+    margin-bottom:10px!important;
+    border:1px solid #467697!important;
+    border-radius:50%!important;
+    background:#102638!important;
+    color:#b7dcfa!important;
+    font-size:9px!important;
+  }
+  .modulePanelStageMain{display:block!important;width:100%!important}
+  .modulePanelStageTitle{
+    display:block!important;
+    min-height:28px!important;
+    color:#edf2f5!important;
+    font-size:10px!important;
+    font-weight:730!important;
+    line-height:1.3!important;
+    white-space:normal!important;
+    overflow:visible!important;
+  }
+  .modulePanelStageNote{
+    display:-webkit-box!important;
+    margin-top:6px!important;
+    color:#81919c!important;
+    font-size:7px!important;
+    line-height:1.35!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    -webkit-line-clamp:3!important;
+    -webkit-box-orient:vertical!important;
+  }
+  .modulePanelStageResult{
+    display:inline-flex!important;
+    margin-top:auto!important;
+    padding:3px 7px!important;
+    border:1px solid #315b78!important;
+    border-radius:999px!important;
+    background:#102233!important;
+    color:#9bcaff!important;
+    font-size:7px!important;
+    max-width:100%!important;
+  }
+  .modulePanelHint{
+    margin-top:10px!important;
+    padding-top:9px!important;
+    border-top:1px solid #25343d!important;
+    color:#758691!important;
+    font-size:7px!important;
+  }
+}
+
+@media (max-width:1040px){
+  .moduleMiniStages{display:none}
+}
+
+@media (max-width:760px){
+  .modulePanelStages{
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+  .modulePanelStage:not(:last-child)::after{display:none!important}
+}
