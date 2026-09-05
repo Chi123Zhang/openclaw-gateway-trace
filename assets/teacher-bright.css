@@ -418,6 +418,7 @@
 
   .moduleMiniStage.currentG{
     z-index:4!important;
+    grid-template-columns:27px minmax(0,1fr) auto!important;
     min-height:31px!important;
     transform:scale(1.07)!important;
     border-color:#d8b44f!important;
