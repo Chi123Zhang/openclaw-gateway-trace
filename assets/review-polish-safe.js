@@ -30,6 +30,69 @@
     }
   }
 
+  function decorateModuleColumns() {
+    const root = document.getElementById("moduleRow");
+    if (!root) return;
+
+    root.querySelectorAll(":scope > .module[data-id]").forEach(node => {
+      const id = node.dataset.id || "";
+      const module = getModule(id);
+      if (!module) return;
+
+      let list = node.querySelector(":scope > .moduleMiniStages");
+      if (!list) {
+        list = document.createElement("div");
+        list.className = "moduleMiniStages";
+        const result = node.querySelector(":scope > .mresult");
+        if (result) node.insertBefore(list, result);
+        else node.append(list);
+      }
+
+      list.replaceChildren();
+      (module.stages || []).forEach(stageId => {
+        const stage = getStage(stageId);
+        const row = document.createElement("div");
+        row.className = "moduleMiniStage";
+
+        const sid = document.createElement("span");
+        sid.className = "moduleMiniStageId";
+        sid.textContent = stageId;
+
+        const title = document.createElement("span");
+        title.className = "moduleMiniStageTitle";
+        title.textContent = stage?.short || stage?.title || stageId;
+
+        row.append(sid, title);
+        list.append(row);
+      });
+
+      let hint = node.querySelector(":scope > .moduleOpenHint");
+      if (!hint) {
+        hint = document.createElement("span");
+        hint.className = "moduleOpenHint";
+        hint.textContent = "View flow →";
+        node.append(hint);
+      }
+    });
+  }
+
+  function installModuleColumnDecorator() {
+    if (document.documentElement.dataset.moduleColumnDecoratorBound === "1") {
+      decorateModuleColumns();
+      return;
+    }
+    if (typeof renderModules !== "function") return;
+
+    const previous = renderModules;
+    renderModules = function renderModulesWithColumnDetails(...args) {
+      const result = previous(...args);
+      decorateModuleColumns();
+      return result;
+    };
+    document.documentElement.dataset.moduleColumnDecoratorBound = "1";
+    decorateModuleColumns();
+  }
+
   let lastModuleTrigger = null;
 
   function buildModulePanel() {
@@ -121,7 +184,7 @@
 
     if (kicker) kicker.textContent = `${id} · Module`;
     if (title) title.textContent = module.title || id;
-    if (purpose) purpose.textContent = MODULE_EXPLAIN[id] || module.subtitle || "—";
+    if (purpose) purpose.textContent = module.subtitle || MODULE_EXPLAIN[id] || "—";
     if (arch) arch.textContent = module.arch || "—";
     if (result) result.textContent = module.result || "—";
     if (count) count.textContent = `${stageIds.length} stages`;
@@ -208,6 +271,7 @@
   }
 
   function boot(attempt = 0) {
+    installModuleColumnDecorator();
     bindModuleInteractions();
     buildModulePanel();
     keepIoComplete();
