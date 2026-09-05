@@ -5,6 +5,7 @@
    */
 
   const MODULE_EXPLAIN = {
+    CONN: "Authenticates the client connection and makes the Gateway ready before chat.send enters the request path.",
     M1: "Checks whether the request may enter the Gateway: method permission, request shape, and message normalization.",
     M2: "Resolves which Session and Agent own this request before execution continues.",
     M3: "Applies send policy, duplicate protection, and runtime admission before work is allowed to run.",
@@ -14,6 +15,17 @@
 
   function getModule(id) {
     try {
+      if (id === "CONN") {
+        const g2 = getStage("G2");
+        return {
+          id: "CONN",
+          title: "Connection & Handshake",
+          subtitle: MODULE_EXPLAIN.CONN,
+          stages: ["G0", "G1", "G2"],
+          result: g2?.result || "—",
+          arch: "Gateway Connection"
+        };
+      }
       if (typeof mods !== "undefined" && mods?.[id]) return mods[id];
       if (typeof DATA !== "undefined" && Array.isArray(DATA?.modules)) {
         return DATA.modules.find(module => module.id === id) || null;
@@ -33,6 +45,36 @@
   function decorateModuleColumns() {
     const root = document.getElementById("moduleRow");
     if (!root) return;
+
+    // Presentation-only synthetic pillar for G0-G2. It reuses the same current-run
+    // stage objects; it does not create or alter trace data.
+    let connection = root.querySelector(':scope > .module[data-id="CONN"]');
+    if (!connection) {
+      connection = document.createElement("div");
+      connection.className = "module pillarConnection";
+      connection.dataset.id = "CONN";
+      connection.innerHTML = [
+        '<div class="mid">CONN</div>',
+        '<h3>Connection & Handshake</h3>',
+        '<p>Authenticate the client and make the Gateway ready.</p>',
+        '<div class="arch">Gateway Connection</div>',
+        '<div class="mresult"></div>'
+      ].join("");
+      root.prepend(connection);
+
+      const connector = document.createElement("div");
+      connector.className = "moduleConnector pillarConnectionConnector sequence";
+      connector.setAttribute("aria-hidden", "true");
+      connector.innerHTML = '<div class="moduleConnectorForward"><span class="moduleConnectorLine"></span><span class="moduleConnectorArrow">→</span></div>';
+      connection.insertAdjacentElement("afterend", connector);
+    }
+
+    const g2 = getStage("G2");
+    const connectionResult = connection.querySelector(":scope > .mresult");
+    if (connectionResult) connectionResult.textContent = g2?.result || "—";
+    if (["G0","G1","G2"].every(id => {
+      try { return typeof completed !== "undefined" && completed.has(id); } catch { return false; }
+    })) connection.classList.add("done");
 
     root.querySelectorAll(":scope > .module[data-id]").forEach(node => {
       const id = node.dataset.id || "";
@@ -130,9 +172,9 @@
             <small id="modulePanelCount">—</small>
           </div>
         </div>
-        <div class="modulePanelSectionTitle">Stages in this module</div>
+        <div class="modulePanelSectionTitle">Execution flow</div>
         <div class="modulePanelStages" id="modulePanelStages"></div>
-        <div class="modulePanelHint">Select a stage to inspect it. The main overview stays in place.</div>
+        <div class="modulePanelHint">Follow the flow from left to right. Select any stage for Input / Output / Flow / Steps / Source.</div>
       </div>`;
 
     document.body.append(backdrop, panel);
@@ -222,7 +264,7 @@
 
     document.addEventListener("click", event => {
       const node = event.target.closest?.(".module[data-id]");
-      if (!node || !/^M[1-5]$/.test(node.dataset.id || "")) return;
+      if (!node || !/^(?:CONN|M[1-5])$/.test(node.dataset.id || "")) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       openModulePanel(node.dataset.id, node);
@@ -235,7 +277,7 @@
         return;
       }
       const node = event.target.closest?.(".module[data-id]");
-      if (!node || !/^M[1-5]$/.test(node.dataset.id || "")) return;
+      if (!node || !/^(?:CONN|M[1-5])$/.test(node.dataset.id || "")) return;
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       event.stopImmediatePropagation();
