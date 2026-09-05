@@ -13,6 +13,15 @@
     M5: "Runs reply dispatch, re-checks the downstream Agent, and selects the reply resolver that enters deeper Agent Runtime."
   };
 
+  const MODULE_CARD_SUBTITLE = {
+    CONN: "Authenticate connection",
+    M1: "Validate the request",
+    M2: "Resolve Session & Agent",
+    M3: "Policy & admission",
+    M4: "Build runtime context",
+    M5: "Dispatch to Agent Runtime"
+  };
+
   function getModule(id) {
     try {
       if (id === "CONN") {
@@ -20,7 +29,7 @@
         return {
           id: "CONN",
           title: "Connection & Handshake",
-          subtitle: MODULE_EXPLAIN.CONN,
+          subtitle: "Authenticate the connection and make the Gateway ready.",
           stages: ["G0", "G1", "G2"],
           result: g2?.result || "—",
           arch: "Gateway Connection"
@@ -42,9 +51,20 @@
     }
   }
 
+  function polishOverviewLabels() {
+    const pipeline = document.querySelector(".pipeline");
+    if (!pipeline) return;
+    const kicker = pipeline.querySelector(":scope > .kicker");
+    const title = pipeline.querySelector(":scope > .sectionTitle");
+    if (kicker) kicker.textContent = "TRACE OVERVIEW";
+    if (title) title.textContent = "OpenClaw request flow";
+  }
+
   function decorateModuleColumns() {
     const root = document.getElementById("moduleRow");
     if (!root) return;
+
+    polishOverviewLabels();
 
     // Presentation-only synthetic pillar for G0-G2. It reuses the same current-run
     // stage objects; it does not create or alter trace data.
@@ -80,6 +100,9 @@
       const id = node.dataset.id || "";
       const module = getModule(id);
       if (!module) return;
+
+      const subtitle = node.querySelector(":scope > p");
+      if (subtitle && MODULE_CARD_SUBTITLE[id]) subtitle.textContent = MODULE_CARD_SUBTITLE[id];
 
       let list = node.querySelector(":scope > .moduleMiniStages");
       if (!list) {
