@@ -51,6 +51,16 @@
     }
   }
 
+  function currentStageLabel() {
+    try {
+      const stage = getStage(activeStage);
+      if (!stage || !/^G\\d+$/.test(String(activeStage || ""))) return "";
+      return `${activeStage} · ${stage.short || stage.title || activeStage}`;
+    } catch {
+      return "";
+    }
+  }
+
   function polishOverviewLabels() {
     const pipeline = document.querySelector(".pipeline");
     if (!pipeline) return;
@@ -58,6 +68,18 @@
     const title = pipeline.querySelector(":scope > .sectionTitle");
     if (kicker) kicker.textContent = "TRACE OVERVIEW";
     if (title) title.textContent = "OpenClaw request flow";
+
+    let indicator = pipeline.querySelector(":scope > .currentStageIndicator");
+    if (!indicator) {
+      indicator = document.createElement("div");
+      indicator.className = "currentStageIndicator";
+      indicator.innerHTML = '<span class="currentStageIndicatorLabel">Current stage</span><strong></strong>';
+      title?.insertAdjacentElement("afterend", indicator);
+    }
+    const value = currentStageLabel();
+    indicator.hidden = !value;
+    const strong = indicator.querySelector("strong");
+    if (strong) strong.textContent = value || "—";
   }
 
   function decorateModuleColumns() {
@@ -128,6 +150,11 @@
         title.textContent = stage?.short || stage?.title || stageId;
 
         row.append(sid, title);
+        row.dataset.stageId = stageId;
+        row.classList.toggle("currentG", stageId === activeStage);
+        try {
+          row.classList.toggle("completedG", typeof completed !== "undefined" && completed.has(stageId));
+        } catch {}
         list.append(row);
       });
 
@@ -141,9 +168,18 @@
     });
   }
 
+  function syncOpenModuleCurrentStage() {
+    const panel = document.getElementById("moduleInspectPanel");
+    if (!panel) return;
+    panel.querySelectorAll(".modulePanelStage[data-stage-id]").forEach(node => {
+      node.classList.toggle("currentG", node.dataset.stageId === activeStage);
+    });
+  }
+
   function installModuleColumnDecorator() {
     if (document.documentElement.dataset.moduleColumnDecoratorBound === "1") {
       decorateModuleColumns();
+      syncOpenModuleCurrentStage();
       return;
     }
     if (typeof renderModules !== "function") return;
@@ -156,6 +192,7 @@
     };
     document.documentElement.dataset.moduleColumnDecoratorBound = "1";
     decorateModuleColumns();
+    syncOpenModuleCurrentStage();
   }
 
   let lastModuleTrigger = null;
@@ -261,6 +298,8 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = "modulePanelStage";
+        button.dataset.stageId = stageId;
+        button.classList.toggle("currentG", stageId === activeStage);
         button.innerHTML = `
           <span class="modulePanelStageId"></span>
           <span class="modulePanelStageMain">
