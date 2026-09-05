@@ -188,6 +188,7 @@
     renderModules = function renderModulesWithColumnDetails(...args) {
       const result = previous(...args);
       decorateModuleColumns();
+      syncOpenModuleCurrentStage();
       return result;
     };
     document.documentElement.dataset.moduleColumnDecoratorBound = "1";
