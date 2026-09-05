@@ -51,6 +51,11 @@
     }
   }
 
+  function traceIsInProgress() {
+    const state = document.getElementById("requestState")?.textContent?.trim() || "";
+    return /^(?:STARTING|RUNNING|PAUSED)/i.test(state);
+  }
+
   function currentStageLabel() {
     try {
       const stage = getStage(activeStage);
@@ -76,7 +81,7 @@
       indicator.innerHTML = '<span class="currentStageIndicatorLabel">Current stage</span><strong></strong>';
       title?.insertAdjacentElement("afterend", indicator);
     }
-    const value = currentStageLabel();
+    const value = traceIsInProgress() ? currentStageLabel() : "";
     indicator.hidden = !value;
     const strong = indicator.querySelector("strong");
     if (strong) strong.textContent = value || "—";
@@ -151,7 +156,7 @@
 
         row.append(sid, title);
         row.dataset.stageId = stageId;
-        row.classList.toggle("currentG", stageId === activeStage);
+        row.classList.toggle("currentG", traceIsInProgress() && stageId === activeStage);
         try {
           row.classList.toggle("completedG", typeof completed !== "undefined" && completed.has(stageId));
         } catch {}
@@ -172,7 +177,7 @@
     const panel = document.getElementById("moduleInspectPanel");
     if (!panel) return;
     panel.querySelectorAll(".modulePanelStage[data-stage-id]").forEach(node => {
-      node.classList.toggle("currentG", node.dataset.stageId === activeStage);
+      node.classList.toggle("currentG", traceIsInProgress() && node.dataset.stageId === activeStage);
     });
   }
 
@@ -300,7 +305,7 @@
         button.type = "button";
         button.className = "modulePanelStage";
         button.dataset.stageId = stageId;
-        button.classList.toggle("currentG", stageId === activeStage);
+        button.classList.toggle("currentG", traceIsInProgress() && stageId === activeStage);
         button.innerHTML = `
           <span class="modulePanelStageId"></span>
           <span class="modulePanelStageMain">
