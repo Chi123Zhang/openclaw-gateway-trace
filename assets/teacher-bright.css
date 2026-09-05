@@ -365,3 +365,138 @@
     color:#aaa38e!important;
   }
 }
+
+
+/* ---------- Exact live G-stage focus ---------- */
+@media (min-width:1041px){
+  .pipeline{position:relative!important}
+
+  .currentStageIndicator{
+    position:absolute!important;
+    top:10px!important;
+    right:12px!important;
+    z-index:5!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:5px 9px!important;
+    border:1px solid #887243!important;
+    border-radius:999px!important;
+    background:#332f21!important;
+    box-shadow:0 4px 14px rgba(0,0,0,.12)!important;
+  }
+  .currentStageIndicator[hidden]{display:none!important}
+  .currentStageIndicatorLabel{
+    color:#b9ad89!important;
+    font-size:6px!important;
+    font-weight:850!important;
+    letter-spacing:.08em!important;
+    text-transform:uppercase!important;
+  }
+  .currentStageIndicator strong{
+    color:#ffe39a!important;
+    font-size:8px!important;
+    font-weight:900!important;
+    line-height:1!important;
+  }
+
+  .moduleMiniStage{
+    border:1px solid transparent!important;
+    border-radius:6px!important;
+    padding:3px 5px!important;
+    transition:
+      transform .12s ease,
+      background .12s ease,
+      border-color .12s ease,
+      box-shadow .12s ease!important;
+    transform-origin:center!important;
+  }
+
+  .moduleMiniStage.completedG:not(.currentG){
+    opacity:.78!important;
+  }
+
+  .moduleMiniStage.currentG{
+    z-index:4!important;
+    min-height:31px!important;
+    transform:scale(1.07)!important;
+    border-color:#d8b44f!important;
+    background:#463b20!important;
+    box-shadow:
+      0 0 0 2px rgba(240,195,93,.10),
+      0 6px 16px rgba(0,0,0,.16)!important;
+    opacity:1!important;
+  }
+
+  .moduleMiniStage.currentG::before{
+    width:8px!important;
+    height:8px!important;
+    border:2px solid #ffd86a!important;
+    background:#ffd86a!important;
+    box-shadow:0 0 0 3px rgba(255,216,106,.12)!important;
+  }
+
+  .moduleMiniStage.currentG::after{
+    content:"NOW"!important;
+    margin-left:auto!important;
+    flex:0 0 auto!important;
+    padding:2px 5px!important;
+    border:1px solid #8c7440!important;
+    border-radius:999px!important;
+    background:#2f2b1d!important;
+    color:#ffe39a!important;
+    font:900 5px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+    letter-spacing:.06em!important;
+  }
+
+  .moduleMiniStage.currentG .moduleMiniStageId{
+    color:#ffe087!important;
+    font-size:8px!important;
+    font-weight:950!important;
+  }
+
+  .moduleMiniStage.currentG .moduleMiniStageTitle{
+    color:#fff9e9!important;
+    font-size:8px!important;
+    font-weight:900!important;
+  }
+
+  .modulePanelStage{
+    transition:
+      transform .12s ease,
+      border-color .12s ease,
+      background .12s ease,
+      box-shadow .12s ease!important;
+  }
+
+  .modulePanelStage.currentG{
+    z-index:3!important;
+    transform:scale(1.035)!important;
+    border-color:#d8b44f!important;
+    background:#334039!important;
+    box-shadow:
+      0 0 0 2px rgba(240,195,93,.10),
+      0 8px 20px rgba(0,0,0,.15)!important;
+  }
+
+  .modulePanelStage.currentG .modulePanelStageId{
+    width:40px!important;
+    height:40px!important;
+    border-color:#ffd769!important;
+    background:#44391e!important;
+    color:#ffe59e!important;
+    font-size:10px!important;
+  }
+
+  .modulePanelStage.currentG .modulePanelStageTitle{
+    color:#fff9e9!important;
+    font-size:12px!important;
+    font-weight:900!important;
+  }
+
+  .modulePanelStage.currentG .modulePanelStageResult{
+    border-color:#957b3f!important;
+    background:#3b321d!important;
+    color:#ffe39a!important;
+  }
+}
