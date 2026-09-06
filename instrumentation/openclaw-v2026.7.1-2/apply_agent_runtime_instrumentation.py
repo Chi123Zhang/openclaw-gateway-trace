@@ -190,8 +190,12 @@ def git_head(root: Path) -> str:
 
 def apply(root: Path) -> None:
     helper = root / HELPER_REL
-    if helper.exists() and "TRACECLAW_AGENT_RUNTIME_SCHEMA" in read(helper):
-        print("already present:", helper)
+    if helper.exists():
+        if read(helper) == HELPER_SOURCE:
+            print("already present:", helper)
+        else:
+            write(helper, HELPER_SOURCE)
+            print("updated:", helper)
     else:
         write(helper, HELPER_SOURCE)
         print("created:", helper)
