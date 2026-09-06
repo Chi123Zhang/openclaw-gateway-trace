@@ -20,9 +20,9 @@ The Gateway-level trace path is implemented and usable as a live research protot
 | Reuse current Session | Implemented |
 | Source-level stage detail and pseudocode | Implemented |
 | G14–G16 standalone runtime events | Not currently instrumented; shown only as verified source path |
-| Deeper Agent Runtime provider / model / tool events | Planned next step |
+| Deeper Agent Runtime provider / model / tool events | Implemented by the pinned v2026.7.1-2 instrumentation patch; requires applying it to the local OpenClaw source |
 
-The current viewer therefore stops its numbered Gateway model at **G18**. Provider, model, tool-call, tool-result, memory, and other deeper Agent Runtime details are intentionally not fabricated when they have not been observed.
+The numbered Gateway model still stops at **G18**. Post-G18 Agent Runtime evidence is stored separately under `agentRuntime`; it never becomes an artificial G19. Provider, model, tool-call, tool-result, lifecycle, and resolver-return facts appear only when the pinned runtime instrumentation directly observes them.
 
 ## What the viewer shows
 
@@ -96,10 +96,13 @@ Instrumented OpenClaw Gateway
 ws://127.0.0.1:18789
                  │
                  ├─ real Gateway execution
-                 └─ TraceClaw runtime JSONL
+                 ├─ G0–G18 TraceClaw events
+                 └─ post-G18 Agent Runtime events
                             │
                             ▼
-                  correlated G-stage events
+                  one correlated run record
+                 ├─ Gateway stages
+                 └─ agentRuntime
                             │
                             ▼
                     live browser playback
@@ -327,25 +330,30 @@ This limitation is explicit because G0–G2 are connection-level stages, not int
 ## Current limitations
 
 1. **G14–G16** currently do not emit standalone TraceClaw events. They are rendered only as verified source-path stages.
-2. **Provider, model, tools, tool calls, and tool results** belong to the deeper Agent Runtime and are not yet captured by the current Gateway instrumentation.
+2. **Post-G18 Agent Runtime events require the pinned local instrumentation patch.** Without applying/rebuilding that patch, provider/model/tools remain explicitly not captured.
 3. Connection-level event correlation is heuristic until an earlier shared connection/request correlation identifier is instrumented.
 4. The live viewer depends on a local OpenClaw + TraceClaw environment; the public GitHub Pages site alone cannot reproduce the local runtime.
 
-## Next step
+## Post-G18 Agent Runtime instrumentation
 
-The next instrumentation boundary is after G18, inside the deeper Reply / Agent Runtime. The intended extension is to capture runtime evidence for:
+The pinned patch and source map live in:
 
 ```text
-Agent Runtime start
-→ provider / model selection
-→ history / memory / skill context
-→ available tools
-→ tool_call / tool_result
-→ final model response
-→ replyResult back to G16
+instrumentation/openclaw-v2026.7.1-2/
 ```
 
-These events will remain outside the G0–G18 Gateway numbering rather than introducing an artificial G19.
+It records the actual runtime branch/provider/model, Agent lifecycle, tool start/result,
+final Agent reply, and the direct reply-resolver return boundary. The collector keeps
+these events outside G0–G18 in a separate `agentRuntime` object.
+
+Apply it with:
+
+```bash
+python3 instrumentation/openclaw-v2026.7.1-2/apply_agent_runtime_instrumentation.py \
+  --root /Users/mac/Desktop/openclaw-source-2026.7.1-2
+```
+
+Then rebuild/restart OpenClaw before the next live run.
 
 ## Public repository
 
