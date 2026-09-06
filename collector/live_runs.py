@@ -26,7 +26,7 @@ from fastapi import HTTPException
 
 from openclaw_client import OpenClawError, assistant_messages, wait_for_new_assistant_message
 from server import RunRequest, _build_trace, app, client, trace_log
-from trace_parser import TraceCursor, correlate_events
+from trace_parser import TraceCursor, correlate_events, is_agent_runtime_event
 
 
 _RUN_ARCHIVE_DIR = Path(
@@ -176,7 +176,9 @@ async def _execute(run: LiveRun) -> None:
         # before the final poll, a terminal run is still archived. Give the trace
         # writer a brief flush window, then capture the final correlated evidence.
         try:
-            await asyncio.sleep(0.1)
+            # Allow the JSONL writer to flush the terminal agent lifecycle and
+            # reply_resolver_returned records before archiving the run.
+            await asyncio.sleep(0.25)
             _scan_new_events(run)
             events = _correlated(run)
             trace = _build_trace(
@@ -213,7 +215,7 @@ def _correlated(run: LiveRun) -> list[dict[str, Any]]:
 def _archive_payload(run: LiveRun, *, trace: dict[str, Any], events: list[dict[str, Any]]) -> dict[str, Any]:
     """Build one self-contained, human-inspectable saved-run record."""
     return {
-        "schemaVersion": "traceclaw.saved-run.v1",
+        "schemaVersion": "traceclaw.saved-run.v2",
         "savedAt": datetime.now(timezone.utc).isoformat(),
         "startedAt": run.started_at_iso,
         "liveRunId": run.id,
@@ -227,8 +229,11 @@ def _archive_payload(run: LiveRun, *, trace: dict[str, Any], events: list[dict[s
         "agentWait": _compact_wait_result(run.wait_result),
         "assistantResponseObserved": bool(run.response),
         "trace": trace,
-        # Keep the correlated runtime evidence for later source/runtime audits.
+        # Keep all correlated evidence for later source/runtime audits.
         "runtimeEvents": events,
+        "agentRuntimeEvents": [
+            event for event in events if is_agent_runtime_event(event)
+        ],
     }
 
 
