@@ -21,7 +21,7 @@ EXPECTED_COMMIT = "0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c"
 HELPER_REL = Path("src/infra/traceclaw-agent-runtime.ts")
 
 
-HELPER_SOURCE = """import { appendFileSync } from "node:fs";
+HELPER_SOURCE = r"""import { appendFileSync } from "node:fs";
 
 const TRACECLAW_AGENT_RUNTIME_SCHEMA = "traceclaw.agent.runtime.v1";
 
