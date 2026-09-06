@@ -9,9 +9,9 @@ The GitHub Pages frontend is static. The collector runs on the same computer as 
 1. creates a fresh `runId` and Session key;
 2. calls the installed OpenClaw CLI with `gateway call chat.send`;
 3. waits for the assistant reply through `chat.history`;
-4. optionally reads the TraceClaw Gateway JSONL log for matching G0–G18 runtime events;
-5. correlates request stages by `runId` / `sessionKey`;
-6. returns a trace payload that the existing dashboard can render.
+4. reads the TraceClaw JSONL log for matching G0–G18 Gateway events and optional post-G18 Agent Runtime events;
+5. correlates both event families by `runId` / `sessionKey`;
+6. returns one trace payload containing numbered Gateway stages plus a separate `agentRuntime` object.
 
 Missing runtime observations are **not fabricated**. If a G stage has no standalone event, the collector leaves it as source-only / not separately observed.
 
@@ -45,10 +45,11 @@ Only set these when your normal OpenClaw CLI configuration does not already reso
 
 ## 2. Point the collector at the TraceClaw JSONL file
 
-For the full G0–G18 runtime visualization, set `TRACECLAW_LOG_PATH` to the JSONL file that contains events such as:
+For the full G0–G18 visualization and post-G18 Agent Runtime capture, set `TRACECLAW_LOG_PATH` to the shared JSONL file that contains events such as:
 
 ```json
 {"schema":"traceclaw.gateway.runtime.v1","stage":"G17","event":"effective_agent_reresolved", ...}
+{"schema":"traceclaw.agent.runtime.v1","scope":"agent-runtime","event":"agent_run_started", ...}
 ```
 
 Example:
@@ -59,7 +60,10 @@ export TRACECLAW_LOG_PATH='/absolute/path/to/your/gateway-runtime.jsonl'
 
 Do not guess this path. Use the same runtime log file that produced the existing Cake trace.
 
-If this variable is omitted, OpenClaw can still answer the question, but the new trace will only contain request-known/source fields and will report that no G-stage runtime events were captured.
+If this variable is omitted, OpenClaw can still answer the question, but the trace will contain only request-known/source fields and will report that runtime events were not captured.
+
+The post-G18 events require the pinned instrumentation under
+`instrumentation/openclaw-v2026.7.1-2/` to be applied and OpenClaw rebuilt.
 
 ## 3. Start the collector
 
@@ -161,4 +165,18 @@ A later deployment step can put the collector behind an HTTPS tunnel/service so 
 
 ## Current boundary
 
-The collector currently relies on the installed OpenClaw CLI and an existing TraceClaw runtime JSONL instrumentation stream. It does not patch or rewrite OpenClaw source code at runtime.
+The collector never rewrites OpenClaw at runtime. The repository includes a separate,
+explicit patcher for the fixed v2026.7.1-2 source checkout. Once that patch is applied
+and OpenClaw is rebuilt, the same JSONL stream contains both Gateway and Agent Runtime
+evidence.
+
+The collector normalizes post-G18 evidence under:
+
+```text
+trace.agentRuntime
+```
+
+including final Agent, resolver, runner, provider/model, Agent lifecycle, tool calls and
+sanitized tool results, direct Agent reply when observed, and the direct return boundary
+back to G16. The final user-visible answer remains independently observed through
+`agent.wait → chat.history`.
