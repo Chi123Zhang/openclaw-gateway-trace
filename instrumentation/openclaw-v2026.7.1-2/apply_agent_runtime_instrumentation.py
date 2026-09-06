@@ -124,7 +124,7 @@ export function mirrorTraceClawAgentEvent(event: AgentBusEventLike): void {
   if (event.stream === "lifecycle") {
     if (phase === "start") {
       traceEvent = "agent_run_started";
-    } else if (phase === "end" || phase === "error" || phase === "finishing") {
+    } else if (phase === "end" || phase === "error") {
       traceEvent = "agent_run_ended";
     } else {
       return;
