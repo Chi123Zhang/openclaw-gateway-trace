@@ -22,6 +22,8 @@ HELPER_REL = Path("src/infra/traceclaw-agent-runtime.ts")
 
 
 HELPER_SOURCE = r"""import { appendFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 const TRACECLAW_AGENT_RUNTIME_SCHEMA = "traceclaw.agent.runtime.v1";
 
@@ -57,7 +59,11 @@ function tracePath(): string {
   return (
     process.env.TRACECLAW_LOG_PATH?.trim() ||
     process.env.TRACECLAW_GATEWAY_TRACE_FILE?.trim() ||
-    ""
+    // The macOS Gateway normally runs under launchd, which does not inherit
+    // shell-only exports from start_live.sh. Keep TraceClaw's historical default
+    // path as the final fallback so post-G18 events land in the same JSONL file
+    // even when the Gateway was restarted as a LaunchAgent.
+    join(homedir(), "Desktop", "traceclaw-cake3-gateway.jsonl")
   );
 }
 
