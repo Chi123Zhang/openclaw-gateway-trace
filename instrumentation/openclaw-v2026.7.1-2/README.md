@@ -145,3 +145,18 @@ A new run contains a separate top-level object:
 
 No missing provider/model/tool/reply fields are invented. If the instrumentation
 does not observe a boundary, the viewer keeps it absent / not captured.
+
+
+## Verify a fresh run
+
+After rebuilding/restarting OpenClaw and completing a **new** trace:
+
+```bash
+cd /Users/mac/Desktop/openclaw-source-2026.7.1-2/openclaw-gateway-trace
+python3 scripts/verify_agent_runtime_capture.py
+```
+
+The verifier reads the newest saved run and reports the requested boundaries:
+final Agent, resolver, runner, provider/model, Agent start/end, tool usage/results,
+final reply evidence, and the direct return to G16. Old saved runs created before
+the instrumentation was applied will not acquire these events retroactively.
