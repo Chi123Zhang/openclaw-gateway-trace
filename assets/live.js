@@ -281,50 +281,98 @@
     const boundary = document.querySelector(".pipeline .boundary");
     if (!boundary) return;
 
-    const inReplyDispatch = activeModule === "M5";
-    boundary.hidden = !inReplyDispatch;
-    if (!inReplyDispatch) return;
-
     const meta = ACTIVE_CASE?.meta || {};
+    const runtime = ACTIVE_CASE?.agentRuntime || fullCaseSnapshot?.agentRuntime || {};
     const g18Revealed = revealedRuntimeStages.has("G18");
+    const runtimeObserved = runtime?.observed === true;
+    const runTerminal = backendComplete || document.getElementById("requestState")?.textContent === "FINISHED";
+
+    // This is a post-G18 layer, not a detail that depends on whichever Gateway
+    // module happens to be selected. Once G18 is reached (or the run terminates),
+    // keep it visible so the user can follow Gateway → Agent Runtime.
+    boundary.hidden = !(g18Revealed || runtimeObserved || runTerminal);
+    if (boundary.hidden) return;
+
+    const resolverSource = runtime?.resolverSource || meta.resolverSource || "";
+    const resolver = runtime?.resolver || meta.resolver || "";
     const resolverText = document.getElementById("resolverBoundaryText");
     if (resolverText) {
-      resolverText.textContent = g18Revealed
-        ? `resolver: ${meta.resolverSource || meta.resolver || "observed"}`
-        : "resolver: not observed yet";
+      resolverText.textContent = (g18Revealed || runtimeObserved)
+        ? `resolver: ${resolverSource || resolver || "observed"}`
+        : "resolver: not captured";
     }
 
     const boxes = boundary.querySelectorAll(".boundaryBox");
     const runtimeBox = boxes[1];
-    if (runtimeBox) {
-      runtimeBox.textContent = "";
-      const title = document.createElement("strong");
-      title.textContent = "Deeper Reply / Agent Runtime · current run";
-      runtimeBox.append(title);
+    if (!runtimeBox) return;
 
-      const rows = [
-        ["Agent", stageNumber(activeStage) >= 17 ? (meta.downstreamAgent || meta.agent) : ""],
-        ["Resolver", g18Revealed ? (meta.resolverSource || meta.resolver) : ""],
-        ["Provider", g18Revealed ? meta.provider : ""],
-        ["Model", g18Revealed ? meta.model : ""],
-        ["Tools", g18Revealed ? meta.tools : ""]
-      ];
+    runtimeBox.textContent = "";
+    runtimeBox.classList.add("agentRuntimeObservedPanel");
+    runtimeBox.classList.toggle("agentRuntimeMissing", !runtimeObserved);
 
-      rows.forEach(([label, value]) => {
-        const row = document.createElement("div");
-        row.style.display = "grid";
-        row.style.gridTemplateColumns = "100px 1fr";
-        row.style.gap = "9px";
-        row.style.marginTop = "5px";
-        const key = document.createElement("span");
-        key.textContent = label;
-        key.style.color = "var(--muted)";
-        const val = document.createElement("code");
-        val.textContent = value || "not observed yet";
-        val.style.color = value ? "var(--cyan)" : "var(--muted)";
-        row.append(key, val);
-        runtimeBox.append(row);
+    const title = document.createElement("strong");
+    title.textContent = "Deeper Agent Run";
+    runtimeBox.append(title);
+
+    const status = document.createElement("span");
+    status.className = "agentRuntimeStatus";
+    if (runtimeObserved) {
+      status.textContent = runtime.runEnded ? "CAPTURED · COMPLETE" : "CAPTURED · RUNNING";
+      status.dataset.tone = runtime.runEnded ? "complete" : "running";
+    } else {
+      status.textContent = runTerminal ? "NOT CAPTURED" : "WAITING";
+      status.dataset.tone = "missing";
+    }
+    runtimeBox.append(status);
+
+    const toolNames = Array.isArray(runtime?.tools)
+      ? runtime.tools.map(tool => tool?.name).filter(Boolean)
+      : [];
+    const toolText = runtimeObserved
+      ? (runtime.toolCalled
+          ? (toolNames.join(", ") || `${runtime.toolCount || 0} tool call(s)`)
+          : (runtime.runEnded ? "none" : "not observed yet"))
+      : "";
+
+    const rows = [
+      ["Agent", runtime.finalAgent || meta.downstreamAgent || meta.downstreamAgentFinal || ""],
+      ["Resolver", resolverSource || resolver],
+      ["Runner", runtime.runner || ""],
+      ["Provider", runtime.provider || meta.provider || ""],
+      ["Model", runtime.model || meta.model || ""],
+      ["Tools", toolText || meta.tools || ""],
+      ["Run", runtimeObserved
+        ? `${runtime.runStarted ? "started" : "start not captured"} → ${runtime.runEnded ? (runtime.terminalPhase || "ended") : "running"}`
+        : ""],
+      ["Return", runtime.returnToG16Observed ? "replyResult → G16 observed" : ""]
+    ];
+
+    rows.forEach(([label, value]) => {
+      const row = document.createElement("div");
+      row.className = "agentRuntimeFact";
+      const key = document.createElement("span");
+      key.textContent = label;
+      const val = document.createElement("code");
+      val.textContent = value || (runTerminal ? "not captured" : "waiting");
+      val.classList.toggle("agentRuntimeFactMissing", !value);
+      row.append(key, val);
+      runtimeBox.append(row);
+    });
+
+    if (runtimeObserved && Array.isArray(runtime.tools) && runtime.tools.length) {
+      const toolStrip = document.createElement("div");
+      toolStrip.className = "agentRuntimeTools";
+      runtime.tools.forEach(tool => {
+        const chip = document.createElement("span");
+        const name = tool?.name || "tool";
+        const state = tool?.status || (tool?.resultObserved ? "completed" : "started");
+        chip.textContent = `${name} · ${state}`;
+        chip.title = tool?.result != null
+          ? JSON.stringify(tool.result)
+          : (tool?.toolErrorSummary || "");
+        toolStrip.append(chip);
       });
+      runtimeBox.append(toolStrip);
     }
   }
 
@@ -614,7 +662,16 @@
         message.textContent = `Visualization paused. Gateway is still collecting; ${playbackQueue.length} stage(s) queued.`;
       }
 
-      if (backendComplete) return;
+      if (backendComplete && (payload.archiveSaved || payload.archiveError)) {
+        // One final paint uses the post-flush snapshot returned by the collector.
+        fullCaseSnapshot = payload.trace || fullCaseSnapshot;
+        if (lastDisplayedStage && !visualPaused) {
+          paintSnapshot(fullCaseSnapshot, lastDisplayedStage);
+        } else {
+          renderRuntimeBoundary();
+        }
+        return;
+      }
       await sleep(100);
     }
   }
