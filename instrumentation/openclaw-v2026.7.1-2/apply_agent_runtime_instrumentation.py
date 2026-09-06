@@ -251,6 +251,32 @@ def apply(root: Path) -> None:
         '                  runEmbeddedAgent({',
     )
 
+    cli_dispatch = root / "src/auto-reply/reply/agent-runner-cli-dispatch.ts"
+    insert_once(
+        cli_dispatch,
+        'from "../../infra/traceclaw-agent-runtime.js"',
+        '} from "../../infra/agent-events.js";',
+        '} from "../../infra/agent-events.js";\n'
+        'import { writeTraceClawAgentRuntimeEvent } from "../../infra/traceclaw-agent-runtime.js";',
+    )
+    insert_once(
+        cli_dispatch,
+        'event: "agent_reply_finalized",',
+        '    if (cliText) {\n'
+        '      emitAgentEvent({',
+        '    if (cliText) {\n'
+        '      writeTraceClawAgentRuntimeEvent({\n'
+        '        event: "agent_reply_finalized",\n'
+        '        runId: params.runId,\n'
+        '        ...(params.runParams.sessionKey ? { sessionKey: params.runParams.sessionKey } : {}),\n'
+        '        ...(params.runParams.agentId ? { agentId: params.runParams.agentId } : {}),\n'
+        '        provider: params.provider,\n'
+        '        model: params.runParams.model ?? "",\n'
+        '        replyText: cliText,\n'
+        '      });\n'
+        '      emitAgentEvent({',
+    )
+
     messages = root / "src/agents/embedded-agent-subscribe.handlers.messages.ts"
     insert_once(
         messages,
