@@ -371,9 +371,10 @@ async def poll_live_run(live_run_id: str) -> dict[str, Any]:
         send_result=run.send_result,
     )
 
-    if run.status in {"complete", "error"}:
-        _persist_run(run, trace=trace, events=events)
-
+    # Do not archive from the polling request. _execute() owns terminal
+    # persistence after its JSONL flush window, so a fast browser poll cannot race
+    # the final Agent lifecycle / reply_resolver_returned records and freeze an
+    # incomplete saved run.
     compact_wait = _compact_wait_result(run.wait_result)
     return {
         "status": run.status,
