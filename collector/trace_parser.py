@@ -14,6 +14,15 @@ from typing import Any
 VALID_STAGES = {f"G{i}" for i in range(19)}
 AUX_STAGES = {"D1", "D2"}
 TRACE_STAGES = VALID_STAGES | AUX_STAGES
+AGENT_RUNTIME_SCHEMA = "traceclaw.agent.runtime.v1"
+AGENT_RUNTIME_SCOPE = "agent-runtime"
+
+
+def is_agent_runtime_event(event: Any) -> bool:
+    return isinstance(event, dict) and (
+        event.get("schema") == AGENT_RUNTIME_SCHEMA
+        or event.get("scope") == AGENT_RUNTIME_SCOPE
+    )
 
 
 @dataclass(frozen=True)
@@ -60,7 +69,9 @@ class TraceLog:
                     item = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                if isinstance(item, dict) and item.get("stage") in TRACE_STAGES:
+                if isinstance(item, dict) and (
+                    item.get("stage") in TRACE_STAGES or is_agent_runtime_event(item)
+                ):
                     events.append(item)
             return events, fh.tell()
 
@@ -87,6 +98,8 @@ class TraceLog:
         last_growth = time.monotonic()
         seen_request_stage = False
         seen_g18 = False
+        seen_agent_runtime = False
+        seen_agent_return = False
 
         while time.monotonic() < deadline:
             batch, offset = self._read_from(TraceCursor(cursor.path, offset))
@@ -100,10 +113,23 @@ class TraceLog:
                 for event in relevant
             )
             seen_g18 = any(event.get("stage") == "G18" for event in relevant)
+            seen_agent_runtime = any(is_agent_runtime_event(event) for event in relevant)
+            seen_agent_return = any(
+                is_agent_runtime_event(event)
+                and event.get("event") == "reply_resolver_returned"
+                for event in relevant
+            )
 
-            if seen_g18 and time.monotonic() - last_growth >= settle_seconds:
+            # G18 is now only the entry boundary. When post-G18 instrumentation is
+            # active, wait for the resolver to return rather than stopping as soon
+            # as the resolver was selected.
+            if seen_agent_return and time.monotonic() - last_growth >= settle_seconds:
                 break
-            if seen_request_stage and time.monotonic() - last_growth >= 2.0:
+            if (
+                seen_request_stage
+                and not seen_agent_runtime
+                and time.monotonic() - last_growth >= 2.0
+            ):
                 break
 
             await asyncio.sleep(0.15)
