@@ -348,7 +348,7 @@
       },
       {
         label: "Provider / Model",
-        value: [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" / "),
+        value: [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" · "),
         state: (runtime.provider || runtime.model || meta.provider || meta.model) ? "observed" : "missing"
       },
       {
@@ -361,13 +361,13 @@
       {
         label: "Final reply",
         value: runtime.agentReplyDirectlyObserved
-          ? "runtime observed"
-          : (runtime.downstreamAssistantResponseObserved ? "response observed" : ""),
+          ? "observed"
+          : (runtime.downstreamAssistantResponseObserved ? "observed" : ""),
         state: (runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved) ? "observed" : "missing"
       },
       {
-        label: "Return to G16",
-        value: runtime.returnToG16Observed ? "observed" : "",
+        label: "Return",
+        value: runtime.returnToG16Observed ? "G16 observed" : "",
         state: runtime.returnToG16Observed ? "observed" : "missing"
       }
     ];
@@ -410,7 +410,7 @@
       ["Model", runtime.model || meta.model || ""],
       ["Tools", toolText || meta.tools || ""],
       ["Run", runtimeObserved
-        ? `${runtime.runStarted ? "started" : "start not captured"} → ${runtime.runEnded ? (runtime.terminalPhase || "ended") : "running"}`
+        ? `${runtime.runStarted ? "start" : "not captured"} → ${runtime.runEnded ? (runtime.terminalPhase || "end") : "running"}`
         : ""],
       ["Return", runtime.returnToG16Observed ? "replyResult → G16 observed" : ""]
     ];
