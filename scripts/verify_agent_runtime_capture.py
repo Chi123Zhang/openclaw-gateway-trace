@@ -97,6 +97,34 @@ def main() -> int:
     events = runtime.get("events")
     print()
     print("Agent Runtime event count:", len(events) if isinstance(events, list) else 0)
+    if isinstance(events, list) and events:
+        print(
+            "Agent Runtime events :",
+            " -> ".join(
+                str(event.get("event") or "?")
+                for event in events
+                if isinstance(event, dict)
+            ),
+        )
+
+    phases = runtime.get("phases")
+    if isinstance(phases, list) and phases:
+        print()
+        print("Post-G18 phases:")
+        for phase in phases:
+            if not isinstance(phase, dict):
+                continue
+            steps = phase.get("steps") if isinstance(phase.get("steps"), list) else []
+            observed_steps = sum(
+                1
+                for step in steps
+                if isinstance(step, dict) and step.get("observed") is True
+            )
+            print(
+                f"  {phase.get('id', '?')} {phase.get('title', '')}: "
+                f"{phase.get('status', 'not captured')} "
+                f"({observed_steps}/{len(steps)} current-run step(s) observed)"
+            )
     return 0
 
 
