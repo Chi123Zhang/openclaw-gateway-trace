@@ -205,6 +205,75 @@ def apply_imports(root: Path) -> None:
         insert_once(root / rel, marker, needle, replacement)
 
 
+def normalize_g6_chat_send_instrumentation(root: Path) -> None:
+    """Place G6 only inside the real chat.send handler.
+
+    The generic anchor used by the first reproducible patcher,
+    `const sessionLoadOptions = requestedAgentId ? ...`, occurs four times in
+    chat.ts (history/startup, message.get, chat.send, chat.inject). A global
+    first-match replacement can therefore put G6 in the wrong handler while a
+    simple marker-presence doctor still reports it as installed.
+
+    Normalize the block to the unique chat.send source sequence
+    requestedSessionKey=rawSessionKey + agentId=agentIdOverride.
+    """
+
+    path = root / "src/gateway/server-methods/chat.ts"
+    content = read(path)
+
+    g6_block = (
+        '    writeTraceClawGatewayRuntimeEvent({\n'
+        '      stage: "G6",\n'
+        '      event: "requested_agent_resolved",\n'
+        '      runId: clientRunId,\n'
+        '      sessionKey: rawSessionKey,\n'
+        '      explicitAgentId: agentIdOverride,\n'
+        '      requestedAgentId,\n'
+        '      result: "resolved",\n'
+        '    });\n'
+    )
+
+    # Remove every prior copy first. This repairs a historical misplaced copy
+    # without inventing a second G6 event.
+    removed = 0
+    while g6_block in content:
+        content = content.replace(g6_block, "", 1)
+        removed += 1
+
+    target = (
+        '    const requestedAgentId = resolveRequestedChatAgentId({\n'
+        '      cfg: (context as { getRuntimeConfig?: () => OpenClawConfig }).getRuntimeConfig?.(),\n'
+        '      requestedSessionKey: rawSessionKey,\n'
+        '      agentId: agentIdOverride,\n'
+        '    });\n'
+        '    const sessionLoadOptions = requestedAgentId ? { agentId: requestedAgentId } : undefined;'
+    )
+    replacement = (
+        '    const requestedAgentId = resolveRequestedChatAgentId({\n'
+        '      cfg: (context as { getRuntimeConfig?: () => OpenClawConfig }).getRuntimeConfig?.(),\n'
+        '      requestedSessionKey: rawSessionKey,\n'
+        '      agentId: agentIdOverride,\n'
+        '    });\n'
+        + g6_block
+        + '    const sessionLoadOptions = requestedAgentId ? { agentId: requestedAgentId } : undefined;'
+    )
+
+    if target not in content:
+        raise RuntimeError(
+            "chat.send-specific G6 source anchor not found in "
+            f"{path}; refusing to patch an ambiguous sessionLoadOptions occurrence"
+        )
+
+    content = content.replace(target, replacement, 1)
+    write(path, content)
+    print(
+        "normalized:",
+        path,
+        'event: "requested_agent_resolved"',
+        f"(removed {removed} prior copy/copies; installed in chat.send)",
+    )
+
+
 def apply_stages(root: Path) -> None:
     auth = root / "src/gateway/server/ws-connection/auth-context.ts"
     insert_once(
@@ -324,21 +393,7 @@ def apply_stages(root: Path) -> None:
         '    });\n'
         '    const pendingChatSendKey = pendingChatSendDedupeKey(clientRunId);',
     )
-    insert_once(
-        chat,
-        'event: "requested_agent_resolved"',
-        '    const sessionLoadOptions = requestedAgentId ? { agentId: requestedAgentId } : undefined;',
-        '    writeTraceClawGatewayRuntimeEvent({\n'
-        '      stage: "G6",\n'
-        '      event: "requested_agent_resolved",\n'
-        '      runId: clientRunId,\n'
-        '      sessionKey: rawSessionKey,\n'
-        '      explicitAgentId: agentIdOverride,\n'
-        '      requestedAgentId,\n'
-        '      result: "resolved",\n'
-        '    });\n'
-        '    const sessionLoadOptions = requestedAgentId ? { agentId: requestedAgentId } : undefined;',
-    )
+    normalize_g6_chat_send_instrumentation(root)
     insert_once(
         chat,
         'event: "session_resolved"',
