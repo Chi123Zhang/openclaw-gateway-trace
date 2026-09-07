@@ -337,6 +337,11 @@
         state: runtimeObserved ? "observed" : "missing"
       },
       {
+        label: "Resolver",
+        value: resolverSource || resolver,
+        state: (resolverSource || resolver) ? "observed" : "missing"
+      },
+      {
         label: "Runtime",
         value: runtime.runner || (runtime.runStarted ? "started" : ""),
         state: runtime.runStarted ? "observed" : "missing"
