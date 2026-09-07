@@ -1,346 +1,176 @@
-/* Post-G18 Agent Runtime overview.
- * Presentation only: all values come from trace.agentRuntime for the current run.
+/* Deeper Agent Run: compact single-line current-run facts.
+ * Values are rendered by live.js from trace.agentRuntime only.
  */
 
-@media (min-width:720px){
-  .pipeline{
-    overflow:visible!important;
-  }
+.pipeline .boundary{
+  position:relative!important;
+  z-index:0!important;
+  flex:0 0 auto!important;
+  min-height:0!important;
+  margin-top:8px!important;
+  padding:7px 9px!important;
+  overflow:visible!important;
+  border:1px solid #74684a!important;
+  border-radius:8px!important;
+  background:linear-gradient(180deg,#21343a 0%,#1a2b31 100%)!important;
+}
+.pipeline .boundary .boundaryGrid{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+}
+.pipeline .boundary .runtimeBoundaryLegacy,
+.pipeline .boundary .returnArrow,
+.pipeline .boundary .returnNote{display:none!important}
 
-  .pipeline .moduleWrap{
-    flex:0 0 auto!important;
-    min-height:245px!important;
-    height:auto!important;
-    overflow:visible!important;
-  }
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:stretch!important;
+  gap:5px!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  background:transparent!important;
+}
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .agentRuntimeLead{
+  flex:0 0 116px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:6px 7px!important;
+  border:1px solid #74633c!important;
+  border-radius:6px!important;
+  background:#302b1e!important;
+}
+.pipeline .boundary .agentRuntimeLead > strong{
+  display:block!important;
+  margin:0!important;
+  color:#fff5dc!important;
+  font-size:8px!important;
+  font-weight:900!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+}
+.pipeline .boundary .agentRuntimeStatus{
+  display:block!important;
+  margin-top:4px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#a9e0b5!important;
+  font:850 5px/1.05 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  letter-spacing:.04em!important;
+  white-space:nowrap!important;
+}
+.pipeline .boundary .agentRuntimeStatus[data-tone="running"]{color:#ffe092!important}
+.pipeline .boundary .agentRuntimeStatus[data-tone="missing"]{color:#aaa495!important}
 
-  .pipeline .moduleFlowRow{
-    height:auto!important;
-    min-height:245px!important;
-  }
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .agentRuntimeFlow{
+  flex:1 1 auto!important;
+  display:grid!important;
+  grid-template-columns:
+    minmax(68px,.75fr)
+    minmax(128px,1.35fr)
+    minmax(76px,.82fr)
+    minmax(116px,1.15fr)
+    minmax(68px,.72fr)
+    minmax(76px,.78fr)
+    minmax(84px,.86fr)!important;
+  gap:5px!important;
+  align-items:stretch!important;
+  width:auto!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:0!important;
+  background:transparent!important;
+}
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .agentRuntimeFlow > .agentRuntimeNode{
+  display:block!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:6px 7px!important;
+  border:1px solid #596167!important;
+  border-radius:6px!important;
+  background:#23373e!important;
+  overflow:hidden!important;
+}
+.pipeline .boundary .agentRuntimeNode > span{
+  display:block!important;
+  margin:0!important;
+  color:#b9ae8d!important;
+  font-size:5px!important;
+  font-weight:850!important;
+  line-height:1!important;
+  letter-spacing:.06em!important;
+  text-transform:uppercase!important;
+  white-space:nowrap!important;
+}
+.pipeline .boundary .agentRuntimeNode > strong{
+  display:block!important;
+  min-width:0!important;
+  margin-top:4px!important;
+  color:#fff8e8!important;
+  font-size:7px!important;
+  font-weight:850!important;
+  line-height:1.12!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.pipeline .boundary .agentRuntimeNode-observed{
+  border-color:#8e7843!important;
+  background:#322f24!important;
+}
+.pipeline .boundary .agentRuntimeNode-observed > strong{color:#ffe7a5!important}
+.pipeline .boundary .agentRuntimeNode-neutral{
+  border-color:#4f5d5d!important;
+  background:#253437!important;
+}
+.pipeline .boundary .agentRuntimeNode-missing{
+  border-style:dashed!important;
+  border-color:#49565a!important;
+  background:#1b292e!important;
+  opacity:.72!important;
+}
+.pipeline .boundary .agentRuntimeNode-missing > strong{color:#8c938e!important}
 
-  .pipeline .boundary{
-    position:relative!important;
-    z-index:0!important;
-    flex:0 0 auto!important;
-    margin-top:10px!important;
-    padding:10px 12px!important;
-    border:1px solid #74684a!important;
-    border-radius:9px!important;
-    background:linear-gradient(180deg,#21343a 0%,#1a2b31 100%)!important;
-  }
-
-  .pipeline .boundaryGrid{
-    display:block!important;
-  }
-
-  .pipeline .boundaryGrid>.runtimeBoundaryLegacy,
-  .pipeline .boundaryGrid>.returnArrow,
-  .pipeline .returnNote{
-    display:none!important;
-  }
-
-  .pipeline .boundaryGrid>.boundaryBox:last-child{
-    display:grid!important;
-    grid-template-columns:auto auto 1fr!important;
-    align-items:center!important;
-    gap:10px!important;
-    padding:0!important;
-    border:0!important;
-    background:transparent!important;
-  }
-
-  .agentRuntimeObservedPanel>strong{
-    color:#fff5dc!important;
-    font-size:11px!important;
-    font-weight:900!important;
-    white-space:nowrap!important;
-  }
-
-  .agentRuntimeStatus{
-    display:inline-flex!important;
-    align-items:center!important;
-    width:max-content!important;
-    padding:4px 7px!important;
-    border:1px solid #7a6940!important;
-    border-radius:999px!important;
-    background:#38311f!important;
-    color:#ffe198!important;
-    font:850 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
-    letter-spacing:.05em!important;
-  }
-
-  .agentRuntimeStatus[data-tone="complete"]{
-    border-color:#55735d!important;
-    background:#20372a!important;
-    color:#a9e0b5!important;
-  }
-
-  .agentRuntimeStatus[data-tone="running"]{
-    border-color:#947b3f!important;
-    background:#3a321d!important;
-    color:#ffe092!important;
-  }
-
-  .agentRuntimeStatus[data-tone="missing"]{
-    border-color:#625d51!important;
-    background:#292d2b!important;
-    color:#aaa495!important;
-  }
-
-  .agentRuntimeFlow{
-    grid-column:1/-1!important;
-    display:grid!important;
-    grid-template-columns:
-      minmax(78px,1fr) 12px
-      minmax(92px,1.05fr) 12px
-      minmax(78px,.9fr) 12px
-      minmax(112px,1.25fr) 12px
-      minmax(72px,.8fr) 12px
-      minmax(90px,1fr) 12px
-      minmax(94px,1fr)!important;
-    gap:4px!important;
-    align-items:stretch!important;
-    margin-top:2px!important;
-  }
-
-  .agentRuntimeNode{
-    min-width:0!important;
-    padding:8px 9px!important;
-    border:1px solid #596167!important;
-    border-radius:7px!important;
-    background:#23373e!important;
-  }
-
-  .agentRuntimeNode span{
-    display:block!important;
-    color:#b9ae8d!important;
-    font-size:5px!important;
-    font-weight:850!important;
-    letter-spacing:.07em!important;
-    text-transform:uppercase!important;
-  }
-
-  .agentRuntimeNode strong{
-    display:block!important;
-    margin-top:5px!important;
-    color:#fff8e8!important;
-    font-size:8px!important;
-    font-weight:850!important;
-    line-height:1.2!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-
-  .agentRuntimeNode-observed{
-    border-color:#8e7843!important;
-    background:#322f24!important;
-    box-shadow:inset 0 0 0 1px rgba(240,195,93,.05)!important;
-  }
-
-  .agentRuntimeNode-observed strong{
-    color:#ffe7a5!important;
-  }
-
-  .agentRuntimeNode-neutral{
-    border-color:#4f5d5d!important;
-    background:#253437!important;
-  }
-
-  .agentRuntimeNode-missing{
-    border-style:dashed!important;
-    border-color:#49565a!important;
-    background:#1b292e!important;
-    opacity:.72!important;
-  }
-
-  .agentRuntimeNode-missing strong{
-    color:#8c938e!important;
-  }
-
-  .agentRuntimeFlowArrow{
-    display:grid!important;
-    place-items:center!important;
-    color:#dfbc61!important;
-    font-size:13px!important;
-    font-weight:900!important;
-  }
-
-  .agentRuntimeFact{
-    display:none!important;
-  }
-
-  .agentRuntimeTools{
-    grid-column:1/-1!important;
-    display:flex!important;
-    flex-wrap:wrap!important;
-    gap:5px!important;
-    margin-top:2px!important;
-  }
-
-  .agentRuntimeTools span{
-    display:inline-flex!important;
-    padding:4px 7px!important;
-    border:1px solid #74633c!important;
-    border-radius:999px!important;
-    background:#302b1e!important;
-    color:#f3d88c!important;
-    font-size:6px!important;
-    font-weight:800!important;
-  }
-
-  .agentRuntimeMissing .agentRuntimeFlow{
-    opacity:.82!important;
-  }
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .agentRuntimeFact,
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .runtimeFact,
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .runtimeIntro,
+.pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .agentRuntimeTools{
+  display:none!important;
 }
 
-@media (max-width:719px){
-  .agentRuntimeFlow{
-    display:grid!important;
-    grid-template-columns:1fr!important;
-    gap:6px!important;
-  }
-  .agentRuntimeFlowArrow{
-    transform:rotate(90deg)!important;
-  }
-}
+/* Inspection stays interactive while live playback is running or paused. */
+.pipeline .module,
+.pipeline .moduleMiniStage,
+.modulePanelStage,
+.stageCard,
+.subnode,
+.tab{pointer-events:auto!important}
 
-
-/* Laptop-width correction: keep the post-G18 layer compact and below the
- * six Gateway pillars. The old 1040px breakpoint produced a vertical stack
- * that consumed the pillar row's flex height and visually covered it. */
-@media (min-width:720px) and (max-width:1180px){
-  .pipeline .moduleWrap{
-    min-height:220px!important;
+@media (max-width:900px){
+  .pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel{
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
   }
-  .pipeline .moduleFlowRow{
-    min-height:220px!important;
+  .pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .agentRuntimeLead{
+    flex:0 0 108px!important;
   }
-  .pipeline .boundary{
-    margin-top:8px!important;
-    padding:7px 8px!important;
-  }
-  .agentRuntimeObservedPanel>strong{
-    font-size:9px!important;
-  }
-  .agentRuntimeFlow{
-    gap:3px!important;
-  }
-  .agentRuntimeNode{
-    padding:6px 7px!important;
-  }
-  .agentRuntimeNode strong{
-    font-size:7px!important;
-  }
-  .agentRuntimeFlowArrow{
-    font-size:10px!important;
-  }
-}
-
-
-/* Compact post-G18 single-line strip.
- * Keep every runtime fact in its own box; never stack vertically on desktop/laptop.
- */
-@media (min-width:720px){
-  .pipeline .boundary{
-    min-height:0!important;
-    padding:7px 9px!important;
-    margin-top:8px!important;
-  }
-
-  .pipeline .boundaryGrid,
-  .pipeline .boundaryGrid>.boundaryBox:last-child{
-    width:100%!important;
-    min-width:0!important;
-  }
-
-  .pipeline .boundaryGrid>.boundaryBox:last-child{
-    display:grid!important;
-    grid-template-columns:auto auto minmax(0,1fr)!important;
-    column-gap:8px!important;
-    row-gap:5px!important;
-    align-items:center!important;
-  }
-
-  .agentRuntimeObservedPanel>strong{
-    font-size:9px!important;
-    line-height:1!important;
-    margin:0!important;
-  }
-
-  .agentRuntimeStatus{
-    padding:3px 6px!important;
-    font-size:6px!important;
-  }
-
-  .agentRuntimeFlow{
-    grid-column:1/-1!important;
-    display:flex!important;
-    flex-direction:row!important;
-    flex-wrap:nowrap!important;
-    align-items:stretch!important;
-    gap:5px!important;
-    width:100%!important;
-    min-width:0!important;
-    margin:0!important;
-    overflow:hidden!important;
-  }
-
-  .agentRuntimeNode{
-    flex:1 1 0!important;
-    min-width:0!important;
-    width:auto!important;
-    padding:6px 7px!important;
-    border-radius:6px!important;
-  }
-
-  .agentRuntimeNode span{
-    font-size:5px!important;
-    line-height:1!important;
-    margin:0!important;
-  }
-
-  .agentRuntimeNode strong{
-    margin-top:4px!important;
-    font-size:7px!important;
-    line-height:1.15!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-
-  .agentRuntimeFlowArrow{
-    flex:0 0 10px!important;
-    width:10px!important;
-    min-width:10px!important;
-    display:grid!important;
-    place-items:center!important;
-    font-size:10px!important;
-    line-height:1!important;
-  }
-
-  .agentRuntimeTools{
-    grid-column:1/-1!important;
-    margin-top:0!important;
-  }
-
-  /* Hide any legacy summary strip so the runtime facts are not duplicated. */
-  .pipeline .boundary .runtimeFacts,
-  .pipeline .boundary .runtimeSummary,
-  .pipeline .boundary .runtimeSummaryStrip,
-  .pipeline .boundary .runtimeMetaStrip{
-    display:none!important;
-  }
-}
-
-@media (max-width:719px){
-  .agentRuntimeFlow{
-    display:grid!important;
-    grid-template-columns:1fr!important;
-    gap:5px!important;
-  }
-  .agentRuntimeFlowArrow{
-    transform:rotate(90deg)!important;
+  .pipeline .boundary .boundaryGrid > .boundaryBox.agentRuntimeObservedPanel > .agentRuntimeFlow{
+    flex:0 0 690px!important;
+    min-width:690px!important;
   }
 }
