@@ -3,6 +3,17 @@
  * reuse trace.agentRuntime.phases from the current run.
  */
 
+body.e2eOverview .pipeline{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+
+body.e2eOverview .pipeline .archBand{
+  display:none!important;
+}
+
 body.e2eOverview .pipeline .track,
 body.e2eOverview .pipeline .runner,
 body.e2eOverview .pipeline .expand,
