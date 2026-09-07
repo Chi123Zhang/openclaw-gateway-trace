@@ -97,7 +97,7 @@
   document.addEventListener("pointerdown", event => {
     if (!liveRunning) return;
     const target = event.target.closest?.(
-      ".module[data-id], .moduleMiniStage[data-stage-id], .modulePanelStage[data-stage-id], .stageCard[data-id], .subnode[data-id], .tab[data-id]"
+      ".module[data-id], .moduleMiniStage[data-stage-id], .modulePanelStage[data-stage-id], .stageCard[data-id], .subnode[data-id], .tab[data-id], .e2ePhaseCard[data-phase-id], .e2eStage[data-id], .e2eRuntimeStep"
     );
     if (!target) return;
     pauseForInspection();
