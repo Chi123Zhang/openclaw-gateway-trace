@@ -93,7 +93,7 @@
       pauseButton.textContent = "▶ Resume";
       pauseButton.classList.add("pauseState");
     }
-    const where = lastDisplayedStage || "waiting";
+    const where = lastDisplayedRuntimeEvent || lastDisplayedStage || "waiting";
     document.getElementById("requestState").textContent = `PAUSED · ${where}`;
     setCollectorState(`Paused for inspection @ ${where}`, "connected");
     message.textContent = `Inspection paused at ${where}. OpenClaw keeps running; click Resume to continue the visual playback.`;
@@ -462,7 +462,7 @@
     const runtime = ACTIVE_CASE?.agentRuntime || fullCaseSnapshot?.agentRuntime || {};
     const g18Revealed = revealedRuntimeStages.has("G18");
     const runtimeObserved = runtime?.observed === true;
-    const runTerminal = backendComplete || document.getElementById("requestState")?.textContent === "FINISHED";
+    const runTerminal = document.getElementById("requestState")?.textContent === "FINISHED";
 
     // Source order is strict: post-G18 Agent Runtime is not visible until the
     // Gateway visualization itself has reached G18.
@@ -521,10 +521,10 @@
       : "";
 
     const flowNodes = [
-      ["agent", "Agent", runtime.finalAgent || meta.downstreamAgent || meta.downstreamAgentFinal || ""],
+      ["agent", "Agent", runtime.finalAgent || ""],
       ["resolver", "Resolver", resolverSource || resolver],
       ["runtime", "Runtime", runtime.runner || (runtime.runStarted ? "started" : "")],
-      ["provider-model", "Provider / Model", [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" · ")],
+      ["provider-model", "Provider / Model", [runtime.provider, runtime.model].filter(Boolean).join(" · ")],
       ["tools", "Tools", toolValue],
       ["final-reply", "Final reply", runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved ? "observed" : ""],
       ["return", "Return", runtime.returnToG16Observed ? "G16 observed" : ""]
@@ -837,7 +837,7 @@
       document.getElementById("requestState").textContent = "RUNNING";
       setCollectorState("Live visualization resumed", "connected");
       message.textContent = playbackQueue.length
-        ? `Resuming from ${lastDisplayedStage || "current stage"} · ${playbackQueue.length} queued stage(s).`
+        ? `Resuming from ${lastDisplayedRuntimeEvent || lastDisplayedStage || "current stage"} · ${playbackQueue.length} queued item(s).`
         : "Resumed · waiting for the next correlated Gateway stage.";
     }
   }
@@ -890,7 +890,7 @@
       backendError = payload.error || null;
 
       if (visualPaused) {
-        setCollectorState(`Paused @ ${lastDisplayedStage || "waiting"}`, "connected");
+        setCollectorState(`Paused @ ${lastDisplayedRuntimeEvent || lastDisplayedStage || "waiting"}`, "connected");
         message.textContent = `Visualization paused. Gateway is still collecting; ${playbackQueue.length} stage(s) queued.`;
       }
 
