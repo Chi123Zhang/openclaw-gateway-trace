@@ -97,7 +97,7 @@
   document.addEventListener("pointerdown", event => {
     if (!liveRunning) return;
     const target = event.target.closest?.(
-      ".module[data-id], .moduleMiniStage[data-stage-id], .modulePanelStage[data-stage-id], .stageCard[data-id], .subnode[data-id], .tab[data-id], .e2ePhaseCard[data-phase-id], .e2eStage[data-id], .e2eRuntimeStep"
+      ".module[data-id], .moduleMiniStage[data-stage-id], .modulePanelStage[data-stage-id], .stageCard[data-id], .subnode[data-id], .tab[data-id], .e2ePhaseCard[data-phase-id], .e2eStage[data-id], .e2eRuntimeStep, .agentRuntimeLead, .agentRuntimeNode[data-runtime-key]"
     );
     if (!target) return;
     pauseForInspection();
@@ -334,6 +334,10 @@
 
     const lead = document.createElement("div");
     lead.className = "agentRuntimeLead";
+    lead.dataset.runtimeKey = "overview";
+    lead.tabIndex = 0;
+    lead.setAttribute("role", "button");
+    lead.setAttribute("aria-label", "Open Deeper Agent Run details");
 
     const title = document.createElement("strong");
     title.textContent = "Deeper Agent Run";
@@ -363,17 +367,21 @@
       : "";
 
     const flowNodes = [
-      ["Agent", runtime.finalAgent || meta.downstreamAgent || meta.downstreamAgentFinal || ""],
-      ["Resolver", resolverSource || resolver],
-      ["Runtime", runtime.runner || (runtime.runStarted ? "started" : "")],
-      ["Provider / Model", [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" · ")],
-      ["Tools", toolValue],
-      ["Final reply", runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved ? "observed" : ""],
-      ["Return", runtime.returnToG16Observed ? "G16 observed" : ""]
+      ["agent", "Agent", runtime.finalAgent || meta.downstreamAgent || meta.downstreamAgentFinal || ""],
+      ["resolver", "Resolver", resolverSource || resolver],
+      ["runtime", "Runtime", runtime.runner || (runtime.runStarted ? "started" : "")],
+      ["provider-model", "Provider / Model", [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" · ")],
+      ["tools", "Tools", toolValue],
+      ["final-reply", "Final reply", runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved ? "observed" : ""],
+      ["return", "Return", runtime.returnToG16Observed ? "G16 observed" : ""]
     ];
 
-    flowNodes.forEach(([label, value]) => {
+    flowNodes.forEach(([runtimeKey, label, value]) => {
       const node = document.createElement("div");
+      node.dataset.runtimeKey = runtimeKey;
+      node.tabIndex = 0;
+      node.setAttribute("role", "button");
+      node.setAttribute("aria-label", `Open ${label} runtime details`);
       const observed = Boolean(value);
       const neutral = label === "Tools" && runtimeObserved && !runtime.toolCalled;
       node.className = `agentRuntimeNode ${observed ? (neutral ? "agentRuntimeNode-neutral" : "agentRuntimeNode-observed") : "agentRuntimeNode-missing"}`;
