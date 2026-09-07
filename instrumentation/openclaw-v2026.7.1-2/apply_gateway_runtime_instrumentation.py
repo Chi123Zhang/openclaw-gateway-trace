@@ -223,17 +223,18 @@ def apply_stages(root: Path) -> None:
     insert_once(
         auth,
         'event: "shared_credential_authorized"',
-        '  const sharedAuthResult =\n    sharedConnectAuth &&',
+        '  return {\n    authResult,',
         '  writeTraceClawGatewayRuntimeEvent({\n'
         '    stage: "G1",\n'
         '    event: "shared_credential_authorized",\n'
         '    authMode: params.resolvedAuth.mode,\n'
-        '    authMethod: authResult.method,\n'
+        '    authMethod: sharedAuthResult?.method ?? authResult.method,\n'
         '    sharedAuthProvided,\n'
-        '    result: authResult.ok ? "allow" : "deny",\n'
-        '    ...(authResult.reason ? { reason: authResult.reason } : {}),\n'
+        '    sharedAuthOk,\n'
+        '    result: sharedAuthOk ? "allow" : "not_shared_authorized",\n'
+        '    ...(sharedAuthResult?.reason ? { reason: sharedAuthResult.reason } : {}),\n'
         '  });\n\n'
-        '  const sharedAuthResult =\n    sharedConnectAuth &&',
+        '  return {\n    authResult,',
     )
     insert_once(
         auth,
