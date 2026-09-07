@@ -69,12 +69,16 @@
     return: "Return to G16",
   };
 
+  function currentCase() {
+    return typeof ACTIVE_CASE !== "undefined" && ACTIVE_CASE ? ACTIVE_CASE : {};
+  }
+
   function currentRuntime() {
-    return window.ACTIVE_CASE?.agentRuntime || {};
+    return currentCase().agentRuntime || {};
   }
 
   function currentMeta() {
-    return window.ACTIVE_CASE?.meta || {};
+    return currentCase().meta || {};
   }
 
   function safeText(value) {
@@ -189,8 +193,9 @@
     }
 
     if (key === "resolver") {
-      const g18Observed = Array.isArray(window.ACTIVE_CASE?._collector?.traceStagesObserved)
-        && window.ACTIVE_CASE._collector.traceStagesObserved.includes("G18");
+      const activeCase = currentCase();
+      const g18Observed = Array.isArray(activeCase?._collector?.traceStagesObserved)
+        && activeCase._collector.traceStagesObserved.includes("G18");
       facts.append(
         fact("Resolver", runtime.resolver || meta.resolver, returned ? "RUNTIME" : (g18Observed ? "RUNTIME · G18" : "NOT CAPTURED")),
         fact("Resolver source", runtime.resolverSource || meta.resolverSource, returned ? "RUNTIME" : (g18Observed ? "RUNTIME · G18" : "NOT CAPTURED")),
