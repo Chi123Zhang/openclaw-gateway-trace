@@ -101,6 +101,248 @@ def _tool_records(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [by_id[call_id] for call_id in ordered_ids]
 
 
+def _runtime_phase_step(
+    *,
+    step_id: str,
+    title: str,
+    evidence: str,
+    observed: bool,
+    event: str = "",
+    values: dict[str, Any] | None = None,
+    note: str = "",
+) -> dict[str, Any]:
+    return {
+        "id": step_id,
+        "title": title,
+        "evidence": evidence,
+        "observed": observed,
+        "event": event,
+        "values": values or {},
+        "note": note,
+    }
+
+
+def _runtime_phases(
+    *,
+    selected: dict[str, Any] | None,
+    started: dict[str, Any] | None,
+    finalized: dict[str, Any] | None,
+    ended: dict[str, Any] | None,
+    returned: dict[str, Any] | None,
+    tools: list[dict[str, Any]],
+    downstream_reply: str,
+) -> list[dict[str, Any]]:
+    """Build post-G18 phases from this run only.
+
+    Static source paths live in the viewer catalog. These phase steps contain only
+    current-run observations (plus one explicit completed-run coverage statement
+    when no tool event occurred).
+    """
+
+    later_than_setup = bool(finalized or ended or returned)
+    if started:
+        setup_status = "complete"
+    elif selected:
+        setup_status = "running"
+    elif later_than_setup:
+        setup_status = "partial"
+    else:
+        setup_status = "not captured"
+
+    setup_steps = [
+        _runtime_phase_step(
+            step_id="AR1.1",
+            title="Runtime attempt selected",
+            evidence="RUNTIME" if selected else "NOT CAPTURED",
+            observed=selected is not None,
+            event="agent_runtime_selected",
+            values={
+                key: (selected or {}).get(key)
+                for key in ("agentId", "runner", "provider", "model")
+                if (selected or {}).get(key) not in (None, "")
+            },
+        ),
+        _runtime_phase_step(
+            step_id="AR1.2",
+            title="Agent lifecycle started",
+            evidence="RUNTIME" if started else "NOT CAPTURED",
+            observed=started is not None,
+            event="agent_run_started",
+            values={
+                key: (started or {}).get(key)
+                for key in ("agentId", "sessionId", "startedAt")
+                if (started or {}).get(key) not in (None, "")
+            },
+        ),
+    ]
+
+    execution_steps = [
+        _runtime_phase_step(
+            step_id="AR2.1",
+            title="Agent execution entered",
+            evidence="RUNTIME" if started else "NOT CAPTURED",
+            observed=started is not None,
+            event="agent_run_started",
+        )
+    ]
+
+    for index, tool in enumerate(tools, start=1):
+        tool_name = str(tool.get("name") or "tool")
+        execution_steps.append(
+            _runtime_phase_step(
+                step_id=f"AR2.T{index}",
+                title=f"Tool · {tool_name}",
+                evidence="RUNTIME",
+                observed=True,
+                event="tool_result" if tool.get("resultObserved") else "tool_started",
+                values={
+                    key: tool.get(key)
+                    for key in (
+                        "toolCallId",
+                        "name",
+                        "started",
+                        "resultObserved",
+                        "status",
+                        "isError",
+                    )
+                    if tool.get(key) not in (None, "")
+                },
+                note=(
+                    "Tool result observed for this run."
+                    if tool.get("resultObserved")
+                    else "Tool start observed; terminal result not captured yet."
+                ),
+            )
+        )
+
+    if not tools and ended:
+        execution_steps.append(
+            _runtime_phase_step(
+                step_id="AR2.T0",
+                title="No tool call observed",
+                evidence="RUNTIME-COVERAGE",
+                observed=True,
+                event="",
+                values={"toolCount": 0},
+                note=(
+                    "The Agent lifecycle ended and this run contained no "
+                    "tool_started/tool_result TraceClaw event."
+                ),
+            )
+        )
+
+    execution_steps.append(
+        _runtime_phase_step(
+            step_id="AR2.F",
+            title="Assistant reply finalized inside Agent runtime",
+            evidence="RUNTIME" if finalized else "NOT CAPTURED",
+            observed=finalized is not None,
+            event="agent_reply_finalized",
+            values={
+                key: (finalized or {}).get(key)
+                for key in ("provider", "model", "stopReason")
+                if (finalized or {}).get(key) not in (None, "")
+            },
+        )
+    )
+
+    if finalized or ended:
+        execution_status = "complete"
+    elif started:
+        execution_status = "running"
+    else:
+        execution_status = "not captured"
+
+    if finalized:
+        reply_boundary_evidence = "RUNTIME"
+        reply_boundary_title = "Final reply observed at Agent boundary"
+        reply_boundary_event = "agent_reply_finalized"
+        reply_boundary_values = {
+            key: finalized.get(key)
+            for key in ("provider", "model", "stopReason")
+            if finalized.get(key) not in (None, "")
+        }
+    elif downstream_reply:
+        reply_boundary_evidence = "RESPONSE"
+        reply_boundary_title = "Final assistant response observed downstream"
+        reply_boundary_event = ""
+        reply_boundary_values = {"source": "chat.history after agent.wait"}
+    else:
+        reply_boundary_evidence = "NOT CAPTURED"
+        reply_boundary_title = "Final reply boundary"
+        reply_boundary_event = "agent_reply_finalized"
+        reply_boundary_values = {}
+
+    completion_steps = [
+        _runtime_phase_step(
+            step_id="AR3.1",
+            title=reply_boundary_title,
+            evidence=reply_boundary_evidence,
+            observed=bool(finalized or downstream_reply),
+            event=reply_boundary_event,
+            values=reply_boundary_values,
+            note=(
+                "Downstream response evidence is not relabeled as an internal "
+                "Agent reply event."
+                if downstream_reply and not finalized
+                else ""
+            ),
+        ),
+        _runtime_phase_step(
+            step_id="AR3.2",
+            title="Agent lifecycle ended",
+            evidence="RUNTIME" if ended else "NOT CAPTURED",
+            observed=ended is not None,
+            event="agent_run_ended",
+            values={
+                key: (ended or {}).get(key)
+                for key in ("phase", "stopReason", "endedAt", "aborted")
+                if (ended or {}).get(key) not in (None, "")
+            },
+        ),
+        _runtime_phase_step(
+            step_id="AR3.3",
+            title="Reply resolver returned to G16",
+            evidence="RUNTIME" if returned else "NOT CAPTURED",
+            observed=returned is not None,
+            event="reply_resolver_returned",
+            values={
+                key: (returned or {}).get(key)
+                for key in ("resolverSource", "replyResultKind", "replyCount")
+                if (returned or {}).get(key) not in (None, "")
+            },
+        ),
+    ]
+
+    if returned and ended:
+        completion_status = "complete"
+    elif finalized or ended or returned or downstream_reply:
+        completion_status = "partial"
+    else:
+        completion_status = "not captured"
+
+    return [
+        {
+            "id": "AR1",
+            "title": "Runtime Setup",
+            "status": setup_status,
+            "steps": setup_steps,
+        },
+        {
+            "id": "AR2",
+            "title": "Agent Execution",
+            "status": execution_status,
+            "steps": execution_steps,
+        },
+        {
+            "id": "AR3",
+            "title": "Completion & Return",
+            "status": completion_status,
+            "steps": completion_steps,
+        },
+    ]
+
+
 def _normalize_agent_runtime(
     *,
     events: list[dict[str, Any]],
@@ -221,6 +463,15 @@ def _normalize_agent_runtime(
         "downstreamAssistantResponseObserved": bool(downstream_reply),
         "attempts": attempts,
         "events": [_event_copy(event) for event in runtime_events],
+        "phases": _runtime_phases(
+            selected=selected,
+            started=started,
+            finalized=finalized,
+            ended=ended,
+            returned=returned,
+            tools=tools,
+            downstream_reply=downstream_reply,
+        ),
     }
 
 
