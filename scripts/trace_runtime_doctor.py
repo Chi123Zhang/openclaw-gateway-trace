@@ -123,6 +123,38 @@ def stage_marker_status(root: Path, suffixes: tuple[str, ...]) -> tuple[list[str
     return present, missing
 
 
+def g6_chat_send_placement_status(root: Path) -> tuple[bool, int, int]:
+    """Return (inside_chat_send, inside_count, outside_count) for the G6 marker."""
+    path = root / "src/gateway/server-methods/chat.ts"
+    if not path.exists():
+        return False, 0, 0
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    marker = 'event: "requested_agent_resolved"'
+    start = text.find('"chat.send": async')
+    end = text.find('"chat.inject": async', start + 1) if start >= 0 else -1
+    if start < 0 or end < 0:
+        return False, 0, text.count(marker)
+    inside = text[start:end].count(marker)
+    outside = text[:start].count(marker) + text[end:].count(marker)
+    return inside == 1 and outside == 0, inside, outside
+
+
+def g6_dist_placement_status(root: Path) -> tuple[bool, int]:
+    """Built output cannot preserve handler slices reliably; require one G6 marker."""
+    count = 0
+    if root.exists():
+        for path in root.rglob("*"):
+            if not path.is_file() or path.suffix not in (".js", ".mjs", ".cjs"):
+                continue
+            try:
+                count += path.read_text(encoding="utf-8", errors="ignore").count(
+                    'requested_agent_resolved'
+                )
+            except OSError:
+                continue
+    return count >= 1, count
+
+
 def fmt_hits(hits: Iterable[Path], root: Path) -> str:
     items = []
     for path in hits:
@@ -152,6 +184,8 @@ def main() -> int:
     dist_stage_present, dist_stage_missing = stage_marker_status(
         root / "dist", (".js", ".mjs", ".cjs")
     )
+    g6_source_ok, g6_source_inside_count, g6_source_outside_count = g6_chat_send_placement_status(root)
+    g6_dist_ok, g6_dist_count = g6_dist_placement_status(root / "dist")
 
     raw_args, plist_env = load_plist_args()
     effective_args = unwrap_program_arguments(raw_args)
@@ -173,6 +207,11 @@ def main() -> int:
         f"{len(source_stage_present)}/19",
         "missing=" + (",".join(source_stage_missing) if source_stage_missing else "none"),
     )
+    print(
+        "G6 placement   :",
+        "chat.send ONLY" if g6_source_ok else "BAD",
+        f"(inside={g6_source_inside_count}, outside={g6_source_outside_count})",
+    )
     print("Agent marker  :", "YES" if source_hits_agent else "NO")
     print("  ", fmt_hits(source_hits_agent, root))
     print()
@@ -184,6 +223,7 @@ def main() -> int:
         f"{len(dist_stage_present)}/19",
         "missing=" + (",".join(dist_stage_missing) if dist_stage_missing else "none"),
     )
+    print("G6 built marker:", "YES" if g6_dist_ok else "NO", f"(count={g6_dist_count})")
     print("Agent marker  :", "YES" if dist_hits_agent else "NO")
     print("  ", fmt_hits(dist_hits_agent, root))
     print()
@@ -208,6 +248,11 @@ def main() -> int:
         problems.append(
             "local src is missing Gateway stage instrumentation: " + ", ".join(source_stage_missing)
         )
+    if not g6_source_ok:
+        problems.append(
+            "G6 requested_agent_resolved is not uniquely placed inside chat.send "
+            f"(inside={g6_source_inside_count}, outside={g6_source_outside_count})"
+        )
     if not source_hits_agent:
         problems.append("local src does not contain post-G18 Agent Runtime instrumentation")
     if source_hits_core and not dist_hits_core:
@@ -216,6 +261,8 @@ def main() -> int:
         problems.append(
             "built dist is missing Gateway stage instrumentation: " + ", ".join(dist_stage_missing)
         )
+    if not g6_dist_ok:
+        problems.append("built dist is missing requested_agent_resolved")
     if source_hits_agent and not dist_hits_agent:
         problems.append("Agent Runtime source is patched but dist was not rebuilt from it")
     if raw_args and not launch_uses_local:
