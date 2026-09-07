@@ -362,3 +362,32 @@ https://github.com/Chi123Zhang/openclaw-gateway-trace
 ```
 
 A static GitHub Pages build may be used for saved traces and interface review, while live execution should be demonstrated from the local viewer at `127.0.0.1:8765`.
+
+
+## macOS development: make the managed Gateway use the local instrumented build
+
+A local `pnpm build` does **not** repoint an already-installed LaunchAgent. In
+OpenClaw v2026.7.1-2, the service installer resolves its dist entrypoint from the
+CLI process that performs `gateway install`. Restart only restarts the currently
+installed service command.
+
+For TraceClaw development, repair all three layers together:
+
+```bash
+cd /Users/mac/Desktop/openclaw-source-2026.7.1-2/openclaw-gateway-trace
+bash scripts/reinstall_local_instrumented_gateway.sh
+```
+
+The repair script:
+
+1. reapplies the pinned post-G18 instrumentation;
+2. refuses to continue if the existing G0-G18 source instrumentation is missing;
+3. rebuilds the local v2026.7.1-2 checkout;
+4. verifies both Gateway and Agent Runtime markers exist in `dist/`;
+5. installs `ai.openclaw.gateway` using the **local** `openclaw.mjs`, so the
+   LaunchAgent points at the local instrumented `dist/`;
+6. restarts the Gateway and runs `scripts/trace_runtime_doctor.py`.
+
+`start_live.sh` also runs the doctor and refuses to start the viewer against a
+known uninstrumented/misaligned Gateway. This prevents a successful assistant
+answer from being mistaken for a captured G0-G18 trace.
