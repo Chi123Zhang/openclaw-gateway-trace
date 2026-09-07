@@ -53,6 +53,13 @@
     arrow?.classList.add("runtimeBoundaryLegacy");
     if (!runtimeBox) return;
 
+    // Modern live Agent Runtime owns its own one-row layout. Do not reinterpret
+    // the nested flow nodes as legacy key/value rows.
+    if (runtimeBox.classList.contains("agentRuntimeObservedPanel") ||
+        runtimeBox.querySelector(":scope > .agentRuntimeFlow")) {
+      return;
+    }
+
     runtimeBox.classList.add("runtimeBoundaryFacts");
     const title = runtimeBox.querySelector(":scope > strong");
     if (title && title.textContent !== "Deeper Agent Run") {
