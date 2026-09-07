@@ -80,6 +80,29 @@
     collectorState.className = `collectorState ${tone}`.trim();
   }
 
+  function pauseForInspection() {
+    if (!liveRunning || visualPaused) return;
+    visualPaused = true;
+    const pauseButton = document.getElementById("livePauseBtn");
+    if (pauseButton) {
+      pauseButton.textContent = "▶ Resume";
+      pauseButton.classList.add("pauseState");
+    }
+    const where = lastDisplayedStage || "waiting";
+    document.getElementById("requestState").textContent = `PAUSED · ${where}`;
+    setCollectorState(`Paused for inspection @ ${where}`, "connected");
+    message.textContent = `Inspection paused at ${where}. OpenClaw keeps running; click Resume to continue the visual playback.`;
+  }
+
+  document.addEventListener("pointerdown", event => {
+    if (!liveRunning) return;
+    const target = event.target.closest?.(
+      ".module[data-id], .moduleMiniStage[data-stage-id], .modulePanelStage[data-stage-id], .stageCard[data-id], .subnode[data-id], .tab[data-id]"
+    );
+    if (!target) return;
+    pauseForInspection();
+  }, true);
+
   function setBusy(busy) {
     runButton.disabled = busy;
     runButton.textContent = busy ? "Running live…" : "Run trace";
@@ -289,9 +312,6 @@
     const runtimeObserved = runtime?.observed === true;
     const runTerminal = backendComplete || document.getElementById("requestState")?.textContent === "FINISHED";
 
-    // This is a post-G18 layer, not a detail that depends on whichever Gateway
-    // module happens to be selected. Once G18 is reached (or the run terminates),
-    // keep it visible so the user can follow Gateway → Agent Runtime.
     boundary.hidden = !(g18Revealed || runtimeObserved || runTerminal);
     if (boundary.hidden) return;
 
@@ -308,13 +328,15 @@
     const runtimeBox = boxes[1];
     if (!runtimeBox) return;
 
-    runtimeBox.textContent = "";
-    runtimeBox.classList.add("agentRuntimeObservedPanel");
+    runtimeBox.replaceChildren();
+    runtimeBox.className = "boundaryBox agentRuntimeObservedPanel";
     runtimeBox.classList.toggle("agentRuntimeMissing", !runtimeObserved);
+
+    const lead = document.createElement("div");
+    lead.className = "agentRuntimeLead";
 
     const title = document.createElement("strong");
     title.textContent = "Deeper Agent Run";
-    runtimeBox.append(title);
 
     const status = document.createElement("span");
     status.className = "agentRuntimeStatus";
@@ -325,123 +347,47 @@
       status.textContent = runTerminal ? "NOT CAPTURED" : "WAITING";
       status.dataset.tone = "missing";
     }
-    runtimeBox.append(status);
+    lead.append(title, status);
+    runtimeBox.append(lead);
 
     const flow = document.createElement("div");
     flow.className = "agentRuntimeFlow";
 
-    const flowNodes = [
-      {
-        label: "Agent",
-        value: runtime.finalAgent || meta.downstreamAgent || meta.downstreamAgentFinal || "",
-        state: runtimeObserved ? "observed" : "missing"
-      },
-      {
-        label: "Resolver",
-        value: resolverSource || resolver,
-        state: (resolverSource || resolver) ? "observed" : "missing"
-      },
-      {
-        label: "Runtime",
-        value: runtime.runner || (runtime.runStarted ? "started" : ""),
-        state: runtime.runStarted ? "observed" : "missing"
-      },
-      {
-        label: "Provider / Model",
-        value: [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" · "),
-        state: (runtime.provider || runtime.model || meta.provider || meta.model) ? "observed" : "missing"
-      },
-      {
-        label: "Tools",
-        value: runtimeObserved
-          ? (runtime.toolCalled ? `${runtime.toolCount || 0} call(s)` : (runtime.runEnded ? "no call" : "waiting"))
-          : "",
-        state: runtimeObserved ? (runtime.toolCalled ? "observed" : "neutral") : "missing"
-      },
-      {
-        label: "Final reply",
-        value: runtime.agentReplyDirectlyObserved
-          ? "observed"
-          : (runtime.downstreamAssistantResponseObserved ? "observed" : ""),
-        state: (runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved) ? "observed" : "missing"
-      },
-      {
-        label: "Return",
-        value: runtime.returnToG16Observed ? "G16 observed" : "",
-        state: runtime.returnToG16Observed ? "observed" : "missing"
-      }
-    ];
-
-    flowNodes.forEach((item, index) => {
-      const node = document.createElement("div");
-      node.className = `agentRuntimeNode agentRuntimeNode-${item.state}`;
-
-      const label = document.createElement("span");
-      label.textContent = item.label;
-      const value = document.createElement("strong");
-      value.textContent = item.value || (runTerminal ? "not captured" : "waiting");
-
-      node.append(label, value);
-      flow.append(node);
-
-      if (index < flowNodes.length - 1) {
-        const arrow = document.createElement("div");
-        arrow.className = "agentRuntimeFlowArrow";
-        arrow.textContent = "→";
-        flow.append(arrow);
-      }
-    });
-    runtimeBox.append(flow);
-
     const toolNames = Array.isArray(runtime?.tools)
       ? runtime.tools.map(tool => tool?.name).filter(Boolean)
       : [];
-    const toolText = runtimeObserved
+    const toolValue = runtimeObserved
       ? (runtime.toolCalled
-          ? (toolNames.join(", ") || `${runtime.toolCount || 0} tool call(s)`)
-          : (runtime.runEnded ? "none" : "not observed yet"))
+          ? (toolNames.join(", ") || `${runtime.toolCount || 0} call(s)`)
+          : (runtime.runEnded ? "no call" : "waiting"))
       : "";
 
-    const rows = [
+    const flowNodes = [
       ["Agent", runtime.finalAgent || meta.downstreamAgent || meta.downstreamAgentFinal || ""],
       ["Resolver", resolverSource || resolver],
-      ["Runner", runtime.runner || ""],
-      ["Provider", runtime.provider || meta.provider || ""],
-      ["Model", runtime.model || meta.model || ""],
-      ["Tools", toolText || meta.tools || ""],
-      ["Run", runtimeObserved
-        ? `${runtime.runStarted ? "start" : "not captured"} → ${runtime.runEnded ? (runtime.terminalPhase || "end") : "running"}`
-        : ""],
-      ["Return", runtime.returnToG16Observed ? "replyResult → G16 observed" : ""]
+      ["Runtime", runtime.runner || (runtime.runStarted ? "started" : "")],
+      ["Provider / Model", [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" · ")],
+      ["Tools", toolValue],
+      ["Final reply", runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved ? "observed" : ""],
+      ["Return", runtime.returnToG16Observed ? "G16 observed" : ""]
     ];
 
-    rows.forEach(([label, value]) => {
-      const row = document.createElement("div");
-      row.className = "agentRuntimeFact";
+    flowNodes.forEach(([label, value]) => {
+      const node = document.createElement("div");
+      const observed = Boolean(value);
+      const neutral = label === "Tools" && runtimeObserved && !runtime.toolCalled;
+      node.className = `agentRuntimeNode ${observed ? (neutral ? "agentRuntimeNode-neutral" : "agentRuntimeNode-observed") : "agentRuntimeNode-missing"}`;
+      node.title = value ? `${label}: ${value}` : `${label}: ${runTerminal ? "not captured" : "waiting"}`;
+
       const key = document.createElement("span");
       key.textContent = label;
-      const val = document.createElement("code");
+      const val = document.createElement("strong");
       val.textContent = value || (runTerminal ? "not captured" : "waiting");
-      val.classList.toggle("agentRuntimeFactMissing", !value);
-      row.append(key, val);
-      runtimeBox.append(row);
+      node.append(key, val);
+      flow.append(node);
     });
 
-    if (runtimeObserved && Array.isArray(runtime.tools) && runtime.tools.length) {
-      const toolStrip = document.createElement("div");
-      toolStrip.className = "agentRuntimeTools";
-      runtime.tools.forEach(tool => {
-        const chip = document.createElement("span");
-        const name = tool?.name || "tool";
-        const state = tool?.status || (tool?.resultObserved ? "completed" : "started");
-        chip.textContent = `${name} · ${state}`;
-        chip.title = tool?.result != null
-          ? JSON.stringify(tool.result)
-          : (tool?.toolErrorSummary || "");
-        toolStrip.append(chip);
-      });
-      runtimeBox.append(toolStrip);
-    }
+    runtimeBox.append(flow);
   }
 
   function paintSnapshot(snapshot, focusStage = null) {
