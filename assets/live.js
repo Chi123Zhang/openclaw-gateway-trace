@@ -325,6 +325,67 @@
     }
     runtimeBox.append(status);
 
+    const flow = document.createElement("div");
+    flow.className = "agentRuntimeFlow";
+
+    const flowNodes = [
+      {
+        label: "Agent",
+        value: runtime.finalAgent || meta.downstreamAgent || meta.downstreamAgentFinal || "",
+        state: runtimeObserved ? "observed" : "missing"
+      },
+      {
+        label: "Runtime",
+        value: runtime.runner || (runtime.runStarted ? "started" : ""),
+        state: runtime.runStarted ? "observed" : "missing"
+      },
+      {
+        label: "Provider / Model",
+        value: [runtime.provider || meta.provider, runtime.model || meta.model].filter(Boolean).join(" / "),
+        state: (runtime.provider || runtime.model || meta.provider || meta.model) ? "observed" : "missing"
+      },
+      {
+        label: "Tools",
+        value: runtimeObserved
+          ? (runtime.toolCalled ? `${runtime.toolCount || 0} call(s)` : (runtime.runEnded ? "no call" : "waiting"))
+          : "",
+        state: runtimeObserved ? (runtime.toolCalled ? "observed" : "neutral") : "missing"
+      },
+      {
+        label: "Final reply",
+        value: runtime.agentReplyDirectlyObserved
+          ? "runtime observed"
+          : (runtime.downstreamAssistantResponseObserved ? "response observed" : ""),
+        state: (runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved) ? "observed" : "missing"
+      },
+      {
+        label: "Return to G16",
+        value: runtime.returnToG16Observed ? "observed" : "",
+        state: runtime.returnToG16Observed ? "observed" : "missing"
+      }
+    ];
+
+    flowNodes.forEach((item, index) => {
+      const node = document.createElement("div");
+      node.className = `agentRuntimeNode agentRuntimeNode-${item.state}`;
+
+      const label = document.createElement("span");
+      label.textContent = item.label;
+      const value = document.createElement("strong");
+      value.textContent = item.value || (runTerminal ? "not captured" : "waiting");
+
+      node.append(label, value);
+      flow.append(node);
+
+      if (index < flowNodes.length - 1) {
+        const arrow = document.createElement("div");
+        arrow.className = "agentRuntimeFlowArrow";
+        arrow.textContent = "→";
+        flow.append(arrow);
+      }
+    });
+    runtimeBox.append(flow);
+
     const toolNames = Array.isArray(runtime?.tools)
       ? runtime.tools.map(tool => tool?.name).filter(Boolean)
       : [];
