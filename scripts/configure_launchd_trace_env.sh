@@ -11,9 +11,13 @@ printf '  TRACECLAW_LOG_PATH=%s\n' "$TRACE_FILE"
 printf '  TRACECLAW_GATEWAY_TRACE_FILE=%s\n' "$TRACE_FILE"
 
 if [[ "${1:-}" == "--restart" ]]; then
-  printf '\nRestarting OpenClaw Gateway so the LaunchAgent inherits the trace path...\n'
+  printf '\nRestarting the existing Gateway service so it inherits the trace path...\n'
   openclaw gateway restart
+  printf '\nNOTE: this command does NOT change which OpenClaw dist the LaunchAgent runs.\n'
+  printf 'If TraceClaw reports 0 G0-G18 stages, use:\n'
+  printf '  bash scripts/reinstall_local_instrumented_gateway.sh\n'
 else
-  printf '\nRestart the Gateway before the next trace:\n'
-  printf '  openclaw gateway restart\n'
+  printf '\nThis only configures launchd environment; it does not repoint the Gateway service.\n'
+  printf 'For the TraceClaw development stack, prefer:\n'
+  printf '  bash scripts/reinstall_local_instrumented_gateway.sh\n'
 fi
