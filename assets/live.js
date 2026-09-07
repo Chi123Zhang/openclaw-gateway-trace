@@ -25,8 +25,13 @@
   let revealedRuntimeStages = new Set();
   let revealedSourceStages = new Set();
   let revealedTimeline = [];
+  let queuedAgentRuntimeEvents = new Set();
+  let pendingAgentRuntimeEvents = [];
+  let revealedAgentRuntimeEvents = [];
+  let lastDisplayedRuntimeEvent = "";
   let fullCaseSnapshot = null;
   let backendComplete = false;
+  let backendSnapshotFinalized = false;
   let backendError = null;
   let pendingResponse = "";
   let lastQueuedTimelineLength = 0;
@@ -263,6 +268,152 @@
     });
   }
 
+  function agentRuntimeEventKey(event) {
+    if (!event || typeof event !== "object") return "";
+    const seq = event.seq ?? "";
+    const ts = event.ts ?? "";
+    const name = event.event ?? "";
+    const toolCallId = event.toolCallId ?? "";
+    return [seq, ts, name, toolCallId].join("|");
+  }
+
+  function lastRevealedAgentEvent(name) {
+    for (let i = revealedAgentRuntimeEvents.length - 1; i >= 0; i -= 1) {
+      const event = revealedAgentRuntimeEvents[i];
+      if (event?.event === name) return event;
+    }
+    return null;
+  }
+
+  function visibleToolRecords() {
+    const ordered = [];
+    const byId = new Map();
+    for (const event of revealedAgentRuntimeEvents) {
+      if (!["tool_started", "tool_result"].includes(event?.event)) continue;
+      const callId = String(event.toolCallId || `observed-${ordered.length + 1}`);
+      if (!byId.has(callId)) {
+        const record = {
+          toolCallId: callId,
+          name: event.name || "",
+          started: false,
+          resultObserved: false
+        };
+        byId.set(callId, record);
+        ordered.push(record);
+      }
+      const record = byId.get(callId);
+      if (event.name) record.name = event.name;
+      if (event.event === "tool_started") {
+        record.started = true;
+        if (event.ts) record.startedAt = event.ts;
+        if (event.args !== undefined) record.args = event.args;
+      } else {
+        record.resultObserved = true;
+        record.status = event.isError === true ? "error" : "completed";
+        record.isError = event.isError === true;
+        if (event.result !== undefined) record.result = event.result;
+        if (event.toolErrorSummary !== undefined) record.toolErrorSummary = event.toolErrorSummary;
+        if (event.ts) record.endedAt = event.ts;
+      }
+    }
+    return ordered;
+  }
+
+  function visibleAgentRuntime(snapshot) {
+    const full = snapshot?.agentRuntime || {};
+    const g18Visible = revealedRuntimeStages.has("G18");
+    if (!g18Visible) {
+      return {
+        schemaVersion: full.schemaVersion || "traceclaw.viewer.agent-runtime.v1",
+        observed: false,
+        status: "waiting for G18",
+        finalAgent: "",
+        resolver: "",
+        resolverSource: "",
+        runner: "",
+        provider: "",
+        model: "",
+        providerModelEvidence: "NOT CAPTURED",
+        runStarted: false,
+        runEnded: false,
+        toolCalled: false,
+        toolEventObserved: false,
+        toolCount: 0,
+        tools: [],
+        finalReply: "",
+        finalReplyEvidence: "NOT CAPTURED",
+        agentReplyDirectlyObserved: false,
+        returnToG16Observed: false,
+        downstreamAssistantResponseObserved: false,
+        events: [],
+        phases: []
+      };
+    }
+
+    const selected = lastRevealedAgentEvent("agent_runtime_selected");
+    const started = lastRevealedAgentEvent("agent_run_started");
+    const finalized = lastRevealedAgentEvent("agent_reply_finalized");
+    const ended = lastRevealedAgentEvent("agent_run_ended");
+    const returned = lastRevealedAgentEvent("reply_resolver_returned");
+    const tools = visibleToolRecords();
+
+    // Resolver selection itself is G18 runtime evidence, so it may appear as soon
+    // as G18 is visually revealed. Everything deeper waits for its own post-G18
+    // runtime event to be revealed in captured order.
+    const meta = snapshot?.meta || {};
+    const resolverSource = returned?.resolverSource || meta.resolverSource || full.resolverSource || "";
+    const resolver = resolverSource === "default_getReplyFromConfig"
+      ? "getReplyFromConfig"
+      : (returned?.resolver || meta.resolver || full.resolver || "");
+
+    const finalAgent = finalized?.agentId || ended?.agentId || started?.agentId || selected?.agentId || "";
+    const provider = finalized?.provider || selected?.provider || "";
+    const model = finalized?.model || selected?.model || "";
+    const directReply = typeof finalized?.replyText === "string" ? finalized.replyText : "";
+    const phase = String(ended?.phase || "").toLowerCase();
+
+    let status = "selected";
+    if (phase === "end") status = "completed";
+    else if (phase === "error") status = "error";
+    else if (started) status = "running";
+    else if (!selected) status = "waiting";
+
+    return {
+      schemaVersion: full.schemaVersion || "traceclaw.viewer.agent-runtime.v1",
+      observed: revealedAgentRuntimeEvents.length > 0,
+      status,
+      finalAgent,
+      resolver,
+      resolverSource,
+      runner: selected?.runner || "",
+      provider,
+      model,
+      providerModelEvidence: finalized && (finalized.provider || finalized.model)
+        ? "RUNTIME · final assistant message"
+        : (selected ? "RUNTIME · selected attempt" : "NOT CAPTURED"),
+      runStarted: Boolean(started),
+      startedAt: started?.startedAt || started?.ts || "",
+      runEnded: Boolean(ended),
+      endedAt: ended?.endedAt || ended?.ts || "",
+      terminalPhase: ended?.phase || "",
+      stopReason: ended?.stopReason || finalized?.stopReason || "",
+      toolCalled: tools.length > 0,
+      toolEventObserved: tools.length > 0,
+      toolCount: tools.length,
+      tools,
+      finalReply: directReply,
+      finalReplyEvidence: directReply ? "RUNTIME · agent reply finalized" : "NOT CAPTURED",
+      agentReplyDirectlyObserved: Boolean(directReply || finalized),
+      returnToG16Observed: Boolean(returned),
+      replyResultKind: returned?.replyResultKind || "",
+      replyCount: returned?.replyCount,
+      downstreamAssistantResponseObserved: false,
+      attempts: selected ? [selected] : [],
+      events: [...revealedAgentRuntimeEvents],
+      phases: []
+    };
+  }
+
   function visibleCaseFromSnapshot(snapshot) {
     const stages = {};
     for (const [id, value] of Object.entries(snapshot?.stages || {})) {
@@ -278,6 +429,7 @@
     return {
       ...snapshot,
       stages,
+      agentRuntime: visibleAgentRuntime(snapshot),
       _collector: {
         ...(snapshot?._collector || {}),
         traceStagesObserved: [...revealedRuntimeStages].sort((a, b) => stageNumber(a) - stageNumber(b)),
@@ -312,7 +464,9 @@
     const runtimeObserved = runtime?.observed === true;
     const runTerminal = backendComplete || document.getElementById("requestState")?.textContent === "FINISHED";
 
-    boundary.hidden = !(g18Revealed || runtimeObserved || runTerminal);
+    // Source order is strict: post-G18 Agent Runtime is not visible until the
+    // Gateway visualization itself has reached G18.
+    boundary.hidden = !g18Revealed;
     if (boundary.hidden) return;
 
     const resolverSource = runtime?.resolverSource || meta.resolverSource || "";
@@ -453,6 +607,10 @@
     revealedRuntimeStages = new Set();
     revealedSourceStages = new Set();
     revealedTimeline = [];
+    queuedAgentRuntimeEvents = new Set();
+    pendingAgentRuntimeEvents = [];
+    revealedAgentRuntimeEvents = [];
+    lastDisplayedRuntimeEvent = "";
     fullCaseSnapshot = makeBlankCase("");
     lastDisplayedStage = null;
     paintSnapshot(fullCaseSnapshot, "G3");
@@ -469,8 +627,13 @@
     revealedRuntimeStages = new Set();
     revealedSourceStages = new Set();
     revealedTimeline = [];
+    queuedAgentRuntimeEvents = new Set();
+    pendingAgentRuntimeEvents = [];
+    revealedAgentRuntimeEvents = [];
+    lastDisplayedRuntimeEvent = "";
     fullCaseSnapshot = makeBlankCase(prompt);
     backendComplete = false;
+    backendSnapshotFinalized = false;
     backendError = null;
     pendingResponse = "";
     lastQueuedTimelineLength = 0;
@@ -523,6 +686,35 @@
     }
   }
 
+  function flushPendingAgentRuntimeEvents() {
+    if (!queuedObservedStages.has("G18") || !pendingAgentRuntimeEvents.length) return;
+    pendingAgentRuntimeEvents.forEach(item => playbackQueue.push(item));
+    pendingAgentRuntimeEvents = [];
+  }
+
+  function enqueueAgentRuntime(snapshot) {
+    const events = Array.isArray(snapshot?.agentRuntime?.events)
+      ? snapshot.agentRuntime.events
+      : [];
+
+    for (const event of events) {
+      const key = agentRuntimeEventKey(event);
+      if (!key || queuedAgentRuntimeEvents.has(key)) continue;
+      queuedAgentRuntimeEvents.add(key);
+      const item = {
+        kind: "agent-runtime",
+        runtimeEvent: event,
+        runtimeEventKey: key
+      };
+      if (queuedObservedStages.has("G18")) {
+        playbackQueue.push(item);
+      } else {
+        pendingAgentRuntimeEvents.push(item);
+      }
+    }
+    flushPendingAgentRuntimeEvents();
+  }
+
   function displayDelayMs() {
     const value = Number(document.getElementById("speed")?.value || 620);
     return Math.max(140, value);
@@ -543,6 +735,18 @@
 
   async function revealPlaybackItem(item, prompt) {
     if (!fullCaseSnapshot) return;
+
+    if (item.kind === "agent-runtime") {
+      const event = item.runtimeEvent || {};
+      revealedAgentRuntimeEvents.push(event);
+      lastDisplayedRuntimeEvent = event.event || "agent-runtime";
+      paintSnapshot(fullCaseSnapshot, "G18");
+      document.getElementById("requestState").textContent = visualPaused ? `PAUSED · ${lastDisplayedRuntimeEvent}` : "RUNNING";
+      setCollectorState(`AGENT · ${lastDisplayedRuntimeEvent}`, "connected");
+      message.textContent = `Post-G18 Agent Runtime · ${lastDisplayedRuntimeEvent} · current-run runtime event`;
+      await waitVisualDelay(displayDelayMs());
+      return;
+    }
 
     if (item.sourceOnly) {
       revealedSourceStages.add(item.stage);
@@ -589,7 +793,7 @@
         continue;
       }
 
-      if (backendComplete) break;
+      if (backendSnapshotFinalized && playbackQueue.length === 0) break;
       await sleep(50);
     }
 
@@ -621,7 +825,7 @@
         pauseButton.textContent = "▶ Resume";
         pauseButton.classList.add("pauseState");
       }
-      const where = lastDisplayedStage || "waiting";
+      const where = lastDisplayedRuntimeEvent || lastDisplayedStage || "waiting";
       document.getElementById("requestState").textContent = `PAUSED · ${where}`;
       setCollectorState(`Paused @ ${where}`, "connected");
       message.textContent = `Visualization paused at ${where}. OpenClaw continues running and ${playbackQueue.length} queued stage(s) will be shown after Resume.`;
@@ -673,6 +877,7 @@
 
       fullCaseSnapshot = payload.trace || fullCaseSnapshot;
       enqueueNewTimeline(fullCaseSnapshot);
+      enqueueAgentRuntime(fullCaseSnapshot);
 
       // Update values already revealed (for example G0 can emit start + resolved)
       // without moving the visual focus ahead of the playback queue.
@@ -690,8 +895,13 @@
       }
 
       if (backendComplete && (payload.archiveSaved || payload.archiveError)) {
-        // One final paint uses the post-flush snapshot returned by the collector.
+        // Final post-flush snapshot can contain terminal Agent Runtime events that
+        // were not present in the first terminal poll. Queue them before allowing
+        // visual playback to finish.
         fullCaseSnapshot = payload.trace || fullCaseSnapshot;
+        enqueueNewTimeline(fullCaseSnapshot);
+        enqueueAgentRuntime(fullCaseSnapshot);
+        backendSnapshotFinalized = true;
         if (lastDisplayedStage && !visualPaused) {
           paintSnapshot(fullCaseSnapshot, lastDisplayedStage);
         } else {
