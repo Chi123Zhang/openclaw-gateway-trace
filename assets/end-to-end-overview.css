@@ -1,0 +1,443 @@
+/* 3 + 3 end-to-end overview.
+ * Presentation only. Gateway cards reuse current G0-G18 run data; Agent cards
+ * reuse trace.agentRuntime.phases from the current run.
+ */
+
+body.e2eOverview .pipeline .track,
+body.e2eOverview .pipeline .runner,
+body.e2eOverview .pipeline .expand,
+body.e2eOverview .pipeline .boundary{
+  display:none!important;
+}
+
+body.e2eOverview .pipeline .moduleWrap{
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+  margin-top:8px!important;
+}
+
+body.e2eOverview #moduleRow.e2eModuleRow{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+  padding:0!important;
+}
+
+.e2eOverviewRoot{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  width:100%;
+}
+
+.e2ePhaseGroup{
+  min-width:0;
+}
+
+.e2eGroupHead{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 6px;
+  color:#cdbb7d;
+  font:900 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+
+.e2eGroupHead::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:#3f4c4d;
+}
+
+.e2ePhaseRow{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  align-items:stretch;
+}
+
+.e2ePhaseCard{
+  position:relative;
+  min-width:0;
+  min-height:138px;
+  padding:11px 12px 10px;
+  border:1px solid #536166;
+  border-top:3px solid #d1ad50;
+  border-radius:8px;
+  background:#20343b;
+  color:#fff7e3;
+  cursor:pointer;
+  text-align:left;
+  transition:transform .12s ease,border-color .12s ease,background .12s ease,box-shadow .12s ease;
+}
+
+.e2ePhaseCard:hover{
+  transform:translateY(-1px);
+  border-color:#c5a34d;
+  background:#263b42;
+}
+
+.e2ePhaseCard.active{
+  border-color:#e0bd5a;
+  background:#344035;
+  box-shadow:0 0 0 2px rgba(224,189,90,.09);
+}
+
+.e2ePhaseCard.complete::after{
+  content:"✓";
+  position:absolute;
+  top:8px;
+  right:9px;
+  color:#7ebdff;
+  font-size:10px;
+  font-weight:900;
+}
+
+.e2ePhaseTop{
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+}
+
+.e2ePhaseNumber{
+  display:grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  border:2px solid #d4b151;
+  border-radius:50%;
+  background:#393322;
+  color:#ffe69e;
+  font:900 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+.e2eAgentCard .e2ePhaseNumber{
+  border-color:#6e9fd1;
+  background:#203444;
+  color:#b9ddff;
+}
+
+.e2ePhaseTitle{
+  min-width:0;
+  color:#fff8e9;
+  font-size:11px;
+  font-weight:900;
+  line-height:1.15;
+}
+
+.e2ePhaseStatus{
+  max-width:110px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  padding:3px 6px;
+  border:1px solid #6b6040;
+  border-radius:999px;
+  background:#302d20;
+  color:#f1d989;
+  font:850 5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  text-transform:uppercase;
+}
+
+.e2ePhaseStatus.good{
+  border-color:#426b54;
+  background:#20372a;
+  color:#a8dfb5;
+}
+.e2ePhaseStatus.info{
+  border-color:#426889;
+  background:#1d3141;
+  color:#a8d4ff;
+}
+.e2ePhaseStatus.muted{
+  border-color:#4b5659;
+  background:#1d2a2f;
+  color:#8e9b9f;
+}
+
+.e2ePhaseSubtitle{
+  margin:7px 0 8px 38px;
+  color:#bdb6a2;
+  font-size:7px;
+  font-weight:650;
+  line-height:1.35;
+}
+
+.e2eMiniFlow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  align-items:center;
+}
+
+.e2eStage,
+.e2eRuntimeStep{
+  min-width:0;
+  padding:4px 6px;
+  border:1px solid #46565b;
+  border-radius:5px;
+  background:#192b31;
+  color:#b7c0bc;
+  font:800 6px/1.15 ui-monospace,SFMono-Regular,Menlo,monospace;
+  cursor:pointer;
+}
+
+.e2eStage.observed,
+.e2eRuntimeStep.observed{
+  border-color:#7a6940;
+  background:#302d20;
+  color:#ffe49c;
+}
+
+.e2eRuntimeStep.response{
+  border-color:#426889;
+  background:#1d3141;
+  color:#afd8ff;
+}
+
+.e2eStage.current,
+.e2eRuntimeStep.current{
+  transform:scale(1.06);
+  border-color:#f0c45d;
+  background:#493d20;
+  color:#fff2bf;
+  box-shadow:0 0 0 2px rgba(240,196,93,.10);
+}
+
+.e2eFlowArrow{
+  color:#b99b4f;
+  font-size:8px;
+  font-weight:900;
+}
+
+.e2ePhaseFooter{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:9px;
+  padding-top:7px;
+  border-top:1px solid #3c4a4d;
+  color:#c9ac5a;
+  font-size:6px;
+  font-weight:850;
+}
+
+.e2eCurrentFacts{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#d8d0bb;
+  font:750 6px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+/* Phase inspector */
+.e2ePhaseBackdrop{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9996;
+  background:rgba(9,14,15,.58);
+  backdrop-filter:blur(2px);
+}
+.e2ePhasePanel{
+  display:none;
+  position:fixed;
+  z-index:9997;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(900px,88vw);
+  max-height:78vh;
+  overflow:auto;
+  border:1px solid #71613e;
+  border-radius:10px;
+  background:#1a2b31;
+  box-shadow:0 22px 70px rgba(0,0,0,.35);
+}
+body.e2ePhaseOpen .e2ePhaseBackdrop,
+body.e2ePhaseOpen .e2ePhasePanel{display:block}
+
+.e2ePhasePanelHead{
+  position:sticky;
+  top:0;
+  z-index:2;
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:center;
+  padding:13px 15px;
+  border-bottom:1px solid #465052;
+  background:#1b2d33;
+}
+.e2ePhasePanelKicker{
+  color:#c0ad69;
+  font:900 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.e2ePhasePanelTitle{
+  margin-top:4px;
+  color:#fff7e5;
+  font-size:15px;
+  font-weight:900;
+}
+.e2ePhasePanelClose{
+  width:30px;
+  height:30px;
+  border:1px solid #5a5a49;
+  border-radius:6px;
+  background:#21343a;
+  color:#ddd3b7;
+  cursor:pointer;
+}
+
+.e2ePhasePanelBody{
+  padding:13px 15px 16px;
+}
+.e2ePhaseIntro{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+}
+.e2ePhasePurpose,
+.e2ePhaseRunStatus{
+  padding:10px 11px;
+  border:1px solid #435057;
+  border-radius:7px;
+  background:#20343b;
+}
+.e2ePhasePurpose p{
+  margin:4px 0 0;
+  color:#eee6d2;
+  font-size:9px;
+  line-height:1.45;
+}
+.e2ePhaseRunStatus{
+  min-width:132px;
+}
+.e2ePanelLabel{
+  color:#aaa38d;
+  font:850 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.e2ePhaseRunStatus strong{
+  display:block;
+  margin-top:5px;
+  color:#ffd86f;
+  font:900 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+.e2ePanelSectionTitle{
+  margin:14px 0 7px;
+  color:#d2bd73;
+  font-size:8px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+.e2ePanelSteps{
+  display:grid;
+  gap:6px;
+}
+.e2ePanelStep{
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:start;
+  padding:8px 9px;
+  border:1px solid #46555a;
+  border-radius:6px;
+  background:#20343a;
+}
+.e2ePanelStepNum{
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border:1px solid #79683f;
+  border-radius:50%;
+  background:#312c1f;
+  color:#ffe096;
+  font:900 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.e2ePanelStepTitle{
+  color:#fff5df;
+  font-size:8px;
+  font-weight:850;
+}
+.e2ePanelStepDetail{
+  margin-top:4px;
+  color:#bcb5a1;
+  font-size:7px;
+  line-height:1.4;
+}
+.e2eEvidence{
+  padding:3px 5px;
+  border:1px solid #4b5c62;
+  border-radius:999px;
+  color:#9da9ad;
+  font:850 5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  white-space:nowrap;
+}
+.e2eEvidence.runtime{
+  border-color:#74633c;
+  background:#302b1e;
+  color:#f4d98e;
+}
+.e2eEvidence.response{
+  border-color:#426889;
+  background:#1d3141;
+  color:#afd8ff;
+}
+.e2eEvidence.source{
+  border-color:#4c565b;
+  background:#1e2b30;
+  color:#abb3b4;
+}
+.e2eEvidence.coverage{
+  border-color:#506653;
+  background:#203128;
+  color:#b4d3b7;
+}
+
+.e2eSourceSteps{
+  display:grid;
+  gap:5px;
+}
+.e2eSourceStep{
+  padding:7px 9px;
+  border-left:2px solid #6f613c;
+  background:#1d3036;
+}
+.e2eSourceStep strong{
+  color:#eee4cb;
+  font-size:7px;
+}
+.e2eSourceStep p{
+  margin:3px 0;
+  color:#b9b19c;
+  font-size:7px;
+  line-height:1.4;
+}
+.e2eSourceStep code{
+  color:#91bed0;
+  font-size:6px;
+  white-space:normal;
+}
+
+@media(max-width:800px){
+  .e2ePhaseRow{grid-template-columns:1fr}
+  .e2ePhaseCard{min-height:0}
+  .e2ePhaseIntro{grid-template-columns:1fr}
+  .e2ePhaseRunStatus{min-width:0}
+}
