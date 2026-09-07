@@ -1,0 +1,187 @@
+/* Post-G18 Agent Runtime overview.
+ * Presentation only: all values come from trace.agentRuntime for the current run.
+ */
+
+@media (min-width:1041px){
+  .pipeline .boundary{
+    margin-top:10px!important;
+    padding:10px 12px!important;
+    border:1px solid #74684a!important;
+    border-radius:9px!important;
+    background:linear-gradient(180deg,#21343a 0%,#1a2b31 100%)!important;
+  }
+
+  .pipeline .boundaryGrid{
+    display:block!important;
+  }
+
+  .pipeline .boundaryGrid>.runtimeBoundaryLegacy,
+  .pipeline .boundaryGrid>.returnArrow,
+  .pipeline .returnNote{
+    display:none!important;
+  }
+
+  .pipeline .boundaryGrid>.boundaryBox:last-child{
+    display:grid!important;
+    grid-template-columns:auto auto 1fr!important;
+    align-items:center!important;
+    gap:10px!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+
+  .agentRuntimeObservedPanel>strong{
+    color:#fff5dc!important;
+    font-size:11px!important;
+    font-weight:900!important;
+    white-space:nowrap!important;
+  }
+
+  .agentRuntimeStatus{
+    display:inline-flex!important;
+    align-items:center!important;
+    width:max-content!important;
+    padding:4px 7px!important;
+    border:1px solid #7a6940!important;
+    border-radius:999px!important;
+    background:#38311f!important;
+    color:#ffe198!important;
+    font:850 6px/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+    letter-spacing:.05em!important;
+  }
+
+  .agentRuntimeStatus[data-tone="complete"]{
+    border-color:#55735d!important;
+    background:#20372a!important;
+    color:#a9e0b5!important;
+  }
+
+  .agentRuntimeStatus[data-tone="running"]{
+    border-color:#947b3f!important;
+    background:#3a321d!important;
+    color:#ffe092!important;
+  }
+
+  .agentRuntimeStatus[data-tone="missing"]{
+    border-color:#625d51!important;
+    background:#292d2b!important;
+    color:#aaa495!important;
+  }
+
+  .agentRuntimeFlow{
+    grid-column:1/-1!important;
+    display:grid!important;
+    grid-template-columns:
+      minmax(96px,1fr) 18px
+      minmax(96px,1fr) 18px
+      minmax(128px,1.25fr) 18px
+      minmax(96px,1fr) 18px
+      minmax(110px,1.1fr) 18px
+      minmax(104px,1fr)!important;
+    gap:4px!important;
+    align-items:stretch!important;
+    margin-top:2px!important;
+  }
+
+  .agentRuntimeNode{
+    min-width:0!important;
+    padding:8px 9px!important;
+    border:1px solid #596167!important;
+    border-radius:7px!important;
+    background:#23373e!important;
+  }
+
+  .agentRuntimeNode span{
+    display:block!important;
+    color:#b9ae8d!important;
+    font-size:5px!important;
+    font-weight:850!important;
+    letter-spacing:.07em!important;
+    text-transform:uppercase!important;
+  }
+
+  .agentRuntimeNode strong{
+    display:block!important;
+    margin-top:5px!important;
+    color:#fff8e8!important;
+    font-size:8px!important;
+    font-weight:850!important;
+    line-height:1.2!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  .agentRuntimeNode-observed{
+    border-color:#8e7843!important;
+    background:#322f24!important;
+    box-shadow:inset 0 0 0 1px rgba(240,195,93,.05)!important;
+  }
+
+  .agentRuntimeNode-observed strong{
+    color:#ffe7a5!important;
+  }
+
+  .agentRuntimeNode-neutral{
+    border-color:#4f5d5d!important;
+    background:#253437!important;
+  }
+
+  .agentRuntimeNode-missing{
+    border-style:dashed!important;
+    border-color:#49565a!important;
+    background:#1b292e!important;
+    opacity:.72!important;
+  }
+
+  .agentRuntimeNode-missing strong{
+    color:#8c938e!important;
+  }
+
+  .agentRuntimeFlowArrow{
+    display:grid!important;
+    place-items:center!important;
+    color:#dfbc61!important;
+    font-size:13px!important;
+    font-weight:900!important;
+  }
+
+  .agentRuntimeFact{
+    display:none!important;
+  }
+
+  .agentRuntimeTools{
+    grid-column:1/-1!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:5px!important;
+    margin-top:2px!important;
+  }
+
+  .agentRuntimeTools span{
+    display:inline-flex!important;
+    padding:4px 7px!important;
+    border:1px solid #74633c!important;
+    border-radius:999px!important;
+    background:#302b1e!important;
+    color:#f3d88c!important;
+    font-size:6px!important;
+    font-weight:800!important;
+  }
+
+  .agentRuntimeMissing .agentRuntimeFlow{
+    opacity:.82!important;
+  }
+}
+
+@media (max-width:1040px){
+  .agentRuntimeFlow{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:6px!important;
+  }
+  .agentRuntimeFlowArrow{
+    transform:rotate(90deg)!important;
+  }
+}
