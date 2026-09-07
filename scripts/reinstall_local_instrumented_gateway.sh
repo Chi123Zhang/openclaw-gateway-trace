@@ -106,9 +106,45 @@ echo
 echo "Installing LaunchAgent from local instrumented dist..."
 node "$OPENCLAW_ROOT/openclaw.mjs" gateway install --force
 
+# OpenClaw v2026.7.1-2's install path already bootstraps the RunAtLoad LaunchAgent.
+# Do NOT immediately call gateway restart here: upstream explicitly avoids a
+# kickstart after install because it can SIGTERM the freshly booted Gateway and
+# push real listener startup past the health deadline.
+GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 echo
-echo "Restarting the locally-installed Gateway..."
-node "$OPENCLAW_ROOT/openclaw.mjs" gateway restart --force
+echo "Waiting for the freshly installed Gateway on port $GATEWAY_PORT..."
+gateway_ready=0
+for _ in {1..20}; do
+  if python3 - "$GATEWAY_PORT" <<'PY'
+import socket, sys
+port = int(sys.argv[1])
+with socket.socket() as sock:
+    sock.settimeout(0.2)
+    raise SystemExit(0 if sock.connect_ex(("127.0.0.1", port)) == 0 else 1)
+PY
+  then
+    gateway_ready=1
+    break
+  fi
+  sleep 1
+done
+
+if [[ "$gateway_ready" != "1" ]]; then
+  echo
+  echo "ERROR: locally installed Gateway did not open port $GATEWAY_PORT." >&2
+  echo
+  echo "LaunchAgent runtime:" >&2
+  launchctl print "gui/$(id -u)/ai.openclaw.gateway" 2>&1 | tail -n 120 || true
+  echo
+  echo "gateway.log tail:" >&2
+  tail -n 120 "$HOME/Library/Logs/openclaw/gateway.log" 2>/dev/null || true
+  echo
+  echo "gateway stderr tail:" >&2
+  tail -n 120 "$HOME/Library/Logs/openclaw/gateway.err.log" 2>/dev/null || true
+  exit 9
+fi
+
+echo "Gateway listener is up."
 
 # 7) Verify source, dist, and LaunchAgent alignment.
 echo
