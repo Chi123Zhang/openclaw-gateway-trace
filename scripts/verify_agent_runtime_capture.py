@@ -41,13 +41,25 @@ def main() -> int:
     payload = json.loads(path.read_text(encoding="utf-8"))
     trace = payload.get("trace") if isinstance(payload, dict) else None
     runtime = trace.get("agentRuntime") if isinstance(trace, dict) else None
+    collector = trace.get("_collector") if isinstance(trace, dict) else {}
+    gateway_stages = collector.get("traceStagesObserved") if isinstance(collector, dict) else []
+    gateway_timeline = collector.get("timeline") if isinstance(collector, dict) else []
+    if not isinstance(gateway_stages, list):
+        gateway_stages = []
+    if not isinstance(gateway_timeline, list):
+        gateway_timeline = []
+
+    print(f"Run: {path.name}")
+    print(f"Gateway G0-G18 observed stages: {len(gateway_stages)}")
+    print("Gateway stages      :", ", ".join(map(str, gateway_stages)) if gateway_stages else "NONE")
+    print(f"Gateway timeline events: {len(gateway_timeline)}")
+    print()
+
     if not isinstance(runtime, dict):
         raise SystemExit(
             "This run has no trace.agentRuntime object. Pull/restart the collector "
             "and run a fresh trace after applying the v2026.7.1-2 instrumentation."
         )
-
-    print(f"Run: {path.name}")
     print(f"Agent Runtime observed: {yn(runtime.get('observed'))}")
     print()
     print("final Agent       :", shown(runtime.get("finalAgent")))
