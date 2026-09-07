@@ -211,14 +211,14 @@ def apply_stages(root: Path) -> None:
         auth,
         'event: "connection_auth_state_resolution_started"',
         '  const sharedConnectAuth = resolveSharedConnectAuth(params.connectAuth);',
+        '  const sharedConnectAuth = resolveSharedConnectAuth(params.connectAuth);\n'
         '  writeTraceClawGatewayRuntimeEvent({\n'
         '    stage: "G0",\n'
         '    event: "connection_auth_state_resolution_started",\n'
         '    authMode: params.resolvedAuth.mode,\n'
         '    hasDeviceIdentity: params.hasDeviceIdentity,\n'
-        '    sharedAuthProvided: Boolean(resolveSharedConnectAuth(params.connectAuth)),\n'
-        '  });\n'
-        '  const sharedConnectAuth = resolveSharedConnectAuth(params.connectAuth);',
+        '    sharedAuthProvided: Boolean(sharedConnectAuth),\n'
+        '  });',
     )
     insert_once(
         auth,
