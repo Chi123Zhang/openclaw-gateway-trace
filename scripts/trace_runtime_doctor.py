@@ -26,6 +26,28 @@ PLIST = Path.home() / "Library/LaunchAgents/ai.openclaw.gateway.plist"
 CORE_MARKER = "traceclaw.gateway.runtime.v1"
 AGENT_MARKER = "traceclaw.agent.runtime.v1"
 
+GATEWAY_STAGE_EVENT_MARKERS = {
+    "G0": "connection_auth_state_resolved",
+    "G1": "shared_credential_authorized",
+    "G2": "connection_authentication_completed",
+    "G3": "gateway_method_authorized",
+    "G4": "chat_send_request_validated",
+    "G5": "chat_message_normalized",
+    "G6": "requested_agent_resolved",
+    "G7": "session_resolved",
+    "G8": "agent_session_validated",
+    "G9": "effective_agent_resolved",
+    "G10": "session_send_policy_evaluated",
+    "G11": "run_idempotency_guard_passed",
+    "G12": "work_admission_completed",
+    "G13": "runtime_context_constructed",
+    "G14": "dispatch_inbound_entered",
+    "G15": "inbound_context_finalized",
+    "G16": "reply_dispatch_orchestration_entered",
+    "G17": "effective_agent_reresolved",
+    "G18": "reply_resolver_selected",
+}
+
 
 def contains(root: Path, marker: str, suffixes: tuple[str, ...]) -> list[Path]:
     hits: list[Path] = []
@@ -89,6 +111,18 @@ def count_jsonl(path: Path) -> dict[str, int]:
     return counts
 
 
+def tree_contains(root: Path, marker: str, suffixes: tuple[str, ...]) -> bool:
+    return bool(contains(root, marker, suffixes))
+
+
+def stage_marker_status(root: Path, suffixes: tuple[str, ...]) -> tuple[list[str], list[str]]:
+    present: list[str] = []
+    missing: list[str] = []
+    for stage, marker in GATEWAY_STAGE_EVENT_MARKERS.items():
+        (present if tree_contains(root, marker, suffixes) else missing).append(stage)
+    return present, missing
+
+
 def fmt_hits(hits: Iterable[Path], root: Path) -> str:
     items = []
     for path in hits:
@@ -112,6 +146,12 @@ def main() -> int:
     source_hits_agent = contains(root / "src", AGENT_MARKER, (".ts", ".js", ".mjs"))
     dist_hits_core = contains(root / "dist", CORE_MARKER, (".js", ".mjs", ".cjs"))
     dist_hits_agent = contains(root / "dist", AGENT_MARKER, (".js", ".mjs", ".cjs"))
+    source_stage_present, source_stage_missing = stage_marker_status(
+        root / "src", (".ts", ".js", ".mjs")
+    )
+    dist_stage_present, dist_stage_missing = stage_marker_status(
+        root / "dist", (".js", ".mjs", ".cjs")
+    )
 
     raw_args, plist_env = load_plist_args()
     effective_args = unwrap_program_arguments(raw_args)
@@ -126,14 +166,24 @@ def main() -> int:
     print("Trace file   :", trace)
     print()
     print("[source]")
-    print("G0-G18 marker :", "YES" if source_hits_core else "NO")
+    print("Gateway schema marker:", "YES" if source_hits_core else "NO")
     print("  ", fmt_hits(source_hits_core, root))
+    print(
+        "G0-G18 stage markers:",
+        f"{len(source_stage_present)}/19",
+        "missing=" + (",".join(source_stage_missing) if source_stage_missing else "none"),
+    )
     print("Agent marker  :", "YES" if source_hits_agent else "NO")
     print("  ", fmt_hits(source_hits_agent, root))
     print()
     print("[built dist]")
-    print("G0-G18 marker :", "YES" if dist_hits_core else "NO")
+    print("Gateway schema marker:", "YES" if dist_hits_core else "NO")
     print("  ", fmt_hits(dist_hits_core, root))
+    print(
+        "G0-G18 stage markers:",
+        f"{len(dist_stage_present)}/19",
+        "missing=" + (",".join(dist_stage_missing) if dist_stage_missing else "none"),
+    )
     print("Agent marker  :", "YES" if dist_hits_agent else "NO")
     print("  ", fmt_hits(dist_hits_agent, root))
     print()
@@ -153,11 +203,19 @@ def main() -> int:
 
     problems: list[str] = []
     if not source_hits_core:
-        problems.append("local src does not contain the G0-G18 TraceClaw instrumentation marker")
+        problems.append("local src does not contain the Gateway TraceClaw schema helper")
+    if source_stage_missing:
+        problems.append(
+            "local src is missing Gateway stage instrumentation: " + ", ".join(source_stage_missing)
+        )
     if not source_hits_agent:
         problems.append("local src does not contain post-G18 Agent Runtime instrumentation")
     if source_hits_core and not dist_hits_core:
-        problems.append("G0-G18 source is patched but dist was not rebuilt from it")
+        problems.append("Gateway source helper is patched but dist was not rebuilt from it")
+    if dist_stage_missing:
+        problems.append(
+            "built dist is missing Gateway stage instrumentation: " + ", ".join(dist_stage_missing)
+        )
     if source_hits_agent and not dist_hits_agent:
         problems.append("Agent Runtime source is patched but dist was not rebuilt from it")
     if raw_args and not launch_uses_local:
