@@ -1,4 +1,9 @@
 (() => {
+  // Keep the established six-column Trace View as the default. The experimental
+  // 3+3 architecture overview remains available only when explicitly requested.
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("architecture") !== "1") return;
+
   const catalog = window.TRACECLAW_END_TO_END_PHASES;
   const root = document.getElementById("moduleRow");
   if (!catalog || !root) return;
