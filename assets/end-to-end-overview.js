@@ -79,9 +79,10 @@
     const observedCount = phase.stages.filter(id => observed.has(id)).length;
     const complete = observedCount === phase.stages.length;
     const active = inProgress() && phase.stages.includes(typeof activeStage !== "undefined" ? activeStage : "");
-    const card = document.createElement("button");
-    card.type = "button";
+    const card = document.createElement("div");
     card.className = "e2ePhaseCard e2eGatewayCard";
+    card.setAttribute("role", "button");
+    card.tabIndex = 0;
     card.dataset.phaseId = phase.id;
     card.classList.toggle("complete", complete);
     card.classList.toggle("active", active);
@@ -135,6 +136,11 @@
 
     card.append(top, subtitle, flow, footer);
     card.addEventListener("click", () => openPhasePanel("gateway", phase.id));
+    card.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openPhasePanel("gateway", phase.id);
+    });
     return card;
   }
 
@@ -208,9 +214,10 @@
     const complete = current.status === "complete" || current.status === "completed";
     const statusValue = observedG18 ? current.status : "not captured";
 
-    const card = document.createElement("button");
-    card.type = "button";
+    const card = document.createElement("div");
     card.className = "e2ePhaseCard e2eAgentCard";
+    card.setAttribute("role", "button");
+    card.tabIndex = 0;
     card.dataset.phaseId = phase.id;
     card.classList.toggle("complete", complete);
     card.classList.toggle("active", active);
@@ -257,6 +264,11 @@
 
     card.append(top, subtitle, flow, footer);
     card.addEventListener("click", () => openPhasePanel("agent", phase.id));
+    card.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openPhasePanel("agent", phase.id);
+    });
     return card;
   }
 
