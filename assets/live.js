@@ -226,7 +226,9 @@
     return DATA.modules.map(module => {
       let result = "—";
 
-      if (module.id === focusModule) result = "ACTIVE";
+      // A default UI focus (G3) is not runtime evidence. Show ACTIVE only when
+      // that exact stage has actually been observed in the current run.
+      if (module.id === focusModule && observed.has(focusStage)) result = "ACTIVE";
       if (module.id === "M1" && observed.has("G5")) result = "PASS";
       if (module.id === "M2" && observed.has("G9")) result = meta.agent || "RESOLVED";
       if (module.id === "M3" && observed.has("G12")) result = meta.admissionDecision || "OBSERVED";
@@ -639,8 +641,13 @@
     // response appears only after the currently collected execution path catches up.
     if (pendingResponse) showResponse(pendingResponse);
     document.getElementById("requestState").textContent = "FINISHED";
-    setCollectorState("Trace complete", "connected");
-    message.textContent = `Finished · ${revealedRuntimeStages.size} Gateway stages observed · source-only gaps remain explicitly labeled.`;
+    if (revealedRuntimeStages.size === 0) {
+      setCollectorState("Answer complete · Gateway trace not captured", "error");
+      message.textContent = "The assistant response completed, but this run produced 0 observed G0–G18 runtime stages. The stage cards below are source catalog only, not evidence that G0–G18 were captured.";
+    } else {
+      setCollectorState("Trace complete", "connected");
+      message.textContent = `Finished · ${revealedRuntimeStages.size} Gateway stages observed · source-only gaps remain explicitly labeled.`;
+    }
     neutralizePendingPaint();
     renderRuntimeBoundary();
   }
