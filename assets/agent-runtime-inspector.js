@@ -27,7 +27,7 @@
     ],
     "provider-model": [
       ["Attempt selection", "src/auto-reply/reply/agent-runner-execution.ts · provider / model passed into CLI or embedded run"],
-      ["Final assistant metadata", "src/agents/embedded-agent-subscribe.handlers.messages.ts · assistantMessage.provider / model"],
+      ["Final embedded winner metadata", "src/agents/embedded-agent-runner/run.ts · meta.agentMeta provider / model"],
     ],
     tools: [
       ["Tool construction", "src/agents/embedded-agent-runner/run/attempt.ts · createOpenClawCodingTools"],
@@ -36,7 +36,8 @@
       ["Agent event bus", "src/infra/agent-events.ts · stream=tool"],
     ],
     "final-reply": [
-      ["Embedded reply boundary", "src/agents/embedded-agent-subscribe.handlers.messages.ts · handleMessageEnd / finalAssistantText"],
+      ["Embedded final-result construction", "src/agents/embedded-agent-runner/run.ts · finalAssistantVisibleText / finalAssistantRawText"],
+      ["Embedded capture boundary", "src/auto-reply/reply/agent-runner-execution.ts · winning fallbackResult.result before deferred lifecycle end"],
       ["CLI reply boundary", "src/auto-reply/reply/agent-runner-cli-dispatch.ts · cliText"],
       ["Downstream response fallback", "chat.history after agent.wait · RESPONSE evidence only"],
     ],
@@ -287,6 +288,7 @@
         fact("Provider", runtime.provider, runtime.providerModelEvidence || "NOT CAPTURED"),
         fact("Model", runtime.model, runtime.providerModelEvidence || "NOT CAPTURED"),
         fact("Stop reason", runtime.stopReason, finalized ? "RUNTIME" : "NOT CAPTURED"),
+        fact("Runtime text source", runtime.finalReplyRuntimeSource, finalized ? "RUNTIME" : "NOT CAPTURED"),
       );
       frag.append(facts);
       frag.append(preBlock("Final reply", runtime.finalReply, runtime.finalReplyEvidence || "NOT CAPTURED"));
