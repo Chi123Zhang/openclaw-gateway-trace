@@ -371,10 +371,12 @@
     const provider = finalized?.provider || selected?.provider || "";
     const model = finalized?.model || selected?.model || "";
     const directReply = typeof finalized?.replyText === "string" ? finalized.replyText : "";
-    const downstreamReplyVisible =
+    const downstreamResponseObserved =
       playbackComplete &&
+      full.downstreamAssistantResponseObserved === true;
+    const downstreamReplyVisible =
+      downstreamResponseObserved &&
       !directReply &&
-      full.downstreamAssistantResponseObserved === true &&
       typeof full.finalReply === "string" &&
       full.finalReply.length > 0;
     const visibleFinalReply = directReply || (downstreamReplyVisible ? full.finalReply : "");
@@ -418,12 +420,13 @@
       tools,
       finalReply: visibleFinalReply,
       finalReplyEvidence: visibleFinalReplyEvidence,
+      finalReplyRuntimeSource: finalized?.replyTextSource || "",
       agentReplyDirectlyObserved: Boolean(finalized),
       agentReplyTextDirectlyObserved: Boolean(directReply),
       returnToG16Observed: Boolean(returned),
       replyResultKind: returned?.replyResultKind || "",
       replyCount: returned?.replyCount,
-      downstreamAssistantResponseObserved: downstreamReplyVisible,
+      downstreamAssistantResponseObserved: downstreamResponseObserved,
       attempts: selected ? [selected] : [],
       events: [...revealedAgentRuntimeEvents],
       phases: []
