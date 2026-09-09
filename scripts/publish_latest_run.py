@@ -100,6 +100,16 @@ def git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
 
 
 def push_case(prompt: str) -> None:
+    # Auto-publishing is intentionally tied to main. Committing latest-live on a
+    # feature branch and then running "git push origin main" would push the wrong
+    # ref and leave the generated snapshot unpublished.
+    branch = git("branch", "--show-current").stdout.strip()
+    if branch != "main":
+        raise SystemExit(
+            f"Refusing to publish latest-live from branch {branch or '<detached>'!r}; "
+            "switch the local viewer checkout to main first."
+        )
+
     # Only stage the generated public case. Local collector/runs files stay ignored.
     git("add", str(OUTPUT.relative_to(REPO_ROOT)))
     diff = git("diff", "--cached", "--quiet", check=False)

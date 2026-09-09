@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sys
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -29,12 +30,20 @@ from server import RunRequest, _build_trace, app, client, trace_log
 from trace_parser import TraceCursor, correlate_events, is_agent_runtime_event
 
 
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 _RUN_ARCHIVE_DIR = Path(
     os.environ.get(
         "TRACECLAW_RUN_ARCHIVE_DIR",
         str(Path(__file__).resolve().parent / "runs"),
     )
 ).expanduser()
+_PUBLISH_SCRIPT = _REPO_ROOT / "scripts" / "publish_latest_run.py"
+_AUTO_PUBLISH_LATEST = os.environ.get("TRACECLAW_AUTO_PUBLISH_LATEST", "1").strip().lower() not in {
+    "0",
+    "false",
+    "no",
+    "off",
+}
 
 
 @dataclass
@@ -60,10 +69,14 @@ class LiveRun:
     archive_id: str | None = None
     archive_path: str | None = None
     archive_error: str | None = None
+    publish_status: str = "disabled" if not _AUTO_PUBLISH_LATEST else "pending"
+    publish_error: str | None = None
+    publish_output: str | None = None
 
 
 _RUNS: dict[str, LiveRun] = {}
 _RUNS_LOCK = asyncio.Lock()
+_PUBLISH_LOCK = asyncio.Lock()
 
 
 def _wait_status(payload: Any) -> str:
@@ -190,9 +203,55 @@ async def _execute(run: LiveRun) -> None:
                 send_result=run.send_result,
             )
             _persist_run(run, trace=trace, events=events)
+            if run.status == "complete" and run.archive_path and _AUTO_PUBLISH_LATEST:
+                await _publish_run(run)
+            elif run.status != "complete" and _AUTO_PUBLISH_LATEST:
+                run.publish_status = "skipped"
         except Exception as archive_exc:
             if not run.archive_error:
                 run.archive_error = str(archive_exc)
+
+
+async def _publish_run(run: LiveRun) -> None:
+    """Replace/push data/cases/latest-live.js from this exact completed run."""
+    if not _AUTO_PUBLISH_LATEST:
+        run.publish_status = "disabled"
+        return
+    if not run.archive_path:
+        run.publish_status = "error"
+        run.publish_error = "run archive was not saved; latest-live was not published"
+        return
+    if not _PUBLISH_SCRIPT.is_file():
+        run.publish_status = "error"
+        run.publish_error = f"publish script not found: {_PUBLISH_SCRIPT}"
+        return
+
+    run.publish_status = "publishing"
+    async with _PUBLISH_LOCK:
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable,
+                str(_PUBLISH_SCRIPT),
+                "--run",
+                run.archive_path,
+                "--push",
+                cwd=str(_REPO_ROOT),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+            stdout, _ = await proc.communicate()
+            output = stdout.decode("utf-8", errors="replace").strip()
+            run.publish_output = output or None
+            if proc.returncode != 0:
+                run.publish_status = "error"
+                run.publish_error = output or f"publisher exited with status {proc.returncode}"
+                return
+            run.publish_status = "published"
+        except Exception as exc:
+            # Publishing is a presentation-side effect; never turn a successful
+            # OpenClaw trace into a failed run because Git/GitHub is unavailable.
+            run.publish_status = "error"
+            run.publish_error = str(exc)
 
 
 def _scan_new_events(run: LiveRun) -> None:
@@ -393,6 +452,9 @@ async def poll_live_run(live_run_id: str) -> dict[str, Any]:
         "archiveId": run.archive_id,
         "archiveSaved": bool(run.archive_id),
         "archiveError": run.archive_error,
+        "latestLivePublishEnabled": _AUTO_PUBLISH_LATEST,
+        "latestLivePublishStatus": run.publish_status,
+        "latestLivePublishError": run.publish_error,
     }
 
 

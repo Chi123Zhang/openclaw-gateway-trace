@@ -18,6 +18,7 @@ The Gateway-level trace path is implemented and usable as a live research protot
 | Pause / Resume visualization | Implemented |
 | New Session per run | Implemented |
 | Reuse current Session | Implemented |
+| Auto-publish newest completed run as `data/cases/latest-live.js` | Implemented; enabled by default in `start_live.sh` |
 | Source-level stage detail and pseudocode | Implemented |
 | G14–G16 standalone runtime events | Not currently instrumented; shown only as verified source path |
 | Deeper Agent Runtime provider / model / tool events | Implemented by the pinned v2026.7.1-2 instrumentation patch; requires applying it to the local OpenClaw source |
@@ -109,6 +110,18 @@ ws://127.0.0.1:18789
 ```
 
 The collector runs on the same machine as OpenClaw. Gateway credentials stay local and are not embedded in the browser code.
+
+Completed-run persistence has two layers:
+
+```text
+collector/runs/<timestamp>_<runId>.json   local history, one file per run
+                 ↓
+data/cases/latest-live.js                 one replaceable public "latest" case
+                 ↓
+git commit + push origin main             automatic when enabled
+```
+
+Only the normalized published trace is pushed; the raw local run archive is not.
 
 ## Session behavior
 
@@ -217,6 +230,15 @@ How to make a cake?
 ```
 
 Press **Run trace**. The page will advance as correlated runtime evidence is received.
+
+For a successful completed run, the collector also publishes that exact saved run as
+`data/cases/latest-live.js` and pushes the generated case to `main`. Local
+`collector/runs/*.json` archives remain ignored and continue to accumulate for
+Run history. Disable automatic publication for a session with:
+
+```bash
+TRACECLAW_AUTO_PUBLISH_LATEST=0 zsh start_live.sh
+```
 
 ## Manual startup
 
