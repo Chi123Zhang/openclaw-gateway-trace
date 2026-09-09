@@ -452,3 +452,12 @@ body.e2ePhaseOpen .e2ePhasePanel{display:block}
   .e2ePhaseIntro{grid-template-columns:1fr}
   .e2ePhaseRunStatus{min-width:0}
 }
+
+
+/* Remove redundant overview strips. The connection prerequisite is already
+ * represented by the Connection & Handshake module, and the assistant response
+ * already appears in the top response panel / Agent Runtime summary. */
+body.e2eOverview section.card.conn,
+body.e2eOverview section.card.output{
+  display:none!important;
+}
