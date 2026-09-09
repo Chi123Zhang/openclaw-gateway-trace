@@ -15,6 +15,7 @@ if [[ ! -x "$COLLECTOR_DIR/.venv/bin/python" ]]; then
 fi
 
 export TRACECLAW_LOG_PATH="$TRACE_FILE"
+export TRACECLAW_AUTO_PUBLISH_LATEST="${TRACECLAW_AUTO_PUBLISH_LATEST:-1}"
 
 OPENCLAW_SOURCE_ROOT="${OPENCLAW_SOURCE_ROOT:-/Users/mac/Desktop/openclaw-source-2026.7.1-2}"
 if [[ "${TRACECLAW_SKIP_RUNTIME_DOCTOR:-0}" != "1" && -f "$REPO_DIR/scripts/trace_runtime_doctor.py" ]]; then
@@ -35,7 +36,8 @@ fi
 printf '\nOpenClaw Gateway Trace\n'
 printf 'Trace file: %s\n' "$TRACECLAW_LOG_PATH"
 printf 'Viewer:     http://127.0.0.1:%s/\n' "$PORT"
-printf 'Health:     http://127.0.0.1:%s/health\n\n' "$PORT"
+printf 'Health:     http://127.0.0.1:%s/health\n' "$PORT"
+printf 'Auto-publish latest-live to GitHub: %s\n\n' "$TRACECLAW_AUTO_PUBLISH_LATEST"
 
 # Run with collector/ as Python's import root. server.py and trace_parser.py are
 # intentionally plain sibling modules, so this keeps their existing imports valid.
