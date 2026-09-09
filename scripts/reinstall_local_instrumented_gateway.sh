@@ -39,6 +39,20 @@ if ! grep -Rqs --include='*.ts' --include='*.js' --include='*.mjs' \
   exit 4
 fi
 
+# The embedded final-reply hook must live at the winning run-result boundary,
+# not the earlier handleMessageEnd boundary used by older TraceClaw revisions.
+if ! grep -qs 'replyTextSource: traceClawFinalReplySource' \
+  "$OPENCLAW_ROOT/src/auto-reply/reply/agent-runner-execution.ts"; then
+  echo "ERROR: embedded final-reply winner-result hook is missing." >&2
+  exit 10
+fi
+
+if grep -qs 'event: "agent_reply_finalized"' \
+  "$OPENCLAW_ROOT/src/agents/embedded-agent-subscribe.handlers.messages.ts"; then
+  echo "ERROR: legacy handleMessageEnd final-reply hook is still present." >&2
+  exit 11
+fi
+
 # Stronger check: all nineteen Gateway stage-boundary event markers must exist.
 GATEWAY_MARKERS=(
   connection_auth_state_resolved
@@ -87,6 +101,12 @@ if ! grep -Rqs --include='*.js' --include='*.mjs' --include='*.cjs' \
   'traceclaw.agent.runtime.v1' "$OPENCLAW_ROOT/dist"; then
   echo "ERROR: build completed but dist lacks Agent Runtime instrumentation." >&2
   exit 6
+fi
+
+if ! grep -Rqs --include='*.js' --include='*.mjs' --include='*.cjs' \
+  'replyTextSource' "$OPENCLAW_ROOT/dist"; then
+  echo "ERROR: built dist lacks the embedded final-reply winner-result marker." >&2
+  exit 12
 fi
 
 for marker in "${GATEWAY_MARKERS[@]}"; do
