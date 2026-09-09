@@ -345,7 +345,7 @@
         finalReplyEvidence: "NOT CAPTURED",
         agentReplyDirectlyObserved: false,
         returnToG16Observed: false,
-        downstreamAssistantResponseObserved: downstreamReplyVisible,
+        downstreamAssistantResponseObserved: false,
         events: [],
         phases: []
       };
@@ -404,7 +404,7 @@
       provider,
       model,
       providerModelEvidence: finalized && (finalized.provider || finalized.model)
-        ? "RUNTIME · final assistant message"
+        ? "RUNTIME · final embedded/CLI run result"
         : (selected ? "RUNTIME · selected attempt" : "NOT CAPTURED"),
       runStarted: Boolean(started),
       startedAt: started?.startedAt || started?.ts || "",
@@ -423,7 +423,7 @@
       returnToG16Observed: Boolean(returned),
       replyResultKind: returned?.replyResultKind || "",
       replyCount: returned?.replyCount,
-      downstreamAssistantResponseObserved: false,
+      downstreamAssistantResponseObserved: downstreamReplyVisible,
       attempts: selected ? [selected] : [],
       events: [...revealedAgentRuntimeEvents],
       phases: []
