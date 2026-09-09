@@ -32,6 +32,7 @@
   let fullCaseSnapshot = null;
   let backendComplete = false;
   let backendSnapshotFinalized = false;
+  let playbackComplete = false;
   let backendError = null;
   let pendingResponse = "";
   let lastQueuedTimelineLength = 0;
@@ -344,7 +345,7 @@
         finalReplyEvidence: "NOT CAPTURED",
         agentReplyDirectlyObserved: false,
         returnToG16Observed: false,
-        downstreamAssistantResponseObserved: false,
+        downstreamAssistantResponseObserved: downstreamReplyVisible,
         events: [],
         phases: []
       };
@@ -370,6 +371,20 @@
     const provider = finalized?.provider || selected?.provider || "";
     const model = finalized?.model || selected?.model || "";
     const directReply = typeof finalized?.replyText === "string" ? finalized.replyText : "";
+    const downstreamReplyVisible =
+      playbackComplete &&
+      !directReply &&
+      full.downstreamAssistantResponseObserved === true &&
+      typeof full.finalReply === "string" &&
+      full.finalReply.length > 0;
+    const visibleFinalReply = directReply || (downstreamReplyVisible ? full.finalReply : "");
+    const visibleFinalReplyEvidence = directReply
+      ? "RUNTIME · agent reply finalized"
+      : downstreamReplyVisible
+        ? (full.finalReplyEvidence || "RESPONSE · chat.history after agent.wait")
+        : finalized
+          ? "RUNTIME · agent reply finalized (empty)"
+          : "NOT CAPTURED";
     const phase = String(ended?.phase || "").toLowerCase();
 
     let status = "selected";
@@ -401,9 +416,10 @@
       toolEventObserved: tools.length > 0,
       toolCount: tools.length,
       tools,
-      finalReply: directReply,
-      finalReplyEvidence: directReply ? "RUNTIME · agent reply finalized" : "NOT CAPTURED",
-      agentReplyDirectlyObserved: Boolean(directReply || finalized),
+      finalReply: visibleFinalReply,
+      finalReplyEvidence: visibleFinalReplyEvidence,
+      agentReplyDirectlyObserved: Boolean(finalized),
+      agentReplyTextDirectlyObserved: Boolean(directReply),
       returnToG16Observed: Boolean(returned),
       replyResultKind: returned?.replyResultKind || "",
       replyCount: returned?.replyCount,
@@ -612,6 +628,7 @@
     revealedAgentRuntimeEvents = [];
     lastDisplayedRuntimeEvent = "";
     fullCaseSnapshot = makeBlankCase("");
+    playbackComplete = false;
     lastDisplayedStage = null;
     paintSnapshot(fullCaseSnapshot, "G3");
     document.getElementById("queryText").textContent = "—";
@@ -634,6 +651,7 @@
     fullCaseSnapshot = makeBlankCase(prompt);
     backendComplete = false;
     backendSnapshotFinalized = false;
+    playbackComplete = false;
     backendError = null;
     pendingResponse = "";
     lastQueuedTimelineLength = 0;
@@ -799,6 +817,14 @@
 
     if (!currentLiveId) return;
     if (backendError) throw new Error(backendError);
+
+    // Playback is now caught up with the collector's final post-flush snapshot.
+    // Repaint once so a downstream chat.history reply can be shown explicitly as
+    // RESPONSE evidence if the direct Agent final-reply event is absent.
+    playbackComplete = true;
+    if (fullCaseSnapshot) {
+      paintSnapshot(fullCaseSnapshot, lastDisplayedStage || "G18");
+    }
 
     // Do not reveal the answer ahead of a paused/queued visualization. The final
     // response appears only after the currently collected execution path catches up.
