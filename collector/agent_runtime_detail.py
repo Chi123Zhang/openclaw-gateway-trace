@@ -391,7 +391,7 @@ def _normalize_agent_runtime(
         or ""
     )
     provider_model_evidence = (
-        "RUNTIME · final assistant message"
+        "RUNTIME · final embedded/CLI run result"
         if finalized and (finalized.get("provider") or finalized.get("model"))
         else ("RUNTIME · selected attempt" if selected else "NOT CAPTURED")
     )
@@ -403,17 +403,24 @@ def _normalize_agent_runtime(
         for event in runtime_events
     )
 
+    direct_reply_event_observed = finalized is not None
     direct_final_reply = ""
     if finalized and isinstance(finalized.get("replyText"), str):
         direct_final_reply = finalized["replyText"]
 
     downstream_reply = response if isinstance(response, str) else ""
-    final_reply = direct_final_reply or downstream_reply
-    final_reply_evidence = (
-        "RUNTIME · agent reply finalized"
-        if direct_final_reply
-        else ("RESPONSE · chat.history after agent.wait" if downstream_reply else "NOT CAPTURED")
-    )
+    if direct_final_reply:
+        final_reply = direct_final_reply
+        final_reply_evidence = "RUNTIME · agent reply finalized"
+    elif downstream_reply:
+        final_reply = downstream_reply
+        final_reply_evidence = "RESPONSE · chat.history after agent.wait"
+    elif direct_reply_event_observed:
+        final_reply = ""
+        final_reply_evidence = "RUNTIME · agent reply finalized (empty)"
+    else:
+        final_reply = ""
+        final_reply_evidence = "NOT CAPTURED"
 
     phase = str((ended or {}).get("phase") or "").strip().lower()
     if phase == "end":
@@ -444,6 +451,7 @@ def _normalize_agent_runtime(
         "provider": provider,
         "model": model,
         "providerModelEvidence": provider_model_evidence,
+        "finalReplyRuntimeSource": (finalized or {}).get("replyTextSource") or "",
         "runStarted": started is not None,
         "startedAt": (started or {}).get("startedAt") or (started or {}).get("ts"),
         "runEnded": terminal_observed,
@@ -456,7 +464,8 @@ def _normalize_agent_runtime(
         "tools": tools,
         "finalReply": final_reply,
         "finalReplyEvidence": final_reply_evidence,
-        "agentReplyDirectlyObserved": bool(direct_final_reply),
+        "agentReplyDirectlyObserved": direct_reply_event_observed,
+        "agentReplyTextDirectlyObserved": bool(direct_final_reply),
         "returnToG16Observed": returned is not None,
         "replyResultKind": (returned or {}).get("replyResultKind") or "",
         "replyCount": (returned or {}).get("replyCount"),
