@@ -25,6 +25,17 @@ PLIST = Path.home() / "Library/LaunchAgents/ai.openclaw.gateway.plist"
 
 CORE_MARKER = "traceclaw.gateway.runtime.v1"
 AGENT_MARKER = "traceclaw.agent.runtime.v1"
+EMBEDDED_FINAL_REPLY_MARKER = "replyTextSource: traceClawFinalReplySource"
+
+AGENT_RUNTIME_EVENT_MARKERS = (
+    "agent_runtime_selected",
+    "agent_run_started",
+    "tool_started",
+    "tool_result",
+    "agent_reply_finalized",
+    "agent_run_ended",
+    "reply_resolver_returned",
+)
 
 GATEWAY_STAGE_EVENT_MARKERS = {
     "G0": "connection_auth_state_resolved",
@@ -123,6 +134,30 @@ def stage_marker_status(root: Path, suffixes: tuple[str, ...]) -> tuple[list[str
     return present, missing
 
 
+def agent_marker_status(root: Path, suffixes: tuple[str, ...]) -> tuple[list[str], list[str]]:
+    present: list[str] = []
+    missing: list[str] = []
+    for marker in AGENT_RUNTIME_EVENT_MARKERS:
+        (present if tree_contains(root, marker, suffixes) else missing).append(marker)
+    return present, missing
+
+
+def embedded_final_reply_placement_status(root: Path) -> tuple[bool, bool, bool]:
+    execution = root / "src/auto-reply/reply/agent-runner-execution.ts"
+    messages = root / "src/agents/embedded-agent-subscribe.handlers.messages.ts"
+    execution_has_new = False
+    messages_has_legacy = False
+    if execution.exists():
+        execution_has_new = EMBEDDED_FINAL_REPLY_MARKER in execution.read_text(
+            encoding="utf-8", errors="ignore"
+        )
+    if messages.exists():
+        messages_has_legacy = 'event: "agent_reply_finalized"' in messages.read_text(
+            encoding="utf-8", errors="ignore"
+        )
+    return execution_has_new and not messages_has_legacy, execution_has_new, messages_has_legacy
+
+
 def g6_chat_send_placement_status(root: Path) -> tuple[bool, int, int]:
     """Return (inside_chat_send, inside_count, outside_count) for the G6 marker."""
     path = root / "src/gateway/server-methods/chat.ts"
@@ -184,6 +219,18 @@ def main() -> int:
     dist_stage_present, dist_stage_missing = stage_marker_status(
         root / "dist", (".js", ".mjs", ".cjs")
     )
+    source_agent_present, source_agent_missing = agent_marker_status(
+        root / "src", (".ts", ".js", ".mjs")
+    )
+    dist_agent_present, dist_agent_missing = agent_marker_status(
+        root / "dist", (".js", ".mjs", ".cjs")
+    )
+    embedded_final_source_ok, embedded_final_in_execution, legacy_final_in_messages = (
+        embedded_final_reply_placement_status(root)
+    )
+    embedded_final_dist_ok = tree_contains(
+        root / "dist", "replyTextSource", (".js", ".mjs", ".cjs")
+    )
     g6_source_ok, g6_source_inside_count, g6_source_outside_count = g6_chat_send_placement_status(root)
     g6_dist_ok, g6_dist_count = g6_dist_placement_status(root / "dist")
 
@@ -214,6 +261,16 @@ def main() -> int:
     )
     print("Agent marker  :", "YES" if source_hits_agent else "NO")
     print("  ", fmt_hits(source_hits_agent, root))
+    print(
+        "Agent events  :",
+        f"{len(source_agent_present)}/{len(AGENT_RUNTIME_EVENT_MARKERS)}",
+        "missing=" + (",".join(source_agent_missing) if source_agent_missing else "none"),
+    )
+    print(
+        "Embedded final:",
+        "WINNER RESULT" if embedded_final_source_ok else "BAD",
+        f"(execution={embedded_final_in_execution}, legacy_message_handler={legacy_final_in_messages})",
+    )
     print()
     print("[built dist]")
     print("Gateway schema marker:", "YES" if dist_hits_core else "NO")
@@ -226,6 +283,12 @@ def main() -> int:
     print("G6 built marker:", "YES" if g6_dist_ok else "NO", f"(count={g6_dist_count})")
     print("Agent marker  :", "YES" if dist_hits_agent else "NO")
     print("  ", fmt_hits(dist_hits_agent, root))
+    print(
+        "Agent events  :",
+        f"{len(dist_agent_present)}/{len(AGENT_RUNTIME_EVENT_MARKERS)}",
+        "missing=" + (",".join(dist_agent_missing) if dist_agent_missing else "none"),
+    )
+    print("Embedded final:", "YES" if embedded_final_dist_ok else "NO", "(replyTextSource marker)")
     print()
     print("[LaunchAgent]")
     print("plist        :", PLIST if PLIST.exists() else "NOT INSTALLED")
@@ -255,6 +318,15 @@ def main() -> int:
         )
     if not source_hits_agent:
         problems.append("local src does not contain post-G18 Agent Runtime instrumentation")
+    if source_agent_missing:
+        problems.append(
+            "local src is missing Agent Runtime event markers: " + ", ".join(source_agent_missing)
+        )
+    if not embedded_final_source_ok:
+        problems.append(
+            "embedded final-reply hook is not exclusively at the winning run-result boundary "
+            f"(execution={embedded_final_in_execution}, legacy_message_handler={legacy_final_in_messages})"
+        )
     if source_hits_core and not dist_hits_core:
         problems.append("Gateway source helper is patched but dist was not rebuilt from it")
     if dist_stage_missing:
@@ -265,6 +337,14 @@ def main() -> int:
         problems.append("built dist is missing requested_agent_resolved")
     if source_hits_agent and not dist_hits_agent:
         problems.append("Agent Runtime source is patched but dist was not rebuilt from it")
+    if dist_agent_missing:
+        problems.append(
+            "built dist is missing Agent Runtime event markers: " + ", ".join(dist_agent_missing)
+        )
+    if embedded_final_source_ok and not embedded_final_dist_ok:
+        problems.append(
+            "embedded final-reply winner-result hook is patched in source but missing from dist"
+        )
     if raw_args and not launch_uses_local:
         problems.append(
             "LaunchAgent points to a different OpenClaw install; local pnpm build cannot affect the running Gateway"

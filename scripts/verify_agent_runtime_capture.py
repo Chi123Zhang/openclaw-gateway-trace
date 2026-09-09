@@ -72,8 +72,11 @@ def main() -> int:
     print("tool called       :", yn(runtime.get("toolCalled")))
     print("tool count        :", shown(runtime.get("toolCount")))
     print("return to G16     :", yn(runtime.get("returnToG16Observed")))
+    print("direct reply event:", yn(runtime.get("agentReplyDirectlyObserved")))
+    print("direct reply text :", yn(runtime.get("agentReplyTextDirectlyObserved")))
     print("final reply       :", shown(runtime.get("finalReply")))
     print("reply evidence    :", shown(runtime.get("finalReplyEvidence")))
+    print("runtime text src  :", shown(runtime.get("finalReplyRuntimeSource")))
 
     tools = runtime.get("tools")
     if isinstance(tools, list) and tools:
@@ -106,6 +109,29 @@ def main() -> int:
                 if isinstance(event, dict)
             ),
         )
+
+    events = runtime.get("events")
+    direct_final_event = bool(
+        isinstance(events, list)
+        and any(
+            isinstance(event, dict) and event.get("event") == "agent_reply_finalized"
+            for event in events
+        )
+    )
+    assistant_response_observed = bool(payload.get("assistantResponseObserved"))
+    if (
+        runtime.get("runner") == "embedded"
+        and runtime.get("runEnded") is True
+        and runtime.get("returnToG16Observed") is True
+        and assistant_response_observed
+        and not direct_final_event
+    ):
+        print()
+        print(
+            "FAIL: completed embedded run returned to G16 and chat.history observed "
+            "an assistant response, but agent_reply_finalized was not captured."
+        )
+        return 2
 
     phases = runtime.get("phases")
     if isinstance(phases, list) and phases:

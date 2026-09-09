@@ -34,7 +34,13 @@ runAgentTurnWithFallback(...)
                         ↓
                   assistant/tool event loop
                         ↓
-                  Agent terminal lifecycle
+                  winning EmbeddedAgentRunResult
+                  ├─ meta.finalAssistantVisibleText
+                  └─ meta.finalAssistantRawText
+                        ↓
+                  TraceClaw agent_reply_finalized
+                        ↓
+                  deferred Agent terminal lifecycle
                         ↓
 return through runReplyAgent / runPreparedReply / getReplyFromConfig
   ↓
@@ -60,7 +66,8 @@ Source anchors in OpenClaw v2026.7.1-2:
 | Agent lifecycle start/end | `src/agents/embedded-agent-subscribe.handlers.lifecycle.ts:27–58, 170–225` |
 | tool start | `src/agents/embedded-agent-subscribe.handlers.tools.ts:1044–1059` |
 | tool result | `src/agents/embedded-agent-subscribe.handlers.tools.ts:1266+, 1470+` |
-| final embedded assistant message | `src/agents/embedded-agent-subscribe.handlers.messages.ts:1026+` |
+| final embedded winner result | `src/agents/embedded-agent-runner/run.ts` · `finalAssistantVisibleText / finalAssistantRawText` |
+| TraceClaw final-reply capture | `src/auto-reply/reply/agent-runner-execution.ts` · winning `fallbackResult.result` before deferred lifecycle end |
 | global Agent event bus | `src/infra/agent-events.ts:487+` |
 
 ## What is recorded
@@ -89,7 +96,7 @@ Those records allow the collector to observe, per run:
 - whether a tool was called;
 - tool name, sanitized arguments and sanitized/capped result;
 - Agent start and terminal lifecycle;
-- final embedded assistant reply when that boundary exists;
+- final embedded winner reply from OpenClaw's returned `EmbeddedAgentRunResult`;
 - direct return of `replyResult` to G16.
 
 The existing `agent.wait → chat.history` path remains the authority for the final
@@ -106,7 +113,10 @@ python3 instrumentation/openclaw-v2026.7.1-2/apply_agent_runtime_instrumentation
 ```
 
 The patcher is idempotent. It validates exact source anchors and supports the
-already-instrumented v2026.7.1-2 working tree used by TraceClaw.
+already-instrumented v2026.7.1-2 working tree used by TraceClaw. Reapplying the
+patch also removes the older `handleMessageEnd()` final-reply hook so the
+embedded `agent_reply_finalized` event is emitted only from the winning run-result
+boundary.
 
 Then rebuild OpenClaw:
 
