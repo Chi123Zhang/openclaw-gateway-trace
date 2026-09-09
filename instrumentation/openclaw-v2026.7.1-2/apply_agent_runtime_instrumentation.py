@@ -4,7 +4,8 @@
 This patch is intentionally small and evidence-oriented:
 - mirror the existing Agent Event bus lifecycle/tool events to TRACECLAW_LOG_PATH;
 - record the selected runtime branch/provider/model for each fallback attempt;
-- record the final embedded assistant provider/model/reply text;
+- record the final embedded winner result after fallback resolution;
+- record the final CLI assistant reply;
 - record the reply-resolver return boundary back into G16.
 
 It does not change Gateway decisions, Agent behavior, prompts, tools, or replies.
@@ -183,6 +184,15 @@ def insert_once(path: Path, marker: str, needle: str, replacement: str) -> bool:
     return True
 
 
+def remove_if_present(path: Path, needle: str, *, label: str) -> bool:
+    content = read(path)
+    if needle not in content:
+        return False
+    write(path, content.replace(needle, "", 1))
+    print("removed legacy patch:", label, "from", path)
+    return True
+
+
 def git_head(root: Path) -> str:
     try:
         return subprocess.check_output(
@@ -267,6 +277,47 @@ def apply(root: Path) -> None:
         '                  runEmbeddedAgent({',
     )
 
+    # Capture the final embedded winner only after runAgentTurnWithFallback has
+    # selected fallbackResult.result. OpenClaw v2026.7.1-2 exposes the winning
+    # assistant text on EmbeddedAgentRunMeta; deferTerminalLifecycle means the
+    # agent_run_ended event is emitted after this point.
+    insert_once(
+        execution,
+        'replyTextSource: traceClawFinalReplySource,',
+        '      fallbackExhausted = fallbackResult.outcome === "exhausted";',
+        '      fallbackExhausted = fallbackResult.outcome === "exhausted";\n'
+        '      if (\n'
+        '        runResult.meta?.executionTrace?.runner === "embedded" &&\n'
+        '        !fallbackExhausted &&\n'
+        '        !runResult.meta?.error\n'
+        '      ) {\n'
+        '        const traceClawFinalReplyText =\n'
+        '          runResult.meta?.finalAssistantVisibleText ??\n'
+        '          runResult.meta?.finalAssistantRawText ??\n'
+        '          "";\n'
+        '        const traceClawFinalReplySource = runResult.meta?.finalAssistantVisibleText\n'
+        '          ? "meta.finalAssistantVisibleText"\n'
+        '          : runResult.meta?.finalAssistantRawText\n'
+        '            ? "meta.finalAssistantRawText"\n'
+        '            : "empty";\n'
+        '        writeTraceClawAgentRuntimeEvent({\n'
+        '          event: "agent_reply_finalized",\n'
+        '          runId,\n'
+        '          ...(params.sessionKey ? { sessionKey: params.sessionKey } : {}),\n'
+        '          ...(params.followupRun.run.agentId\n'
+        '            ? { agentId: params.followupRun.run.agentId }\n'
+        '            : {}),\n'
+        '          provider: runResult.meta?.agentMeta?.provider ?? fallbackProvider,\n'
+        '          model: runResult.meta?.agentMeta?.model ?? fallbackModel,\n'
+        '          stopReason: runResult.meta?.stopReason ?? "",\n'
+        '          replyText: traceClawFinalReplyText,\n'
+        '          replyTextSource: traceClawFinalReplySource,\n'
+        '          payloadCount: runResult.payloads?.length ?? 0,\n'
+        '          terminalReplyKind: runResult.meta?.terminalReplyKind ?? "",\n'
+        '        });\n'
+        '      }',
+    )
+
     cli_dispatch = root / "src/auto-reply/reply/agent-runner-cli-dispatch.ts"
     insert_once(
         cli_dispatch,
@@ -293,20 +344,17 @@ def apply(root: Path) -> None:
         '      emitAgentEvent({',
     )
 
+    # Older TraceClaw revisions emitted agent_reply_finalized from handleMessageEnd().
+    # That boundary is too early: tool/retry/fallback processing can still change the
+    # winner. Remove the legacy hook when reapplying this patch to an existing checkout.
     messages = root / "src/agents/embedded-agent-subscribe.handlers.messages.ts"
-    insert_once(
+    remove_if_present(
         messages,
-        'from "../infra/traceclaw-agent-runtime.js"',
-        'import type { AssistantMessage } from "../llm/types.js";',
-        'import type { AssistantMessage } from "../llm/types.js";\n'
-        'import { writeTraceClawAgentRuntimeEvent } from "../infra/traceclaw-agent-runtime.js";',
+        'import { writeTraceClawAgentRuntimeEvent } from "../infra/traceclaw-agent-runtime.js";\n',
+        label="embedded message-handler import",
     )
-    insert_once(
+    remove_if_present(
         messages,
-        'event: "agent_reply_finalized",',
-        '  const finalAssistantText = silentExpectedWithoutSentinel ? "" : text;\n'
-        '  const addedDuringMessage = ctx.state.assistantTexts.length > ctx.state.assistantTextBaseline;',
-        '  const finalAssistantText = silentExpectedWithoutSentinel ? "" : text;\n'
         '  writeTraceClawAgentRuntimeEvent({\n'
         '    event: "agent_reply_finalized",\n'
         '    runId: ctx.params.runId,\n'
@@ -316,8 +364,8 @@ def apply(root: Path) -> None:
         '    model: normalizeOptionalString(assistantMessage.model) ?? "",\n'
         '    stopReason: normalizeOptionalString(assistantMessage.stopReason) ?? "",\n'
         '    replyText: finalAssistantText,\n'
-        '  });\n'
-        '  const addedDuringMessage = ctx.state.assistantTexts.length > ctx.state.assistantTextBaseline;',
+        '  });\n',
+        label="embedded handleMessageEnd final-reply hook",
     )
 
     dispatch = root / "src/auto-reply/reply/dispatch-from-config.ts"
