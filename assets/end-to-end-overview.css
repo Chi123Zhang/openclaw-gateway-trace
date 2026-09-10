@@ -453,11 +453,10 @@ body.e2ePhaseOpen .e2ePhasePanel{display:block}
   .e2ePhaseRunStatus{min-width:0}
 }
 
-
-/* Remove redundant overview strips. The connection prerequisite is already
- * represented by the Connection & Handshake module, and the assistant response
- * already appears in the top response panel / Agent Runtime summary. */
-body.e2eOverview section.card.conn,
-body.e2eOverview section.card.output{
+/* Remove redundant overview strips in BOTH the default six-column Trace View
+ * and the optional architecture=1 overview. These elements remain in the DOM so
+ * existing runtime synchronization code can continue updating them safely. */
+section.card.conn,
+section.card.output{
   display:none!important;
 }
