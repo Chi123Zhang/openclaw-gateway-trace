@@ -120,3 +120,31 @@
   updateExpandedModulePresentation();
   updateRuntimeContextPresentation();
 })();
+
+(() => {
+  /* Final frontend-only overview cleanup.
+   * Keep these nodes in the DOM because existing rendering code still writes to
+   * them, but collapse them visually. This adds no runtime/trace behavior and no
+   * DOM mutation observer, so it cannot create the previous feedback loop. */
+  if (document.getElementById("traceclaw-overview-final-cleanup")) return;
+  const style = document.createElement("style");
+  style.id = "traceclaw-overview-final-cleanup";
+  style.textContent = `
+    html body .layout main.main > section.card.conn,
+    html body .layout main.main > section.card.conn:has(#connFlow),
+    html body .layout main.main > section.card.output {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      max-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      overflow: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+})();
