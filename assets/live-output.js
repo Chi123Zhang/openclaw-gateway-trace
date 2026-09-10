@@ -122,27 +122,14 @@
 })();
 
 (() => {
-  /* The default overview has two redundant presentation strips: the standalone
-   * connection handoff (rendered as G2 -> G3) and the bottom response summary.
-   * Hide them with inline !important styles so later/dynamically loaded theme CSS
-   * cannot re-enable them. Keep the nodes in the DOM because existing renderer
-   * and synchronization code still writes to them. */
-  const hideRedundantOverviewStrips = () => {
-    [
-      document.querySelector("main.main > section.card.conn"),
-      document.querySelector("main.main > section.card.output"),
-    ].filter(Boolean).forEach(node => {
-      node.hidden = true;
-      node.setAttribute("aria-hidden", "true");
-      node.style.setProperty("display", "none", "important");
-    });
-  };
-
-  hideRedundantOverviewStrips();
-  new MutationObserver(hideRedundantOverviewStrips).observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["class", "style", "hidden"],
+  /* Hide the two redundant overview strips once. Inline !important wins over
+   * later theme CSS without observing our own style changes, which previously
+   * created a MutationObserver feedback loop and stalled page rendering. */
+  [
+    document.querySelector("main.main > section.card.conn"),
+    document.querySelector("main.main > section.card.output"),
+  ].filter(Boolean).forEach(node => {
+    node.setAttribute("aria-hidden", "true");
+    node.style.setProperty("display", "none", "important");
   });
 })();
