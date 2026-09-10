@@ -120,16 +120,3 @@
   updateExpandedModulePresentation();
   updateRuntimeContextPresentation();
 })();
-
-(() => {
-  /* Hide the two redundant overview strips once. Inline !important wins over
-   * later theme CSS without observing our own style changes, which previously
-   * created a MutationObserver feedback loop and stalled page rendering. */
-  [
-    document.querySelector("main.main > section.card.conn"),
-    document.querySelector("main.main > section.card.output"),
-  ].filter(Boolean).forEach(node => {
-    node.setAttribute("aria-hidden", "true");
-    node.style.setProperty("display", "none", "important");
-  });
-})();
