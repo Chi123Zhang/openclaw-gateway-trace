@@ -72,6 +72,13 @@ html body .layout main.main > section.card.pipeline > .sectionTitle{
   font-size:13px!important;
 }
 
+/* Stage detail: only brighten/bolden the Purpose and Observed trace body text. */
+body.stageModalOpen .stageModalTarget #purpose,
+body.stageModalOpen .stageModalTarget #case2{
+  color:#edf3f7!important;
+  font-weight:700!important;
+}
+
 @media (min-width:900px){
   .moduleFlowRow{
     grid-template-columns:
