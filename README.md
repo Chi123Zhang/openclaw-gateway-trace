@@ -1,31 +1,140 @@
-# OpenClaw Gateway Trace Viewer
+# TraceClaw — Source-Grounded Observability for Agent Runtimes
 
-A source-grounded, interactive execution viewer for the OpenClaw Gateway `chat.send` path.
+**TraceClaw reconstructs an agent system from source code, instruments the real runtime, and shows which semantic execution boundaries were actually observed.**
 
-This project visualizes how one user request moves through the Gateway before control reaches the deeper Agent Runtime. It combines a fixed source-code model of OpenClaw `v2026.7.1-2` with runtime evidence collected from an instrumented local Gateway.
+This repository currently targets the OpenClaw Gateway `chat.send` path on **OpenClaw `v2026.7.1-2`**. It combines a fixed source model of Gateway execution (**G0–G18**) with runtime instrumentation for the deeper post-G18 Agent Runtime, including Agent selection, provider/model execution, tool lifecycle, final reply capture, and the return to Gateway control flow.
 
-The main goal is not to replay a hand-written demo. The viewer can accept a new prompt, execute it through OpenClaw, correlate the resulting runtime events, and animate the observed Gateway path in the browser.
+> Source defines what **can** happen. Runtime evidence determines what **was observed** to happen.
 
-## Current status
+---
 
-The Gateway-level trace path is implemented and usable as a live research prototype.
+## Why this project exists
 
-| Area | Status |
+Agent systems are difficult to debug because message-level events, logs, and user-visible outputs do not always line up with the system's actual semantic execution boundaries.
+
+A concrete example is the **final assistant reply**. A message-end hook can fire before later tool execution, retry/fallback logic, or winner selection finishes. TraceClaw therefore captures the final reply at the winning run-result boundary instead of treating an earlier message event as authoritative.
+
+TraceClaw is built around three goals:
+
+1. **Reconstruct the execution model from implementation source** instead of inventing a generic pipeline.
+2. **Overlay real runtime evidence** without turning source-derived facts into fake measurements.
+3. **Expose cross-layer boundaries** from Gateway request handling into Agent Runtime and back.
+
+---
+
+## What I built
+
+- **Source-grounded G0–G18 execution model** for the OpenClaw Gateway `chat.send` path, pinned to a specific upstream release and commit.
+- **Runtime instrumentation** for Gateway stages plus post-G18 Agent Runtime events.
+- **Cross-layer trace correlation** across Session, Agent, resolver, provider/model, tools, final reply, and resolver return.
+- **Evidence-aware UI** that separates source structure from direct observations and source-derived facts.
+- **Live playback** with Pause/Resume that freezes only visualization while the Gateway continues running.
+- **Semantic final-reply capture** at the winning run-result boundary after fallback/winner selection.
+- **Automated completed-run publishing** to `data/cases/latest-live.js` while keeping raw local archives out of Git.
+- **Runtime doctor / verification scripts** to detect a stale or uninstrumented local OpenClaw build before a trace is trusted.
+
+---
+
+## System at a glance
+
+```text
+User prompt
+   │
+   ▼
+OpenClaw Gateway
+   │
+   ├─ G0–G2   Connection authentication
+   ├─ G3–G5   Request validation / normalization
+   ├─ G6–G9   Session + Agent resolution
+   ├─ G10–G12 Policy / dedupe / work admission
+   ├─ G13–G15 Runtime context preparation
+   └─ G16–G18 Reply dispatch + resolver boundary
+                    │
+                    ▼
+             Deeper Agent Runtime
+                    │
+                    ├─ agent_runtime_selected
+                    ├─ agent_run_started
+                    ├─ tool_started / tool_result
+                    ├─ agent_reply_finalized
+                    ├─ agent_run_ended
+                    └─ reply_resolver_returned
+                    │
+                    ▼
+             G16 resumes processing
+                    │
+                    ▼
+             G14 returns final result
+```
+
+The numbered Gateway model intentionally stops at **G18**. Post-G18 evidence is stored separately under `agentRuntime`; it is not renamed into an artificial G19.
+
+---
+
+## Evidence semantics
+
+The viewer keeps source structure and runtime evidence separate.
+
+| Label | Meaning |
 | --- | --- |
-| Arbitrary prompt execution | Implemented |
-| Live G0–G18 Gateway visualization | Implemented |
-| Runtime / source evidence separation | Implemented |
-| Pause / Resume visualization | Implemented |
-| New Session per run | Implemented |
-| Reuse current Session | Implemented |
-| Auto-publish newest completed run as `data/cases/latest-live.js` | Implemented; enabled by default in `start_live.sh` |
-| Source-level stage detail and pseudocode | Implemented |
-| G14–G16 standalone runtime events | Not currently instrumented; shown only as verified source path |
-| Deeper Agent Runtime provider / model / tool events | Implemented by the pinned v2026.7.1-2 instrumentation patch; requires applying it to the local OpenClaw source |
+| **SOURCE MODEL** | Fixed control-flow / data-flow structure reconstructed from OpenClaw `v2026.7.1-2`. |
+| **OBSERVED** | Direct runtime or native evidence from the current run. |
+| **SOURCE-DERIVED** | Supported by the current run plus verified source control flow, but not emitted as a standalone runtime event. |
+| **NOT OBSERVED** | No direct current-run evidence for that stage, branch, or value. |
 
-The numbered Gateway model still stops at **G18**. Post-G18 Agent Runtime evidence is stored separately under `agentRuntime`; it never becomes an artificial G19. Provider, model, tool-call, tool-result, lifecycle, and resolver-return facts appear only when the pinned runtime instrumentation directly observes them.
+Before a new live run starts, the page shows only the **SOURCE MODEL**. It does not reuse runtime values from a previously published trace.
 
-## What the viewer shows
+This distinction matters especially for **G14–G16**: the current instrumentation does not emit standalone events for every internal step there, so those stages may be source-confirmed by surrounding runtime evidence rather than falsely labeled as directly observed.
+
+---
+
+## The final-reply boundary
+
+One of the most important bugs uncovered while building TraceClaw was that an early message-level hook was not a reliable semantic final-reply boundary.
+
+```text
+message end
+   │
+   ├─ tool execution may still happen
+   ├─ retry / fallback may still happen
+   └─ winning run may not be selected yet
+
+winning run result selected
+   │
+   ▼
+finalAssistantVisibleText / finalAssistantRawText
+   │
+   ▼
+agent_reply_finalized
+```
+
+The instrumentation now captures the reply from the **winning run result** after fallback selection. This makes the displayed final reply correspond to the runtime result that actually won, rather than to an earlier intermediate message event.
+
+---
+
+## Current capabilities
+
+| Capability | Status |
+| --- | --- |
+| Arbitrary live prompt execution | ✅ |
+| G0–G18 Gateway visualization | ✅ |
+| Source model vs current-run evidence separation | ✅ |
+| Post-G18 Agent Runtime tracing | ✅ |
+| Provider / model capture | ✅ |
+| Tool start / result capture | ✅ |
+| Final Agent reply capture | ✅ |
+| Return-to-G16 resolver boundary | ✅ |
+| Pause / Resume visualization | ✅ |
+| Fresh Session per run | ✅ |
+| Session reuse | ✅ |
+| Saved / published trace view | ✅ |
+| Auto-publish latest successful run | ✅ |
+| Source-level pseudocode + verified source ranges | ✅ |
+| Runtime alignment / instrumentation doctor | ✅ |
+
+---
+
+## Source model
 
 The fixed Gateway model is organized as:
 
@@ -41,17 +150,9 @@ M2  Session & Agent           G6–G9
 M3  Runtime Control           G10–G12
 M4  Context Preparation       G13–G15
 M5  Reply Dispatch            G16–G18
-
-G18
-  ↓
-Deeper Reply / Agent Runtime
-  ↓
-replyResult returns to G16
-  ↓
-G14 finalization
 ```
 
-The strict source relationship near the reply boundary is:
+The reply-side source relationship is:
 
 ```text
 G14 dispatchInboundMessage(...)
@@ -60,126 +161,66 @@ G14 dispatchInboundMessage(...)
    ├─ G17 downstream Agent re-resolution
    └─ G18 reply resolver invocation
         ↓
-        Deeper Reply / Agent Runtime
+        Deeper Agent Runtime
+        ↓
+        replyResult returns to G16
 ```
 
-G14, G15, and G16 are not treated as independent runtime observations unless standalone events actually exist. In the current instrumentation, they are displayed as **SOURCE PATH** when the surrounding runtime evidence and source control flow establish that the request passed through them.
+All source mappings are tied to:
 
-## Evidence model
+```text
+OpenClaw v2026.7.1-2
+commit 0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c
+```
 
-The viewer deliberately distinguishes three types of information:
+The stage definitions in `data/stages/` are therefore version-specific source mappings, not generic descriptions of an arbitrary OpenClaw release.
 
-- **RUNTIME** — directly observed from TraceClaw / Gateway runtime events.
-- **SOURCE** — verified from the fixed OpenClaw source snapshot.
-- **SOURCE-DERIVED / REQUEST-KNOWN** — values that follow from the request or verified control flow but were not emitted as standalone runtime fields.
-
-Missing observations are left blank or shown as `not observed yet` / `not separately observed`.
-
-This is important for stages such as G14–G16 and for the deeper Agent Runtime. The UI should not make a source-derived fact look like a measured runtime event.
+---
 
 ## Live architecture
 
 ```text
-Browser
-http://127.0.0.1:8765/
+Browser (127.0.0.1:8765)
         │
         │ POST /api/live/start
         │ GET  /api/live/{liveRunId}
         ▼
 Local viewer + collector
         │
-        ├─ OpenClaw CLI: gateway call chat.send
-        ├─ optional history baseline for reused Sessions
-        └─ TraceClaw JSONL reader
+        ├─ OpenClaw CLI / Gateway request
+        ├─ TraceClaw JSONL reader
+        └─ run correlation
                  │
                  ▼
 Instrumented OpenClaw Gateway
-ws://127.0.0.1:18789
+        │
+        ├─ G0–G18 events
+        └─ post-G18 Agent Runtime events
                  │
-                 ├─ real Gateway execution
-                 ├─ G0–G18 TraceClaw events
-                 └─ post-G18 Agent Runtime events
-                            │
-                            ▼
-                  one correlated run record
-                 ├─ Gateway stages
-                 └─ agentRuntime
-                            │
-                            ▼
-                    live browser playback
+                 ▼
+        one normalized run snapshot
+        ├─ stages
+        └─ agentRuntime
+                 │
+                 ▼
+          browser playback
 ```
 
-The collector runs on the same machine as OpenClaw. Gateway credentials stay local and are not embedded in the browser code.
+Gateway credentials remain local and are not embedded in frontend code.
 
-Completed-run persistence has two layers:
-
-```text
-collector/runs/<timestamp>_<runId>.json   local history, one file per run
-                 ↓
-data/cases/latest-live.js                 one replaceable public "latest" case
-                 ↓
-git commit + push origin main             automatic when enabled
-```
-
-Only the normalized published trace is pushed; the raw local run archive is not.
-
-## Session behavior
-
-By default, every new live run creates a fresh SessionKey:
-
-```text
-Run 1 → Session A
-Run 2 → Session B
-```
-
-For a brand-new Session, the collector does not perform a preflight `chat.history` request. It records the trace cursor and moves directly into `chat.send`.
-
-The webpage also provides **Reuse current session**. When enabled after a completed run:
-
-```text
-Run 1 → Session A
-Run 2 → Session A
-Run 3 → Session A
-```
-
-For a reused Session, the collector first checks the existing assistant-message count so it can identify the new reply correctly, then sends the next message through the same Session.
-
-A simple continuity test is:
-
-```text
-Run 1: My favorite number is 7391.
-Run 2 with Reuse current session: What is my favorite number?
-```
-
-## Pause / Resume semantics
-
-Pause affects **only the visualization**.
-
-```text
-Gateway execution continues
-        ↓
-TraceClaw continues collecting
-        ↓
-new stages remain queued
-        ↓
-Resume replays them in order
-```
-
-The Gateway itself is never paused, so the observer does not alter request timing, timeout behavior, or execution semantics.
+---
 
 ## Quick start
 
 ### 1. Requirements
 
-You need:
+- OpenClaw installed locally
+- OpenClaw Gateway running
+- Python 3
+- this repository
+- TraceClaw runtime instrumentation applied to the pinned OpenClaw source checkout
 
-- OpenClaw installed locally;
-- a running Gateway;
-- the TraceClaw Gateway instrumentation writing JSONL runtime events;
-- Python 3;
-- this repository.
-
-Confirm OpenClaw first:
+Verify OpenClaw first:
 
 ```bash
 which openclaw
@@ -193,7 +234,7 @@ git clone https://github.com/Chi123Zhang/openclaw-gateway-trace.git
 cd openclaw-gateway-trace
 ```
 
-### 3. Start the local viewer
+### 3. Start the viewer
 
 If the trace file is already at the path expected by `start_live.sh`:
 
@@ -201,51 +242,168 @@ If the trace file is already at the path expected by `start_live.sh`:
 zsh start_live.sh
 ```
 
-For a different TraceClaw JSONL file:
+Or specify another JSONL trace file:
 
 ```bash
 TRACECLAW_LOG_PATH=/absolute/path/to/gateway-runtime.jsonl zsh start_live.sh
 ```
 
-The startup script creates the collector virtual environment when needed and serves both the frontend and API from one local origin.
-
-Open:
+Then open:
 
 ```text
 http://127.0.0.1:8765/
 ```
 
-Health endpoint:
-
-```text
-http://127.0.0.1:8765/health
-```
+`start_live.sh` runs a runtime doctor before starting the viewer so a successful assistant response is not mistaken for a valid G0–G18 trace when the local Gateway is stale or uninstrumented.
 
 ### 4. Run a trace
 
-Enter any prompt, for example:
+Enter any prompt and press **Run trace**. The browser advances only as correlated evidence from that run becomes available.
+
+A tool-using prompt is useful for demonstrating the full cross-layer path because it can expose:
 
 ```text
-How to make a cake?
+G0–G18
+  ↓
+Agent Runtime
+  ↓
+tool_started
+  ↓
+tool_result
+  ↓
+agent_reply_finalized
+  ↓
+reply_resolver_returned
 ```
 
-Press **Run trace**. The page will advance as correlated runtime evidence is received.
+---
 
-For a successful completed run, the collector also publishes that exact saved run as
-`data/cases/latest-live.js` and pushes the generated case to `main`. Local
-`collector/runs/*.json` archives remain ignored and continue to accumulate for
-Run history. Disable automatic publication for a session with:
+## Completed-run publishing
+
+Each successful completed live run is stored locally and, by default, normalized into the public latest snapshot:
+
+```text
+collector/runs/<timestamp>_<runId>.json   local archive (gitignored)
+                 ↓
+data/cases/latest-live.js                 replaceable published snapshot
+                 ↓
+git commit + push origin main
+```
+
+Only the normalized published trace is pushed. Raw local run archives remain ignored.
+
+Disable automatic publication for a session with:
 
 ```bash
 TRACECLAW_AUTO_PUBLISH_LATEST=0 zsh start_live.sh
 ```
 
-## Manual startup
+Explicit `?reference=1` pages are treated as saved/published trace views; the normal live viewer starts from an evidence-neutral **SOURCE MODEL** state.
 
-If you prefer not to use `start_live.sh`:
+---
+
+## Repository layout
+
+```text
+openclaw-gateway-trace/
+├── index.html                     # main viewer
+├── start_live.sh                  # local viewer + collector entry point
+├── config.js
+├── assets/                        # rendering, evidence, flow, live playback
+├── data/
+│   ├── modules.js
+│   ├── stages/                    # fixed G0–G18 source catalog
+│   └── cases/                     # saved / latest published trace
+├── collector/                     # live API, parsing, correlation, persistence
+├── instrumentation/
+│   └── openclaw-v2026.7.1-2/     # pinned Gateway + Agent Runtime patches
+└── scripts/
+    ├── publish_latest_run.py
+    ├── reinstall_local_instrumented_gateway.sh
+    ├── trace_runtime_doctor.py
+    └── verify_agent_runtime_capture.py
+```
+
+---
+
+## Research direction
+
+TraceClaw is currently a research prototype. The next stage is evaluation rather than additional UI feature work.
+
+Planned research questions include:
+
+- **Faithfulness:** how accurately does source-grounded tracing reconstruct semantic execution paths?
+- **Debugging utility:** can semantic boundaries localize failures more clearly than conventional logs?
+- **Overhead:** what latency / resource / trace-volume cost does instrumentation introduce?
+- **Generality:** how well does the approach transfer across OpenClaw versions or other agent runtimes?
+
+A central hypothesis is that **observable message events are not always equivalent to semantic execution boundaries**, and that source-grounded runtime evidence can make those boundaries explicit.
+
+---
+
+## Current limitations
+
+1. **G14–G16 do not currently have standalone runtime events for every internal step.** They may appear as source-confirmed/source-derived when downstream evidence proves the surrounding control path.
+2. **Post-G18 Agent Runtime evidence requires the pinned local instrumentation patch.** Without it, provider/model/tool/final-reply fields remain explicitly uncaptured.
+3. **Connection-level G0–G2 correlation is conservative.** These events occur before request-specific identifiers are consistently available and are not intrinsically one-per-request when a connection is reused.
+4. **Live execution requires a local OpenClaw + TraceClaw environment.** A static GitHub Pages view can display saved traces but cannot reproduce local runtime execution by itself.
+
+---
+
+<details>
+<summary><strong>Apply / verify the pinned instrumentation</strong></summary>
+
+The version-specific instrumentation lives in:
+
+```text
+instrumentation/openclaw-v2026.7.1-2/
+```
+
+It includes separate Gateway and post-G18 Agent Runtime instrumentation scripts.
+
+For the full local macOS development setup, the repair script reapplies instrumentation, rebuilds the pinned OpenClaw checkout, repoints the managed Gateway to the local instrumented build, restarts it, and runs the runtime doctor:
 
 ```bash
-cd openclaw-gateway-trace/collector
+bash scripts/reinstall_local_instrumented_gateway.sh
+```
+
+Verify Agent Runtime capture separately with:
+
+```bash
+python3 scripts/verify_agent_runtime_capture.py
+```
+
+</details>
+
+<details>
+<summary><strong>Live API</strong></summary>
+
+Start a run:
+
+```http
+POST /api/live/start
+Content-Type: application/json
+
+{
+  "message": "What is the weather today?"
+}
+```
+
+Poll the run:
+
+```http
+GET /api/live/{liveRunId}
+```
+
+The older blocking `POST /api/run` endpoint remains available for direct testing, while the browser uses the incremental live API.
+
+</details>
+
+<details>
+<summary><strong>Manual collector startup</strong></summary>
+
+```bash
+cd collector
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -256,162 +414,6 @@ TRACECLAW_LOG_PATH=/absolute/path/to/gateway-runtime.jsonl \
   --port 8765
 ```
 
-Then open:
+Then open `http://127.0.0.1:8765/`.
 
-```text
-http://127.0.0.1:8765/
-```
-
-## Live API
-
-The live UI uses a two-phase API.
-
-Start a run:
-
-```http
-POST /api/live/start
-Content-Type: application/json
-
-{
-  "message": "How to make pasta?"
-}
-```
-
-Reuse a Session:
-
-```http
-POST /api/live/start
-Content-Type: application/json
-
-{
-  "message": "What did I ask before?",
-  "sessionKey": "agent:main:dashboard:trace-..."
-}
-```
-
-Poll the active run:
-
-```http
-GET /api/live/{liveRunId}
-```
-
-The older blocking `POST /api/run` endpoint remains available for direct testing, but the browser uses the incremental live API.
-
-## Repository layout
-
-```text
-openclaw-gateway-trace/
-├── index.html
-├── config.js
-├── start_live.sh
-├── assets/
-│   ├── app.js
-│   ├── styles.css
-│   ├── live.js
-│   ├── live.css
-│   └── session-reuse.js
-├── data/
-│   ├── modules.js
-│   ├── stages/
-│   │   ├── part1.js
-│   │   ├── part2.js
-│   │   └── part3.js
-│   └── cases/
-│       ├── index.js
-│       ├── cake.js
-│       └── _template.js
-└── collector/
-    ├── server.py
-    ├── live_runs.py
-    ├── viewer_server.py
-    ├── openclaw_client.py
-    ├── trace_parser.py
-    ├── requirements.txt
-    └── README.md
-```
-
-## Source snapshot
-
-All G0–G18 source mappings are tied to one fixed OpenClaw snapshot:
-
-```text
-OpenClaw v2026.7.1-2
-commit 0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c
-```
-
-The stage definitions in `data/stages/` are source-aligned to this snapshot rather than being generic descriptions of an arbitrary OpenClaw release.
-
-## Runtime correlation
-
-Request-specific stages are correlated using `runId` and/or `sessionKey` where available.
-
-Connection-level G0–G3 events occur before request-specific identifiers are consistently available, so the collector uses the nearest preceding connection-authentication sequence as a conservative correlation heuristic. Their raw event order is preserved.
-
-This limitation is explicit because G0–G2 are connection-level stages, not intrinsically one-per-request stages when a WebSocket connection is reused.
-
-## Current limitations
-
-1. **G14–G16** currently do not emit standalone TraceClaw events. They are rendered only as verified source-path stages.
-2. **Post-G18 Agent Runtime events require the pinned local instrumentation patch.** Without applying/rebuilding that patch, provider/model/tools remain explicitly not captured.
-3. Connection-level event correlation is heuristic until an earlier shared connection/request correlation identifier is instrumented.
-4. The live viewer depends on a local OpenClaw + TraceClaw environment; the public GitHub Pages site alone cannot reproduce the local runtime.
-
-## Post-G18 Agent Runtime instrumentation
-
-The pinned patch and source map live in:
-
-```text
-instrumentation/openclaw-v2026.7.1-2/
-```
-
-It records the actual runtime branch/provider/model, Agent lifecycle, tool start/result,
-final Agent reply, and the direct reply-resolver return boundary. The collector keeps
-these events outside G0–G18 in a separate `agentRuntime` object.
-
-Apply it with:
-
-```bash
-python3 instrumentation/openclaw-v2026.7.1-2/apply_agent_runtime_instrumentation.py \
-  --root /Users/mac/Desktop/openclaw-source-2026.7.1-2
-```
-
-Then rebuild/restart OpenClaw before the next live run.
-
-## Public repository
-
-```text
-https://github.com/Chi123Zhang/openclaw-gateway-trace
-```
-
-A static GitHub Pages build may be used for saved traces and interface review, while live execution should be demonstrated from the local viewer at `127.0.0.1:8765`.
-
-
-## macOS development: make the managed Gateway use the local instrumented build
-
-A local `pnpm build` does **not** repoint an already-installed LaunchAgent. In
-OpenClaw v2026.7.1-2, the service installer resolves its dist entrypoint from the
-CLI process that performs `gateway install`. Restart only restarts the currently
-installed service command.
-
-For TraceClaw development, repair all three layers together:
-
-```bash
-cd /Users/mac/Desktop/openclaw-source-2026.7.1-2/openclaw-gateway-trace
-bash scripts/reinstall_local_instrumented_gateway.sh
-```
-
-The repair script:
-
-1. reapplies the pinned **G0-G18 Gateway** instrumentation from
-   `apply_gateway_runtime_instrumentation.py`;
-2. reapplies the pinned post-G18 Agent Runtime instrumentation;
-3. verifies all 19 Gateway stage event markers are present, then rebuilds the local
-   v2026.7.1-2 checkout;
-4. verifies both Gateway and Agent Runtime markers exist in `dist/`;
-5. installs `ai.openclaw.gateway` using the **local** `openclaw.mjs`, so the
-   LaunchAgent points at the local instrumented `dist/`;
-6. restarts the Gateway and runs `scripts/trace_runtime_doctor.py`.
-
-`start_live.sh` also runs the doctor and refuses to start the viewer against a
-known uninstrumented/misaligned Gateway. This prevents a successful assistant
-answer from being mistaken for a captured G0-G18 trace.
+</details>
