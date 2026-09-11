@@ -145,6 +145,12 @@
       opacity: 0 !important;
       pointer-events: none !important;
     }
+
+    /* Web overview cleanup requested for the final presentation. */
+    html body .handoffStrip,
+    html body .pipeline > .sectionTitle {
+      display: none !important;
+    }
   `;
   document.head.appendChild(style);
 })();
