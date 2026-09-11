@@ -72,3 +72,144 @@
   decorate();
   requestAnimationFrame(decorate);
 })();
+
+(() => {
+  /*
+   * Live-view evidence guard.
+   *
+   * A normal viewer page must never show values from a previously loaded saved
+   * case before the user starts a new live run. Before STARTING/RUNNING, Flow
+   * and Steps are therefore presented strictly as the fixed source model.
+   * Explicit ?reference=1 pages are intentionally excluded because those pages
+   * are meant to display a completed published/saved trace.
+   *
+   * Presentation only: no trace data, instrumentation, collector state, or
+   * source mapping is changed here.
+   */
+
+  const STYLE_ID = "traceclaw-idle-evidence-guard-style";
+  if (!document.getElementById(STYLE_ID)) {
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = `
+      html.traceclawIdleEvidence .stageHandoffData > *{
+        display:none!important;
+      }
+      html.traceclawIdleEvidence .stageHandoffData::before{
+        content:"No current-run evidence yet.";
+        display:block;
+        padding:8px 10px;
+        color:#7f8b94;
+        font:600 9px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+      }
+      html.traceclawIdleEvidence #compactSteps .stepFlowFacts{
+        display:none!important;
+      }
+      html.traceclawIdleEvidence #stepIoPanel .stepSpecificGrid,
+      html.traceclawIdleEvidence #stepKnownSection,
+      html.traceclawIdleEvidence #stepDirectDetails{
+        display:none!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function isReferenceMode() {
+    if (document.documentElement.classList.contains("referenceMode")) return true;
+    try {
+      return new URLSearchParams(window.location.search).get("reference") === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  function requestState() {
+    return String(document.getElementById("requestState")?.textContent || "")
+      .trim()
+      .toUpperCase();
+  }
+
+  function hasCurrentLiveExecution() {
+    if (isReferenceMode()) return true;
+    return /^(?:STARTING|RUNNING|PAUSED|FINISHED|FAILED)/.test(requestState());
+  }
+
+  function forceSourceModelLabels() {
+    const contextTitle = document.querySelector(".runEvidenceContextTitle");
+    const contextText = document.querySelector(".runEvidenceContextText");
+    if (contextTitle) contextTitle.textContent = "SOURCE MODEL";
+    if (contextText) {
+      contextText.textContent = "No runtime execution has been observed yet. Run a trace to overlay the actual execution path.";
+    }
+
+    const flowEyebrow = document.querySelector("#stageHandoffPanel .stageHandoffEyebrow");
+    if (flowEyebrow) flowEyebrow.textContent = "SOURCE MODEL";
+
+    document.querySelectorAll("#stageHandoffPanel .stageHandoffRoute > .runEvidenceBadge").forEach(badge => {
+      badge.textContent = "SOURCE MODEL";
+      badge.className = "runEvidenceBadge sourceModel";
+    });
+
+    document.querySelectorAll("#compactSteps .compactStep .stepIoHint").forEach(hint => {
+      hint.textContent = "Source model";
+      hint.className = "stepIoHint source";
+    });
+
+    document.querySelectorAll("#sourceStepList .sourceStepItem > .runEvidenceBadge").forEach(badge => {
+      badge.textContent = "SOURCE MODEL";
+      badge.className = "runEvidenceBadge sourceModel";
+    });
+
+    const chip = document.getElementById("stepStatusChip");
+    if (chip) {
+      chip.textContent = "Source model";
+      chip.className = "stepStatusChip source";
+    }
+
+    const runResult = document.getElementById("stepRunResult");
+    if (runResult) {
+      runResult.textContent = "No runtime execution has been observed yet. This step is shown from the fixed v2026.7.1-2 source model.";
+    }
+  }
+
+  function syncIdleEvidenceGuard() {
+    const idle = !hasCurrentLiveExecution();
+    document.documentElement.classList.toggle("traceclawIdleEvidence", idle);
+    if (idle) forceSourceModelLabels();
+  }
+
+  if (typeof renderAll === "function") {
+    const previousRenderAll = renderAll;
+    renderAll = function renderAllWithIdleEvidenceGuard(...args) {
+      const result = previousRenderAll(...args);
+      requestAnimationFrame(syncIdleEvidenceGuard);
+      return result;
+    };
+  }
+
+  if (typeof renderSteps === "function") {
+    const previousRenderSteps = renderSteps;
+    renderSteps = function renderStepsWithIdleEvidenceGuard(...args) {
+      const result = previousRenderSteps(...args);
+      requestAnimationFrame(syncIdleEvidenceGuard);
+      return result;
+    };
+  }
+
+  const stateNode = document.getElementById("requestState");
+  if (stateNode) {
+    new MutationObserver(syncIdleEvidenceGuard).observe(stateNode, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest?.('[data-id^="G"], .stagePageTab')) return;
+    requestAnimationFrame(syncIdleEvidenceGuard);
+  });
+
+  syncIdleEvidenceGuard();
+  requestAnimationFrame(syncIdleEvidenceGuard);
+})();
