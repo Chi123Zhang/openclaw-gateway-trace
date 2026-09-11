@@ -1,0 +1,97 @@
+/* Keep the old standalone connection / G2->G3 strip out of the main page.
+ * renderConnection() may still populate it in the DOM for compatibility, but
+ * the trace overview owns the visible relationship now.
+ */
+.conn,
+.handoffStrip{
+  display:none!important;
+}
+
+/* The first overview connector carries the only special cross-lifecycle edge:
+ * G2 completes connection authentication; G3 belongs to a later chat.send.
+ */
+.moduleFlowRow > .connectionRequestHandoff{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:center!important;
+  min-width:0!important;
+  padding:0 5px!important;
+  color:#c9ad62!important;
+  text-align:center!important;
+}
+
+.connectionRequestFrom,
+.connectionRequestTo,
+.connectionRequestType{
+  display:block!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;
+}
+
+.connectionRequestFrom{
+  color:#b7c4bd!important;
+  font-size:5px!important;
+  font-weight:850!important;
+  letter-spacing:.05em!important;
+}
+
+.connectionRequestTo{
+  margin-top:2px!important;
+  color:#f0d98d!important;
+  font-size:6px!important;
+  font-weight:850!important;
+}
+
+.connectionRequestType{
+  align-self:center!important;
+  margin-top:5px!important;
+  padding:2px 4px!important;
+  border:1px solid #685d3c!important;
+  border-radius:999px!important;
+  background:#2a281d!important;
+  color:#c9b36d!important;
+  font-size:4px!important;
+  font-weight:900!important;
+  letter-spacing:.04em!important;
+}
+
+.connectionRequestForward{
+  width:100%!important;
+  margin-top:4px!important;
+}
+.connectionRequestHandoff .moduleConnectorLine{
+  background:#6f6748!important;
+}
+.connectionRequestHandoff .moduleConnectorArrow{
+  color:#d8b957!important;
+  font-size:13px!important;
+}
+
+/* Give this one relation enough room for a tiny semantic label while keeping
+ * all remaining overview connectors as the compact arrows they already are.
+ */
+@media (min-width:900px){
+  .moduleFlowRow{
+    grid-template-columns:
+      minmax(0,1fr) 64px
+      minmax(0,1fr) 24px
+      minmax(0,1fr) 24px
+      minmax(0,1fr) 24px
+      minmax(0,1fr) 24px
+      minmax(0,1fr)!important;
+  }
+}
+
+@media (max-width:899px){
+  .connectionRequestFrom,
+  .connectionRequestTo,
+  .connectionRequestType{
+    display:none!important;
+  }
+  .moduleFlowRow > .connectionRequestHandoff{
+    padding:0 3px!important;
+  }
+}
