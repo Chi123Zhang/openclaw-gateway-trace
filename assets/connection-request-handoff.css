@@ -1,14 +1,16 @@
-/* Keep the old standalone connection / G2->G3 strip out of the main page.
- * renderConnection() may still populate it in the DOM for compatibility, but
- * the trace overview owns the visible relationship now.
+/* Final web-only cleanup for the overview.
+ * Runtime/trace data is untouched: these rules only suppress redundant presentation.
  */
-.conn,
-.handoffStrip{
+html body .layout main.main > section.card.conn,
+html body #connectionRequestBridge,
+html body .handoffStrip,
+html body .layout main.main > section.card.pipeline > .sectionTitle{
   display:none!important;
 }
 
 /* The first overview connector carries the only special cross-lifecycle edge:
  * G2 completes connection authentication; G3 belongs to a later chat.send.
+ * This compact connector stays inside the six-column overview only.
  */
 .moduleFlowRow > .connectionRequestHandoff{
   display:flex!important;
@@ -70,9 +72,6 @@
   font-size:13px!important;
 }
 
-/* Give this one relation enough room for a tiny semantic label while keeping
- * all remaining overview connectors as the compact arrows they already are.
- */
 @media (min-width:900px){
   .moduleFlowRow{
     grid-template-columns:
