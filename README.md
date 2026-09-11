@@ -10,9 +10,27 @@ The basic rule in the UI is:
 
 ## Background
 
-The first version of the stage breakdown was informed by several papers and technical write-ups that analyzed OpenClaw's structure. They were useful for getting oriented around the major subsystems and likely control-flow boundaries.
+I did not start the project by reading the OpenClaw repository from line one. A few architecture write-ups helped me get oriented first, especially around the Gateway/control-plane split, sessions, the Agent Runtime, tools, and observability.
 
-I did not keep those diagrams as the final authority. The current G0–G18 model was re-derived and checked against the pinned `v2026.7.1-2` source snapshot, and the runtime layer was then added on top of that model. I plan to include the exact paper citations in the paper/preprint version of this work once the bibliography is finalized.
+Those references were useful for deciding where to look, but I do not use their diagrams as the ground truth for TraceClaw. The current G0–G18 model was re-derived and checked against the pinned `v2026.7.1-2` source snapshot. The runtime instrumentation was then added on top of that source model.
+
+A few papers on agent debugging and visual analytics also influenced how I thought about presenting execution state. They are not OpenClaw source references, but they were useful background for the UI and debugging side of the project.
+
+## References and early inspiration
+
+### OpenClaw architecture
+
+- [OpenClaw Architecture - Part 1: Control Plane, Sessions, and the Event Loop](https://theagentstack.substack.com/p/openclaw-architecture-part-1-control) — useful early orientation for the Gateway, sessions, and the agent loop.
+- [OpenClaw Architecture - Part 6: Reliability, Observability, and Evaluation](https://theagentstack.substack.com/p/openclaw-architecture-part-6-reliability) — especially relevant to the observability and runtime-evidence side of TraceClaw.
+- [OpenClaw Architecture, Explained: How It Works as an OS for AI Agents](https://ppaolo.substack.com/p/openclaw-system-architecture-overview) — a broad system-level walkthrough of the Gateway, Agent Runtime, sessions, tools, and end-to-end message flow.
+
+### Agent debugging and visual analytics
+
+- [XAgen: An Explainability Tool for Identifying and Correcting Failures in Multi-Agent Workflows](https://arxiv.org/abs/2512.17896) — relevant to log visualization, step-level failure localization, and interactive debugging of agent workflows.
+- [Illuminating LLM Coding Agents: Visual Analytics for Deeper Understanding and Enhancement](https://arxiv.org/abs/2508.12555) — useful background for visualizing agent behavior and comparing execution/process structure rather than only inspecting final outputs.
+- [FlowForge: Guiding the Creation of Multi-agent Workflows with Interactive Visualizations as a Thinking Scaffold](https://ieeevis.org/year/2025/program/paper_ed3195e2-8726-4d85-acb7-c5ed2dc361bb.html) — related visualization work; its focus is workflow design rather than runtime tracing, but it helped frame how multi-agent structure can be presented interactively.
+
+These references helped with orientation and interface ideas. The version-specific stage definitions and source ranges in TraceClaw are based on the OpenClaw `v2026.7.1-2` source itself.
 
 ## Why I built it
 
