@@ -157,12 +157,12 @@
 
 (() => {
   /*
-   * Source-model + current-run evidence overlay for the Stage Flow / Steps pages.
+   * Source-model + current-run evidence overlay for Stage Flow / Steps.
    *
-   * The fixed v2026.7.1-2 catalog continues to define what CAN happen. This
-   * presentation layer only labels what the selected run actually supports. It
-   * does not change Gateway execution, instrumentation, collector data, or the
-   * source catalog.
+   * The fixed v2026.7.1-2 catalog defines what CAN happen. The selected run
+   * determines what was directly observed, source-derived, not taken, or still
+   * unresolved. This layer is presentation-only: it does not modify execution,
+   * instrumentation, collector data, or source mappings.
    */
   const STYLE_ID = "traceclaw-run-evidence-overlay-style";
   if (!document.getElementById(STYLE_ID)) {
@@ -193,12 +193,11 @@
       .runEvidenceBadge.unresolved{border-color:#5a5050;background:#1c1818;color:#b7a9a9}
       .runEvidenceBadge.notTaken{border-color:#414950;background:#151a1e;color:#7f8991}
       .runEvidenceBadge.sourceModel{border-color:#4a5660;background:#151b20;color:#aab4bd}
-      .compactStep,.sourceStepItem{position:relative}
-      .compactStep .runEvidenceBadge{margin-left:auto}
       .sourceStepItem .runEvidenceBadge{margin:5px 0 0}
       .stageHandoffRoute .runEvidenceBadge{margin-left:8px}
       .stageHandoffHead.runEvidenceHead{align-items:flex-start}
       .stageHandoffHead .runEvidenceLegend{margin-left:auto}
+      body.stageModalOpen .stageModalTarget[data-compact-page="source"] .runEvidenceContext{display:none!important}
       @media(max-width:760px){
         .runEvidenceContext{display:block}
         .runEvidenceLegend{justify-content:flex-start;margin-top:7px}
@@ -278,7 +277,7 @@
     if (observed.has(stage?.id) || stageIsSourceMapped(stage?.id)) {
       return {
         title: "CURRENT RUN + SOURCE MODEL",
-        description: "OBSERVED marks direct runtime/native evidence. SOURCE-DERIVED marks source-backed execution inferred from this run. Other branches remain explicitly unresolved or not taken."
+        description: "Observed values come from this run. Source-derived labels are used only when the fixed source path plus observed run state supports the claim."
       };
     }
     return {
@@ -333,19 +332,66 @@
     };
   }
 
+  function stepHintLabel(status) {
+    const map = {
+      "SOURCE MODEL": "Source model",
+      "NOT OBSERVED": "Not observed",
+      "SOURCE-DERIVED": "Derived",
+      "SOURCE-CONFIRMED": "Source path",
+      "UNRESOLVED": "Unknown",
+      "UNRESOLVED BRANCH": "Branch unknown",
+      "DOWNSTREAM OBSERVED": "Observed downstream",
+      "RESOLVER OBSERVED": "Resolver observed",
+      "PATH COMPLETED": "Completed"
+    };
+    return map[status.label] || status.label.toLowerCase().replaceAll("_", " ");
+  }
+
+  function syncInspectorGate(stage, status) {
+    const chip = document.getElementById("stepStatusChip");
+    const result = document.getElementById("stepRunResult");
+    if (!chip || !result) return;
+    if (!hasCurrentRun()) {
+      chip.textContent = "Source model";
+      chip.className = "stepStatusChip source";
+      result.textContent = "No runtime execution has been observed yet. This step is shown from the fixed v2026.7.1-2 source model.";
+      return;
+    }
+    const observed = observedStages();
+    if (!observed.has(stage.id) && !stageIsSourceMapped(stage.id)) {
+      chip.textContent = "Not observed";
+      chip.className = "stepStatusChip unresolved";
+      result.textContent = "This source step exists, but the selected run has not provided evidence that this stage was reached.";
+      return;
+    }
+    chip.textContent = stepHintLabel(status);
+    chip.className = `stepStatusChip ${status.tone === "sourceModel" ? "unresolved" : status.tone}`;
+  }
+
   function decorateStepRows(stage) {
     if (!stage) return;
     ensureStepsContext(stage);
     document.querySelectorAll("#compactSteps .compactStep").forEach((row, index) => {
-      row.querySelector(":scope > .runEvidenceBadge")?.remove();
-      const status = statusForStep(stage, Number(row.dataset.step ?? index));
-      row.append(makeBadge(status.label, status.tone));
+      const stepIndex = Number(row.dataset.step ?? index);
+      const status = statusForStep(stage, stepIndex);
+      let hint = row.querySelector(".stepIoHint");
+      if (!hint) {
+        hint = document.createElement("span");
+        row.append(hint);
+      }
+      hint.textContent = stepHintLabel(status);
+      hint.className = `stepIoHint ${status.tone === "sourceModel" ? "source" : status.tone}`;
+      row.setAttribute("aria-label", `${stage.steps?.[stepIndex]?.title || `Step ${stepIndex + 1}`}. ${stepHintLabel(status)}.`);
     });
+
     document.querySelectorAll("#sourceStepList .sourceStepItem").forEach((row, index) => {
       row.querySelector(":scope > .runEvidenceBadge")?.remove();
       const status = statusForStep(stage, Number(row.dataset.step ?? index));
       row.append(makeBadge(status.label, status.tone));
     });
+
+    const activeIndex = Math.max(0, Number(typeof activeStep !== "undefined" ? activeStep : 0) || 0);
+    syncInspectorGate(stage, statusForStep(stage, activeIndex));
   }
 
   function flowStatus(row) {
@@ -373,10 +419,11 @@
     const panel = document.getElementById("stageHandoffPanel");
     if (!panel) return;
     const stage = selectedStage();
+    const ctx = runContextForStage(stage);
     const head = panel.querySelector(".stageHandoffHead");
     const eyebrow = panel.querySelector(".stageHandoffEyebrow");
     if (head) head.classList.add("runEvidenceHead");
-    if (eyebrow) eyebrow.textContent = hasCurrentRun() ? "SOURCE MODEL + CURRENT RUN" : "SOURCE MODEL";
+    if (eyebrow) eyebrow.textContent = ctx.title;
 
     let legend = head?.querySelector(":scope > .runEvidenceLegend");
     if (head && !legend) {
@@ -400,10 +447,6 @@
       const status = flowStatus(row);
       route.append(makeBadge(status.label, status.tone));
     });
-
-    panel.dataset.runEvidenceMode = hasCurrentRun()
-      ? (observedStages().has(stage?.id) || stageIsSourceMapped(stage?.id) ? "current" : "unobserved")
-      : "source";
   }
 
   function refreshEvidenceOverlay(stage = selectedStage()) {
