@@ -30,6 +30,10 @@ A few papers on agent debugging and visual analytics also influenced how I thoug
 - [Illuminating LLM Coding Agents: Visual Analytics for Deeper Understanding and Enhancement](https://arxiv.org/abs/2508.12555) — useful background for visualizing agent behavior and comparing execution/process structure rather than only inspecting final outputs.
 - [FlowForge: Guiding the Creation of Multi-agent Workflows with Interactive Visualizations as a Thinking Scaffold](https://ieeevis.org/year/2025/program/paper_ed3195e2-8726-4d85-acb7-c5ed2dc361bb.html) — related visualization work; its focus is workflow design rather than runtime tracing, but it helped frame how multi-agent structure can be presented interactively.
 
+### Related runtime observability
+
+- [Fangcun Observer: Runtime Security for AI Agents](https://fangcunleap.com/blog/observer) — a related runtime-observability system that records system-level side effects such as commands, file activity, network access, and behavior chains. Its framework-independent, OS/runtime view is different from TraceClaw's source-guided semantic tracing, but it is useful context for thinking about trustworthy runtime evidence.
+
 These references helped with orientation and interface ideas. The version-specific stage definitions and source ranges in TraceClaw are based on the OpenClaw `v2026.7.1-2` source itself.
 
 ## Why I built it
