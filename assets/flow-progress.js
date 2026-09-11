@@ -53,7 +53,6 @@
     document.querySelectorAll("#moduleRow > .moduleConnector").forEach(connector => {
       connector.classList.remove("flowCurrent", "flowDone", "flowPending", "returnCurrent", "returnDone");
       const state = executionState();
-      const from = connector.dataset.from;
       const to = connector.dataset.to;
       if (state === "idle") {
         connector.classList.add("flowPending");
@@ -75,42 +74,16 @@
     });
   }
 
-  function ensureConnectionRequestBridge() {
-    const conn = document.querySelector("section.conn");
-    const query = document.querySelector("section.query");
-    if (!conn || !query) return null;
-    let bridge = document.getElementById("connectionRequestBridge");
-    if (bridge) return bridge;
-
-    bridge = document.createElement("div");
-    bridge.id = "connectionRequestBridge";
-    bridge.className = "connectionRequestBridge flowPending";
-    bridge.innerHTML = `
-      <span class="bridgeNode">G2</span>
-      <span class="bridgeLine"><span class="bridgePulse"></span></span>
-      <span class="bridgeRelation"><b>PREREQUISITE</b><span>authenticated connection · later chat.send request</span></span>
-      <span class="bridgeArrow">→</span>
-      <span class="bridgeNode">G3</span>`;
-    conn.insertAdjacentElement("afterend", bridge);
-    return bridge;
-  }
-
-  function applyConnectionRequestBridge() {
-    const bridge = ensureConnectionRequestBridge();
-    if (!bridge) return;
-    bridge.classList.remove("flowCurrent", "flowDone", "flowPending");
-    const state = executionState();
-    if (state === "idle") return bridge.classList.add("flowPending");
-    if (activeStage === "G3") return bridge.classList.add("flowCurrent");
-    if (stageNumber(activeStage) > 3 || state === "finished") bridge.classList.add("flowDone");
-    else bridge.classList.add("flowPending");
+  function removeConnectionRequestBridge() {
+    document.getElementById("connectionRequestBridge")?.remove();
   }
 
   function refreshProgress() {
     applyStageArrows(document.getElementById("connFlow"));
     applyStageArrows(document.getElementById("subflow"));
     applyModuleArrows();
-    applyConnectionRequestBridge();
+    // Presentation-only: the standalone G2 -> G3 prerequisite strip is intentionally omitted.
+    removeConnectionRequestBridge();
   }
 
   function install() {
@@ -129,7 +102,7 @@
       observer.observe(requestState, { childList: true, characterData: true, subtree: true });
     }
 
-    ensureConnectionRequestBridge();
+    removeConnectionRequestBridge();
     requestAnimationFrame(() => requestAnimationFrame(refreshProgress));
   }
 
