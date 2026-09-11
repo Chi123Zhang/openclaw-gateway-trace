@@ -403,3 +403,5 @@ TRACECLAW_LOG_PATH=/absolute/path/to/gateway-runtime.jsonl \
 Then open `http://127.0.0.1:8765/`.
 
 </details>
+
+As a next step, I plan to adapt this trace view for the **MAVDR six-agent system at the Chinese Academy of Sciences**, so each agent can be inspected through the same source/runtime evidence model.
