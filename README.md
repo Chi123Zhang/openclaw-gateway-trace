@@ -1,72 +1,75 @@
 # TraceClaw
 
-TraceClaw is a source-guided runtime execution analysis system for OpenClaw. I built it to answer a fairly simple question: when a `chat.send` request runs, how does it actually move through the system, which parts of the source path execute, and where does control enter and leave the deeper Agent Runtime?
+TraceClaw is a **source-guided runtime execution analysis system for OpenClaw**. I built it to answer a practical question: when a `chat.send` request runs, how does it actually move through the system, which parts of the source path execute, and where does control enter and leave the deeper Agent Runtime?
 
-The current version is pinned to **OpenClaw `v2026.7.1-2`**. It combines a source-level model of the Gateway path (**G0–G18**) with runtime instrumentation for Agent selection, provider/model execution, tool calls, final reply capture, and the return to Gateway control flow, so a real run can be analyzed against the path defined by the source.
+The current implementation is pinned to **OpenClaw `v2026.7.1-2`**. It combines a source-level model of the Gateway path (**G0–G18**) with runtime instrumentation for Agent selection, provider/model execution, tool calls, final-reply capture, and the return to Gateway control flow.
 
 The basic rule in the UI is:
 
-> Source shows the path that can exist. Runtime evidence shows what this run actually exposed.
+> **Source shows the path that can exist. Runtime evidence shows what this run actually exposed.**
 
 ## Framework
 
 ![TraceClaw framework](docs/traceclaw-framework.svg)
 
-At a high level, TraceClaw moves from **source code → execution model → runtime instrumentation → correlated runtime events → evidence analysis → execution view**. The current OpenClaw implementation is the first case study; the planned MAVDR integration is the next test of whether the same source/runtime evidence model transfers to a multi-agent system.
+At a high level, TraceClaw moves through six steps:
+
+**source code → execution model → runtime instrumentation → runtime events → evidence correlation → execution analysis view**
+
+The current OpenClaw implementation is the first case study. The planned MAVDR integration is the next test of whether the same source/runtime evidence model transfers to a multi-agent system.
 
 The proposed cross-system trace abstraction is documented in [`docs/trace-schema.md`](docs/trace-schema.md). It is a design target for generalization rather than a claim that the current OpenClaw collector already emits every event in one fully normalized format.
 
-## Background
+## OpenClaw workflow context
 
-I did not start the project by reading the OpenClaw repository from line one. A few architecture write-ups helped me get oriented first, especially around the Gateway/control-plane split, sessions, the Agent Runtime, tools, and observability.
+The following diagram is a high-level, source-informed view of the broader OpenClaw runtime: external requests enter through the Gateway, move through Session and runtime-context preparation, reach the model/tool loop, and eventually return through Gateway egress.
 
-Those references were useful for deciding where to look, but I do not use their diagrams as the ground truth for TraceClaw. The current G0–G18 model was re-derived and checked against the pinned `v2026.7.1-2` source snapshot. The runtime instrumentation was then added on top of that source model.
+![OpenClaw normal runtime flow](docs/figures/openclaw-normal-runtime-flow.jpg)
 
-A few papers on agent debugging and visual analytics also influenced how I thought about presenting execution state. They are not OpenClaw source references, but they were useful background for the UI and debugging side of the project.
+This diagram is useful as **system context**, but TraceClaw does not treat it as runtime ground truth. The stage-level **G0–G18 model is separately re-derived and checked against the pinned `v2026.7.1-2` source snapshot**.
 
-## References and early inspiration
+### Example workflow
 
-### OpenClaw architecture
+This concrete example shows the same high-level workflow applied to an interpretable task: preparing and sending a recruiting link to a Columbia Statistics student.
 
-- [OpenClaw Architecture - Part 1: Control Plane, Sessions, and the Event Loop](https://theagentstack.substack.com/p/openclaw-architecture-part-1-control) — useful early orientation for the Gateway, sessions, and the agent loop.
-- [OpenClaw Architecture - Part 6: Reliability, Observability, and Evaluation](https://theagentstack.substack.com/p/openclaw-architecture-part-6-reliability) — especially relevant to the observability and runtime-evidence side of TraceClaw.
-- [OpenClaw Architecture, Explained: How It Works as an OS for AI Agents](https://ppaolo.substack.com/p/openclaw-system-architecture-overview) — a broad system-level walkthrough of the Gateway, Agent Runtime, sessions, tools, and end-to-end message flow.
+![OpenClaw validation use case](docs/figures/openclaw-validation-use-case.jpg)
 
-### Agent debugging and visual analytics
+The example makes the end-to-end path easier to read: request intake, Session lookup, context assembly, model inference, recipient/content checks, approval, tool execution, tool result, and final response.
 
-- [XAgen: An Explainability Tool for Identifying and Correcting Failures in Multi-Agent Workflows](https://arxiv.org/abs/2512.17896) — relevant to log visualization, step-level failure localization, and interactive debugging of agent workflows.
-- [Illuminating LLM Coding Agents: Visual Analytics for Deeper Understanding and Enhancement](https://arxiv.org/abs/2508.12555) — useful background for visualizing agent behavior and comparing execution/process structure rather than only inspecting final outputs.
-- [FlowForge: Guiding the Creation of Multi-agent Workflows with Interactive Visualizations as a Thinking Scaffold](https://ieeevis.org/year/2025/program/paper_ed3195e2-8726-4d85-acb7-c5ed2dc361bb.html) — related visualization work; its focus is workflow design rather than runtime tracing, but it helped frame how multi-agent structure can be presented interactively.
+### What TraceClaw adds
 
-### Related runtime observability
+The workflow diagrams explain the **overall system structure**. TraceClaw adds a lower-level execution-analysis layer on top of that structure:
 
-- [Fangcun Observer: Runtime Security for AI Agents](https://fangcunleap.com/blog/observer) — a related runtime-observability system that records system-level side effects such as commands, file activity, network access, and behavior chains. Its framework-independent, OS/runtime view is different from TraceClaw's source-guided semantic tracing, but it is useful context for thinking about trustworthy runtime evidence.
-
-These references helped with orientation and interface ideas. The version-specific stage definitions and source ranges in TraceClaw are based on the OpenClaw `v2026.7.1-2` source itself.
+- source-grounded stage reconstruction for the pinned OpenClaw version;
+- direct runtime evidence overlaid on the source model;
+- explicit separation of **OBSERVED**, **SOURCE-DERIVED**, and **NOT OBSERVED** states;
+- correlation across Gateway, Agent Runtime, model/provider, and tool execution;
+- final-reply capture at the winning run-result boundary;
+- explicit observation of the resolver return from Agent Runtime back into Gateway control flow.
 
 ## Why I built it
 
-At first, I tried to analyze how a request actually executed mostly from logs and message-level callbacks. That worked for some stages, but it became unreliable around the Agent Runtime boundary because isolated events did not always reveal the full execution path or the true semantic boundaries.
+At first, I tried to analyze a request mostly from logs and message-level callbacks. That worked for some stages, but it became unreliable around the Agent Runtime boundary because isolated events did not always reveal the full execution path or the true semantic boundaries.
 
-The clearest example was the final assistant reply. An early message-end hook could fire before later tool execution, retry/fallback logic, or winner selection had finished. In other words, a message event was observable, but it was not necessarily the semantic end of the run.
+The clearest example was the final assistant reply. An early message-end hook could fire before later tool execution, retry/fallback logic, or winner selection had finished. In other words, an event was observable, but it was not necessarily the semantic end of the run.
 
 That led to the main design of TraceClaw:
 
 - reconstruct the control flow from source;
-- instrument the runtime at a few important boundaries;
+- instrument a small number of important runtime boundaries;
 - keep direct observations separate from source-derived facts;
 - correlate Gateway execution with the deeper Agent Runtime.
 
 ## What it does
 
-- Builds a version-specific **G0–G18 source model** as a reference for analyzing the OpenClaw Gateway `chat.send` execution path.
+- Builds a version-specific **G0–G18 source model** for the OpenClaw Gateway `chat.send` path.
 - Captures Gateway runtime events and post-G18 Agent Runtime events.
 - Correlates Session, Agent, resolver, provider/model, tool, final-reply, and return-to-G16 state.
 - Shows **direct observations**, **source-derived path facts**, and **unobserved state** separately.
-- Replays a run in the browser, with Pause/Resume affecting only the visualization.
+- Replays a run in the browser, with Pause/Resume affecting visualization only.
 - Captures the final reply from the **winning run result**, after fallback/winner selection.
 - Saves completed traces locally and can publish the latest normalized trace to the repository.
-- Includes verification scripts that catch a stale or uninstrumented local OpenClaw build before a trace is trusted.
+- Includes verification scripts that detect a stale or uninstrumented local OpenClaw build before a trace is trusted.
 
 ## Execution path
 
@@ -119,15 +122,15 @@ This matters most around **G14–G16**. The current instrumentation does not emi
 
 ### 1. Pre-run state could leak stale runtime evidence
 
-An early version of the viewer could preload the most recently published trace and then render parts of that historical runtime state before a new live run had started. That meant old prompt, Session, Agent, or source-derived values could appear in a page that was supposed to represent a fresh run.
+An early version of the viewer could preload the most recently published trace and render parts of that historical runtime state before a new live run had started. Old prompt, Session, Agent, or source-derived values could therefore appear in a page that was supposed to represent a fresh run.
 
-The fix was to make the normal live viewer evidence-neutral before execution: it shows only the **SOURCE MODEL** until the new run enters the live execution states. Saved traces remain available only through an explicit reference view.
+The fix was to make the normal live viewer evidence-neutral before execution: it shows only the **SOURCE MODEL** until the new run enters live execution states. Saved traces remain available through an explicit reference view.
 
-This issue reinforced an important rule for the project: **historical/reference data and current-run evidence must never be conflated.**
+This reinforced an important rule for the project: **historical/reference data and current-run evidence must never be conflated.**
 
-### 2. A message-end event was not the final reply boundary
+### 2. A message-end event was not the final-reply boundary
 
-The final-reply capture exposed a deeper problem. An early message-end hook could fire before later tool execution, retry/fallback logic, or winner selection had finished.
+The final-reply capture exposed a deeper issue. An early message-end hook could fire before later tool execution, retry/fallback logic, or winner selection had finished.
 
 ```text
 message end
@@ -208,7 +211,7 @@ OpenClaw v2026.7.1-2
 commit 0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c
 ```
 
-So the stage definitions in `data/stages/` are version-specific mappings, not generic descriptions of every OpenClaw release.
+The stage definitions in `data/stages/` are therefore version-specific mappings, not generic descriptions of every OpenClaw release.
 
 ## Live architecture
 
@@ -285,7 +288,7 @@ http://127.0.0.1:8765/
 
 `start_live.sh` runs a runtime doctor before starting the viewer. This prevents a normal assistant response from being mistaken for a valid G0–G18 trace when the local Gateway is stale or uninstrumented.
 
-Enter a prompt and press **Run trace**. A tool-using prompt is useful for showing the full cross-layer path:
+A tool-using prompt is useful for showing the full cross-layer path:
 
 ```text
 G0–G18
@@ -337,7 +340,10 @@ openclaw-gateway-trace/
 │   └── cases/                     # saved / latest published trace
 ├── collector/                     # live API, parsing, correlation, persistence
 ├── docs/
-│   ├── traceclaw-framework.svg    # high-level method / case-study figure
+│   ├── figures/
+│   │   ├── openclaw-normal-runtime-flow.jpg
+│   │   └── openclaw-validation-use-case.jpg
+│   ├── traceclaw-framework.svg    # high-level TraceClaw framework
 │   └── trace-schema.md            # proposed cross-system trace abstraction
 ├── instrumentation/
 │   └── openclaw-v2026.7.1-2/     # pinned Gateway + Agent Runtime patches
@@ -348,11 +354,33 @@ openclaw-gateway-trace/
     └── verify_agent_runtime_capture.py
 ```
 
-## Research notes
+## Research notes and next step
 
 I am treating the current codebase as a research prototype rather than continuing to add UI features. The next work is mainly evaluation: checking path faithfulness, building fault cases, measuring tracing overhead, and testing how much of the approach transfers across versions or other agent runtimes.
 
 The question I am most interested in is whether **observable message events and semantic execution boundaries diverge often enough to matter in practice**, and whether source-guided runtime execution analysis makes those cases easier to inspect and debug.
+
+As a next step, I plan to adapt the execution-analysis view for the **MAVDR six-agent system at the Chinese Academy of Sciences**, so each agent can be inspected through the same source/runtime evidence model. This will also provide a second case study for testing how well the TraceClaw abstraction generalizes beyond OpenClaw.
+
+## References and early inspiration
+
+### OpenClaw architecture
+
+- [OpenClaw Architecture - Part 1: Control Plane, Sessions, and the Event Loop](https://theagentstack.substack.com/p/openclaw-architecture-part-1-control) — useful early orientation for the Gateway, sessions, and the agent loop.
+- [OpenClaw Architecture - Part 6: Reliability, Observability, and Evaluation](https://theagentstack.substack.com/p/openclaw-architecture-part-6-reliability) — especially relevant to observability and runtime evidence.
+- [OpenClaw Architecture, Explained: How It Works as an OS for AI Agents](https://ppaolo.substack.com/p/openclaw-system-architecture-overview) — a broad system-level walkthrough of Gateway, Agent Runtime, sessions, tools, and message flow.
+
+### Agent debugging and visual analytics
+
+- [XAgen: An Explainability Tool for Identifying and Correcting Failures in Multi-Agent Workflows](https://arxiv.org/abs/2512.17896) — relevant to failure localization and interactive debugging of agent workflows.
+- [Illuminating LLM Coding Agents: Visual Analytics for Deeper Understanding and Enhancement](https://arxiv.org/abs/2508.12555) — useful background for visualizing execution/process structure rather than only final outputs.
+- [FlowForge: Guiding the Creation of Multi-agent Workflows with Interactive Visualizations as a Thinking Scaffold](https://ieeevis.org/year/2025/program/paper_ed3195e2-8726-4d85-acb7-c5ed2dc361bb.html) — related visualization work focused on multi-agent workflow design.
+
+### Related runtime observability
+
+- [Fangcun Observer: Runtime Security for AI Agents](https://fangcunleap.com/blog/observer) — a related system focused on framework-independent runtime evidence such as commands, file activity, network access, and behavior chains.
+
+These references helped with orientation and interface ideas. The version-specific stage definitions and source ranges in TraceClaw are based on the pinned OpenClaw source itself.
 
 ## Current limitations
 
@@ -360,6 +388,7 @@ The question I am most interested in is whether **observable message events and 
 2. **Post-G18 Agent Runtime evidence requires the pinned local instrumentation patch.** Without it, provider/model/tool/final-reply fields stay explicitly uncaptured.
 3. **Connection-level G0–G2 correlation is conservative.** These events happen before request-specific identifiers are consistently available and are not intrinsically one-per-request when a connection is reused.
 4. **Live execution requires a local OpenClaw + TraceClaw environment.** A static page can display saved traces but cannot reproduce local runtime execution by itself.
+5. **The cross-system trace schema is currently a design target.** MAVDR integration has not yet been completed, so generality beyond OpenClaw remains to be evaluated.
 
 <details>
 <summary><strong>Apply / verify the pinned instrumentation</strong></summary>
@@ -426,5 +455,3 @@ TRACECLAW_LOG_PATH=/absolute/path/to/gateway-runtime.jsonl \
 Then open `http://127.0.0.1:8765/`.
 
 </details>
-
-As a next step, I plan to adapt this runtime execution analysis view for the **MAVDR six-agent system at the Chinese Academy of Sciences**, so each agent can be inspected through the same source/runtime evidence model.
