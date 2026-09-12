@@ -8,6 +8,14 @@ The basic rule in the UI is:
 
 > Source shows the path that can exist. Runtime evidence shows what this run actually exposed.
 
+## Framework
+
+![TraceClaw framework](docs/traceclaw-framework.svg)
+
+At a high level, TraceClaw moves from **source code → execution model → runtime instrumentation → correlated runtime events → evidence analysis → execution view**. The current OpenClaw implementation is the first case study; the planned MAVDR integration is the next test of whether the same source/runtime evidence model transfers to a multi-agent system.
+
+The proposed cross-system trace abstraction is documented in [`docs/trace-schema.md`](docs/trace-schema.md). It is a design target for generalization rather than a claim that the current OpenClaw collector already emits every event in one fully normalized format.
+
 ## Background
 
 I did not start the project by reading the OpenClaw repository from line one. A few architecture write-ups helped me get oriented first, especially around the Gateway/control-plane split, sessions, the Agent Runtime, tools, and observability.
@@ -328,6 +336,9 @@ openclaw-gateway-trace/
 │   ├── stages/                    # fixed G0–G18 source catalog
 │   └── cases/                     # saved / latest published trace
 ├── collector/                     # live API, parsing, correlation, persistence
+├── docs/
+│   ├── traceclaw-framework.svg    # high-level method / case-study figure
+│   └── trace-schema.md            # proposed cross-system trace abstraction
 ├── instrumentation/
 │   └── openclaw-v2026.7.1-2/     # pinned Gateway + Agent Runtime patches
 └── scripts/
