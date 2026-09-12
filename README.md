@@ -107,9 +107,19 @@ Before a live run starts, the page shows only the **SOURCE MODEL**. It does not 
 
 This matters most around **G14–G16**. The current instrumentation does not emit a standalone event for every internal step there, so those stages can be source-confirmed by surrounding runtime evidence without being mislabeled as directly observed.
 
-## A bug that changed the design
+## Two issues that shaped the design
 
-The final-reply capture is a good example of why I ended up using source + runtime evidence together.
+### 1. Pre-run state could leak stale runtime evidence
+
+An early version of the viewer could preload the most recently published trace and then render parts of that historical runtime state before a new live run had started. That meant old prompt, Session, Agent, or source-derived values could appear in a page that was supposed to represent a fresh run.
+
+The fix was to make the normal live viewer evidence-neutral before execution: it shows only the **SOURCE MODEL** until the new run enters the live execution states. Saved traces remain available only through an explicit reference view.
+
+This issue reinforced an important rule for the project: **historical/reference data and current-run evidence must never be conflated.**
+
+### 2. A message-end event was not the final reply boundary
+
+The final-reply capture exposed a deeper problem. An early message-end hook could fire before later tool execution, retry/fallback logic, or winner selection had finished.
 
 ```text
 message end
@@ -127,7 +137,9 @@ finalAssistantVisibleText / finalAssistantRawText
 agent_reply_finalized
 ```
 
-The current instrumentation captures the final reply from the **winning run result**. This avoids treating an earlier message-level event as the authoritative answer when the runtime still has work left to do.
+The current instrumentation captures the final reply from the **winning run result**. This avoids treating an observable message event as the semantic end of execution when the runtime still has work left to do.
+
+Together, these two issues pushed TraceClaw toward a stricter separation between **what the source permits, what the current run directly exposes, and what the UI is allowed to claim as evidence**.
 
 ## Current status
 
