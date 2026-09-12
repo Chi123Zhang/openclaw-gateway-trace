@@ -1,8 +1,8 @@
 # TraceClaw
 
-TraceClaw is a source-guided runtime tracer for OpenClaw. I built it to answer a fairly simple debugging question: when a `chat.send` request runs, which parts of the source path actually execute, and where does control enter and leave the deeper Agent Runtime?
+TraceClaw is a source-guided runtime execution analysis system for OpenClaw. I built it to answer a fairly simple question: when a `chat.send` request runs, how does it actually move through the system, which parts of the source path execute, and where does control enter and leave the deeper Agent Runtime?
 
-The current version is pinned to **OpenClaw `v2026.7.1-2`**. It combines a source-level model of the Gateway path (**G0–G18**) with runtime instrumentation for Agent selection, provider/model execution, tool calls, final reply capture, and the return to Gateway control flow.
+The current version is pinned to **OpenClaw `v2026.7.1-2`**. It combines a source-level model of the Gateway path (**G0–G18**) with runtime instrumentation for Agent selection, provider/model execution, tool calls, final reply capture, and the return to Gateway control flow, so a real run can be analyzed against the path defined by the source.
 
 The basic rule in the UI is:
 
@@ -38,7 +38,7 @@ These references helped with orientation and interface ideas. The version-specif
 
 ## Why I built it
 
-At first, I tried to understand the request path mostly from logs and message-level callbacks. That worked for some stages, but it became unreliable around the Agent Runtime boundary.
+At first, I tried to analyze how a request actually executed mostly from logs and message-level callbacks. That worked for some stages, but it became unreliable around the Agent Runtime boundary because isolated events did not always reveal the full execution path or the true semantic boundaries.
 
 The clearest example was the final assistant reply. An early message-end hook could fire before later tool execution, retry/fallback logic, or winner selection had finished. In other words, a message event was observable, but it was not necessarily the semantic end of the run.
 
@@ -51,7 +51,7 @@ That led to the main design of TraceClaw:
 
 ## What it does
 
-- Builds a version-specific **G0–G18 source model** for the OpenClaw Gateway `chat.send` path.
+- Builds a version-specific **G0–G18 source model** as a reference for analyzing the OpenClaw Gateway `chat.send` execution path.
 - Captures Gateway runtime events and post-G18 Agent Runtime events.
 - Correlates Session, Agent, resolver, provider/model, tool, final-reply, and return-to-G16 state.
 - Shows **direct observations**, **source-derived path facts**, and **unobserved state** separately.
@@ -341,7 +341,7 @@ openclaw-gateway-trace/
 
 I am treating the current codebase as a research prototype rather than continuing to add UI features. The next work is mainly evaluation: checking path faithfulness, building fault cases, measuring tracing overhead, and testing how much of the approach transfers across versions or other agent runtimes.
 
-The question I am most interested in is whether **observable message events and semantic execution boundaries diverge often enough to matter in practice**, and whether source-guided tracing makes those cases easier to debug.
+The question I am most interested in is whether **observable message events and semantic execution boundaries diverge often enough to matter in practice**, and whether source-guided runtime execution analysis makes those cases easier to inspect and debug.
 
 ## Current limitations
 
@@ -416,4 +416,4 @@ Then open `http://127.0.0.1:8765/`.
 
 </details>
 
-As a next step, I plan to adapt this trace view for the **MAVDR six-agent system at the Chinese Academy of Sciences**, so each agent can be inspected through the same source/runtime evidence model.
+As a next step, I plan to adapt this runtime execution analysis view for the **MAVDR six-agent system at the Chinese Academy of Sciences**, so each agent can be inspected through the same source/runtime evidence model.
