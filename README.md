@@ -22,19 +22,67 @@ The proposed cross-system trace abstraction is documented in [`docs/trace-schema
 
 ## OpenClaw workflow context
 
-The following diagram is a high-level, source-informed view of the broader OpenClaw runtime: external requests enter through the Gateway, move through Session and runtime-context preparation, reach the model/tool loop, and eventually return through Gateway egress.
+The following source-informed overview summarizes the broader OpenClaw runtime. It is intentionally rendered natively in GitHub so the labels remain sharp at different screen sizes.
 
-![OpenClaw normal runtime flow](docs/figures/openclaw-normal-runtime-flow.jpg)
+```mermaid
+flowchart LR
+    A["1 · External Channels / Clients"] --> B["2 · Gateway"]
+    B --> C["3 · Session"]
+    C --> D["4 · Runtime Context Assembly"]
+    D --> E["5 · Provider / LLM Inference"]
+    E --> F["6 · Policy / Approval Gate"]
+    F --> G["7 · Tool Execution"]
+    G --> H["8 · Tool Result Return"]
+    H --> I["9 · Runtime Continue & Respond"]
+    I --> J["10 · Gateway Egress"]
+    J --> K["11 · Channel Response"]
 
-This diagram is useful as **system context**, but TraceClaw does not treat it as runtime ground truth. The stage-level **G0–G18 model is separately re-derived and checked against the pinned `v2026.7.1-2` source snapshot**.
+    SK["Skills"] -. context injection .-> D
+    MEM["Memory"] -. context injection .-> D
+    G --> BT["Built-in Tools"]
+    G --> MCP["MCP Tools"]
+    G --> PL["Plugin Tools"]
+```
+
+The high-level stages cover:
+
+- **External clients → Gateway:** request intake, authentication/authorization, RPC dispatch, and routing;
+- **Session:** session-key resolution, transcript/state loading, and history/compaction support;
+- **Runtime context assembly:** system prompt, session history, Skills, Memory, and available tools;
+- **Provider / LLM:** model inference, streaming/retry/continuation, and deciding whether a tool is needed;
+- **Policy / approval:** allow/deny/approval logic and safety checks around tool use;
+- **Tool execution → result:** built-in, MCP, or plugin tools and their returned outputs;
+- **Runtime continue → Gateway egress:** continue the agent loop, compose the final response, update state, and deliver the output to the channel.
+
+This overview is useful as **system context**, but TraceClaw does not treat it as runtime ground truth. The stage-level **G0–G18 model is separately re-derived and checked against the pinned `v2026.7.1-2` source snapshot**.
 
 ### Example workflow
 
-This concrete example shows the same high-level workflow applied to an interpretable task: preparing and sending a recruiting link to a Columbia Statistics student.
+A concrete validation example makes the same high-level path easier to read: preparing and sending a recruiting link to a Columbia Statistics student.
 
-![OpenClaw validation use case](docs/figures/openclaw-validation-use-case.jpg)
+```mermaid
+flowchart LR
+    U["1 · 用户请求"] --> G["2 · Gateway 接收"]
+    G --> S["3 · Session 定位"]
+    S --> C["4 · 上下文组装"]
+    C --> M["5 · 模型推理"]
+    M --> V["6 · 检查内容与收件人"]
+    V --> A["7 · 审批 / 确认"]
+    A --> T["8 · 工具执行"]
+    T --> R["9 · 工具结果返回"]
+    R --> F["10 · 最终回复用户"]
 
-The example makes the end-to-end path easier to read: request intake, Session lookup, context assembly, model inference, recipient/content checks, approval, tool execution, tool result, and final response.
+    SK["Skills"] -.-> C
+    MEM["Memory"] -.-> C
+    H["Session History"] -.-> C
+    T --> BT["Built-in Tools"]
+    T --> MCP["MCP Tools"]
+    T --> PT["Plugin Tools"]
+```
+
+In this example, the model first interprets the task and prepares a send plan; recipient/content checks and approval happen before the sending tool is executed; the tool result is then returned to the runtime before the final user-facing response is composed.
+
+The original raster workflow references are kept under [`docs/figures/`](docs/figures/) for project history, while the README uses native diagrams for clearer recruiting/review presentation.
 
 ### What TraceClaw adds
 
@@ -340,9 +388,7 @@ openclaw-gateway-trace/
 │   └── cases/                     # saved / latest published trace
 ├── collector/                     # live API, parsing, correlation, persistence
 ├── docs/
-│   ├── figures/
-│   │   ├── openclaw-normal-runtime-flow.jpg
-│   │   └── openclaw-validation-use-case.jpg
+│   ├── figures/                   # original workflow references
 │   ├── traceclaw-framework.svg    # high-level TraceClaw framework
 │   └── trace-schema.md            # proposed cross-system trace abstraction
 ├── instrumentation/
