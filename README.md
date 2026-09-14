@@ -8,6 +8,14 @@ The basic rule in the UI is:
 
 > **Source shows the path that can exist. Runtime evidence shows what this run actually exposed.**
 
+## Demo
+
+▶ **[Watch the 75-second demo](docs/demo/traceclaw-demo-short.mp4)**
+
+A quick walkthrough of TraceClaw's source-grounded G0–G18 execution model, runtime evidence, deeper Agent Runtime, tool execution, final-reply capture, and return to Gateway control flow.
+
+[Full technical walkthrough (7 min)](docs/demo/traceclaw-demo-full.mp4)
+
 ## Framework
 
 ![TraceClaw framework](docs/traceclaw-framework.svg)
@@ -388,6 +396,9 @@ openclaw-gateway-trace/
 │   └── cases/                     # saved / latest published trace
 ├── collector/                     # live API, parsing, correlation, persistence
 ├── docs/
+│   ├── demo/
+│   │   ├── traceclaw-demo-short.mp4
+│   │   └── traceclaw-demo-full.mp4
 │   ├── figures/                   # original workflow references
 │   ├── traceclaw-framework.svg    # high-level TraceClaw framework
 │   └── trace-schema.md            # proposed cross-system trace abstraction
