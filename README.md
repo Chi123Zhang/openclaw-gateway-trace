@@ -14,7 +14,7 @@ The basic rule in the UI is:
 
 A quick walkthrough of TraceClaw's source-grounded G0–G18 execution model, runtime evidence, deeper Agent Runtime, tool execution, final-reply capture, and return to Gateway control flow.
 
-[Full technical walkthrough (7 min)](docs/demo/traceclaw-demo-full.mp4)
+**[Chinese demo (5 min)](docs/demo/traceclaw-demo-chinese.mp4)** · [Full technical walkthrough (7 min)](docs/demo/traceclaw-demo-full.mp4)
 
 ## Framework
 
@@ -398,6 +398,7 @@ openclaw-gateway-trace/
 ├── docs/
 │   ├── demo/
 │   │   ├── traceclaw-demo-short.mp4
+│   │   ├── traceclaw-demo-chinese.mp4
 │   │   └── traceclaw-demo-full.mp4
 │   ├── figures/                   # original workflow references
 │   ├── traceclaw-framework.svg    # high-level TraceClaw framework
