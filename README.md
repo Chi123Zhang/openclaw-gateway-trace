@@ -10,6 +10,10 @@ The basic rule in the UI is:
 
 ## Demo
 
+▶ **[中文高清演示 / Chinese walkthrough](https://github.com/Chi123Zhang/openclaw-gateway-trace/raw/main/docs/demo/traceclaw-demo-chinese.mp4)**
+
+For the clearest playback, open or download the raw MP4 instead of viewing the compressed GitHub file preview.
+
 ▶ **[Watch the 75-second demo](docs/demo/traceclaw-demo-short.mp4)**
 
 A quick walkthrough of TraceClaw's source-grounded G0–G18 execution model, runtime evidence, deeper Agent Runtime, tool execution, final-reply capture, and return to Gateway control flow.
@@ -397,6 +401,7 @@ openclaw-gateway-trace/
 ├── collector/                     # live API, parsing, correlation, persistence
 ├── docs/
 │   ├── demo/
+│   │   ├── traceclaw-demo-chinese.mp4
 │   │   ├── traceclaw-demo-short.mp4
 │   │   ├── traceclaw-demo-chinese.mp4
 │   │   └── traceclaw-demo-full.mp4
