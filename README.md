@@ -18,7 +18,7 @@ For the clearest playback, open or download the raw MP4 instead of viewing the c
 
 A quick walkthrough of TraceClaw's source-grounded G0–G18 execution model, runtime evidence, deeper Agent Runtime, tool execution, final-reply capture, and return to Gateway control flow.
 
-**[Chinese demo (5 min)](docs/demo/traceclaw-demo-chinese.mp4)** · [Full technical walkthrough (7 min)](docs/demo/traceclaw-demo-full.mp4)
+[Full technical walkthrough (7 min)](docs/demo/traceclaw-demo-full.mp4)
 
 ## Framework
 
