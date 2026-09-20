@@ -18,7 +18,6 @@
   let lastSelectedArchive = "";
   let refreshTimer = null;
   let staticFallbackLoaded = false;
-  let autoReplayStarted = false;
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -117,10 +116,6 @@
     }
     select.value = `static:${loaded.item.id}`;
 
-    if (options.autoReplay && typeof replay === "function" && !autoReplayStarted) {
-      autoReplayStarted = true;
-      window.setTimeout(() => replay(), 250);
-    }
   }
 
   function observedStageIds(trace) {
@@ -283,8 +278,7 @@
       if (!staticFallbackLoaded) {
         staticFallbackLoaded = true;
         await loadStaticCase("latest-live", {
-          autoReplay: true,
-          label: "Live mode needs a local collector; showing the latest saved run."
+          label: "Live mode needs a local collector; showing the latest saved run. Click Replay to watch the path animate."
         });
       }
       console.warn("Could not load run history:", error);
