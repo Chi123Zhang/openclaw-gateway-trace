@@ -15,6 +15,8 @@
   let liveRunning = false;
   let currentLiveId = null;
   let collectorReady = false;
+  let liveControlsEnabled = true;
+  const collectorUnavailableReason = "Live mode needs a local collector. This public page is showing a saved run.";
 
   // Visualization state is deliberately separate from Gateway execution state.
   // Pausing freezes only the UI. The Gateway and collector keep running so no
@@ -86,6 +88,34 @@
     collectorState.className = `collectorState ${tone}`.trim();
   }
 
+  function publishCollectorState(ready, reason = "") {
+    window.TRACECLAW_COLLECTOR_READY = ready;
+    window.dispatchEvent(new CustomEvent("traceclaw:collector-state", {
+      detail: { ready, reason }
+    }));
+  }
+
+  function setLiveControlsEnabled(enabled, reason = "") {
+    liveControlsEnabled = Boolean(enabled);
+    const disabledReason = reason || collectorUnavailableReason;
+
+    if (input) {
+      input.disabled = !liveControlsEnabled;
+      input.title = liveControlsEnabled ? "" : disabledReason;
+      input.placeholder = liveControlsEnabled
+        ? "Type a question, for example: How to make a cake?"
+        : "Live mode needs a local collector; showing a saved run.";
+    }
+
+    if (runButton) {
+      runButton.disabled = liveRunning || !liveControlsEnabled;
+      runButton.title = liveControlsEnabled
+        ? "Run a live trace through the local collector."
+        : disabledReason;
+      runButton.setAttribute("aria-disabled", String(!liveControlsEnabled));
+    }
+  }
+
   function pauseForInspection() {
     if (!liveRunning || visualPaused) return;
     visualPaused = true;
@@ -110,7 +140,7 @@
   }, true);
 
   function setBusy(busy) {
-    runButton.disabled = busy;
+    runButton.disabled = busy || !liveControlsEnabled;
     runButton.textContent = busy ? "Running live…" : "Run trace";
     const pauseButton = document.getElementById("livePauseBtn");
     if (pauseButton) {
@@ -875,7 +905,9 @@
     if (!collectorUrl) {
       collectorReady = false;
       setCollectorState("Collector not configured");
-      message.textContent = "Set collectorUrl in config.js to run new questions.";
+      setLiveControlsEnabled(false, collectorUnavailableReason);
+      publishCollectorState(false, "Collector URL is not configured.");
+      message.textContent = "Live mode needs a local collector; showing a saved run.";
       return;
     }
 
@@ -889,12 +921,16 @@
       if (!health.traceLogExists) throw new Error(`Trace log missing: ${health.traceLogPath || ""}`);
 
       collectorReady = true;
+      setLiveControlsEnabled(true);
+      publishCollectorState(true);
       setCollectorState("Gateway + trace connected", "connected");
       message.textContent = "Ready. Run trace starts a source-aligned live execution view; Pause freezes the visualization without stopping OpenClaw.";
     } catch (error) {
       collectorReady = false;
+      setLiveControlsEnabled(false, collectorUnavailableReason);
+      publishCollectorState(false, error.message);
       setCollectorState("Collector unavailable", "error");
-      message.textContent = `Collector/Gateway unavailable: ${error.message}`;
+      message.textContent = "Live mode needs a local collector; showing a saved run.";
     }
   }
 

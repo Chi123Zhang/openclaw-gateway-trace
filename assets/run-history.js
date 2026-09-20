@@ -10,11 +10,15 @@
   const responsePanel = document.getElementById("responsePanel");
   const responseText = document.getElementById("responseText");
   const promptInput = document.getElementById("promptInput");
+  const playButton = document.getElementById("playBtn");
+  const publicNotice = document.getElementById("publicNotice");
 
-  if (!select || !picker || !collectorUrl) return;
+  if (!select || !picker) return;
 
   let lastSelectedArchive = "";
   let refreshTimer = null;
+  let staticFallbackLoaded = false;
+  let autoReplayStarted = false;
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -47,6 +51,76 @@
     const text = String(value || "");
     responsePanel.hidden = !text;
     responseText.textContent = text;
+  }
+
+  function setPublicNotice(visible) {
+    if (publicNotice) publicNotice.hidden = !visible;
+  }
+
+  function setStaticViewerMode(enabled) {
+    window.TRACECLAW_STATIC_FALLBACK = Boolean(enabled);
+    setPublicNotice(enabled);
+    if (playButton) playButton.style.display = enabled ? "" : "none";
+    if (enabled) select.disabled = false;
+  }
+
+  function staticCaseItem(preferredId = "latest-live") {
+    const index = window.GATEWAY_CASE_INDEX || [];
+    return (
+      index.find(item => item.id === preferredId) ||
+      index.find(item => item.id === "latest-live") ||
+      index.find(item => item.id === "cake") ||
+      index[0]
+    );
+  }
+
+  async function ensureStaticCase(id = "latest-live") {
+    const item = staticCaseItem(id);
+    if (!item) return null;
+    window.GATEWAY_CASES = window.GATEWAY_CASES || {};
+    if (!window.GATEWAY_CASES[item.id] && item.file && typeof loadScript === "function") {
+      await loadScript(item.file);
+    }
+    const trace = window.GATEWAY_CASES?.[item.id];
+    return trace ? { item, trace } : null;
+  }
+
+  function populateStaticRuns(activeId = "latest-live") {
+    select.replaceChildren();
+
+    const index = window.GATEWAY_CASE_INDEX || [];
+    const saved = index.filter(item => item.id === "latest-live" || item.id === "cake");
+    saved.forEach(item => {
+      const option = document.createElement("option");
+      option.value = `static:${item.id}`;
+      option.textContent = item.id === "latest-live"
+        ? "Latest saved run"
+        : item.title || "Reference saved run";
+      select.append(option);
+    });
+
+    if ([...select.options].some(option => option.value === `static:${activeId}`)) {
+      select.value = `static:${activeId}`;
+    }
+  }
+
+  async function loadStaticCase(id = "latest-live", options = {}) {
+    const loaded = await ensureStaticCase(id);
+    if (!loaded) return;
+
+    const label = options.label || `Loaded saved run · ${loaded.trace.meta?.title || loaded.item.title || loaded.item.id}`;
+    lastSelectedArchive = "";
+    paintSavedTrace(loaded.trace, loaded.trace.meta?.response || "", label);
+    if (window.TRACECLAW_STATIC_FALLBACK && collectorState) {
+      collectorState.textContent = "Saved trace · offline";
+      collectorState.className = "collectorState";
+    }
+    select.value = `static:${loaded.item.id}`;
+
+    if (options.autoReplay && typeof replay === "function" && !autoReplayStarted) {
+      autoReplayStarted = true;
+      window.setTimeout(() => replay(), 250);
+    }
   }
 
   function observedStageIds(trace) {
@@ -158,10 +232,14 @@
 
   async function refreshRunHistory(preferredId = "") {
     try {
+      if (!collectorUrl) throw new Error("Collector URL is not configured.");
+
       const response = await fetch(`${collectorUrl}/api/runs?limit=40`, { cache: "no-store" });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
 
+      setStaticViewerMode(false);
+      staticFallbackLoaded = false;
       const runs = Array.isArray(payload.runs) ? payload.runs : [];
       select.replaceChildren();
 
@@ -199,11 +277,16 @@
         select.value = "";
       }
     } catch (error) {
-      select.replaceChildren();
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "Run history unavailable";
-      select.append(option);
+      setStaticViewerMode(true);
+      populateStaticRuns("latest-live");
+      select.title = "Bundled saved runs for the public GitHub Pages viewer";
+      if (!staticFallbackLoaded) {
+        staticFallbackLoaded = true;
+        await loadStaticCase("latest-live", {
+          autoReplay: true,
+          label: "Live mode needs a local collector; showing the latest saved run."
+        });
+      }
       console.warn("Could not load run history:", error);
     }
   }
@@ -234,6 +317,12 @@
           loadReferenceCase();
           return;
         }
+        if (value.startsWith("static:")) {
+          await loadStaticCase(value.slice(7), {
+            label: "Loaded bundled saved run."
+          });
+          return;
+        }
         if (value.startsWith("run:")) {
           await loadArchivedRun(value.slice(4));
         }
@@ -244,9 +333,9 @@
 
     if (runButton) {
       new MutationObserver(() => {
-        select.disabled = runButton.disabled;
+        select.disabled = runButton.disabled && !window.TRACECLAW_STATIC_FALLBACK;
       }).observe(runButton, { attributes: true, attributeFilter: ["disabled"] });
-      select.disabled = runButton.disabled;
+      select.disabled = runButton.disabled && !window.TRACECLAW_STATIC_FALLBACK;
     }
 
     if (requestState) {
