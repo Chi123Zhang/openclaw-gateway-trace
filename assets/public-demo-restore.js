@@ -2,6 +2,7 @@
   const LEGACY_STYLE_ID = "traceclaw-public-demo-restore";
   const STYLE_ID = "traceclaw-public-demo-compact-runtime";
   const LARGE_PANEL_ID = "publicAgentRuntimePanel";
+  let lastRenderedSignature = "";
 
   function currentCase() {
     try { return ACTIVE_CASE || null; } catch { return null; }
@@ -163,7 +164,36 @@
 
     if (!runtime.observed && !meta.response) return;
 
+    const signature = JSON.stringify({
+      runId: meta.runId || "",
+      prompt: meta.prompt || "",
+      response: meta.response || "",
+      agent: runtime.finalAgent || meta.agent || meta.downstreamAgentFinal || meta.downstreamAgent || "",
+      resolver: runtime.resolverSource || runtime.resolver || meta.resolverSource || meta.resolver || "",
+      runner: runtime.runner || "",
+      provider: runtime.provider || meta.provider || "",
+      model: runtime.model || meta.model || "",
+      toolCalled: Boolean(runtime.toolCalled),
+      toolCount: runtime.toolCount || 0,
+      toolNames: uniqueToolNames(runtime),
+      runStarted: Boolean(runtime.runStarted),
+      runEnded: Boolean(runtime.runEnded),
+      replyObserved: Boolean(runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved),
+      returnToG16Observed: Boolean(runtime.returnToG16Observed),
+      eventCount: Array.isArray(runtime.events) ? runtime.events.length : 0
+    });
+
     let boundary = pipeline.querySelector(":scope > .boundary");
+
+    // MutationObserver also sees our own DOM writes. Without this guard the
+    // saved-run strip is rebuilt every ~50ms, so pointerdown and click land on
+    // different DOM nodes. Keep the completed strip stable until run data changes.
+    if (
+      signature === lastRenderedSignature &&
+      boundary?.querySelector(".agentRuntimeObservedPanel")
+    ) {
+      return;
+    }
     if (!boundary) {
       boundary = document.createElement("div");
       boundary.className = "boundary";
@@ -250,6 +280,7 @@
     note.className = "returnNote";
 
     boundary.replaceChildren(grid, note);
+    lastRenderedSignature = signature;
   }
 
   function restore() {
