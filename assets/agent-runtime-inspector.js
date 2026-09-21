@@ -464,6 +464,10 @@
     close.focus();
   }
 
+  // Public/saved-run renderers can call the same inspector explicitly.
+  // The document-level delegated handler below remains as a fallback.
+  window.TRACECLAW_OPEN_AGENT_RUNTIME = openPanel;
+
   document.addEventListener("click", event => {
     const target = event.target.closest?.(".agentRuntimeNode[data-runtime-key], .agentRuntimeLead[data-runtime-key]");
     if (!target) return;
