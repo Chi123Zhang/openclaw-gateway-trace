@@ -142,6 +142,13 @@
   function setBusy(busy) {
     runButton.disabled = busy || !liveControlsEnabled;
     runButton.textContent = busy ? "Running live…" : "Run trace";
+
+    const clearButton = document.getElementById("resetBtn");
+    if (clearButton) {
+      clearButton.disabled = Boolean(busy);
+      clearButton.title = busy ? "Clear is available after the live run finishes or fails." : "";
+    }
+
     const pauseButton = document.getElementById("livePauseBtn");
     if (pauseButton) {
       pauseButton.hidden = !busy;
@@ -151,6 +158,20 @@
         pauseButton.classList.remove("pauseState");
       }
     }
+  }
+
+  function releaseLiveRunControls() {
+    liveRunning = false;
+    visualPaused = false;
+    currentLiveId = null;
+    setBusy(false);
+  }
+
+  function failLiveRun(error) {
+    const detail = error instanceof Error ? error.message : String(error || "Unknown live-run failure");
+    setCollectorState("Run failed", "error");
+    message.textContent = `Run failed: ${detail}`;
+    document.getElementById("requestState").textContent = "FAILED";
   }
 
   function showResponse(value) {
@@ -935,6 +956,7 @@
   }
 
   async function pollLiveRun(liveId, prompt) {
+    let terminalPollsWithoutArchive = 0;
     while (currentLiveId === liveId) {
       const response = await fetch(`${collectorUrl}/api/live/${liveId}`, { cache: "no-store" });
       const payload = await response.json().catch(() => ({}));
@@ -954,25 +976,37 @@
       backendComplete = Boolean(payload.complete);
       backendError = payload.error || null;
 
+      if (backendError) {
+        backendSnapshotFinalized = true;
+        throw new Error(backendError);
+      }
+
       if (visualPaused) {
         setCollectorState(`Paused @ ${lastDisplayedRuntimeEvent || lastDisplayedStage || "waiting"}`, "connected");
         message.textContent = `Visualization paused. Gateway is still collecting; ${playbackQueue.length} stage(s) queued.`;
       }
 
-      if (backendComplete && (payload.archiveSaved || payload.archiveError)) {
-        // Final post-flush snapshot can contain terminal Agent Runtime events that
-        // were not present in the first terminal poll. Queue them before allowing
-        // visual playback to finish.
-        fullCaseSnapshot = payload.trace || fullCaseSnapshot;
-        enqueueNewTimeline(fullCaseSnapshot);
-        enqueueAgentRuntime(fullCaseSnapshot);
-        backendSnapshotFinalized = true;
-        if (lastDisplayedStage && !visualPaused) {
-          paintSnapshot(fullCaseSnapshot, lastDisplayedStage);
-        } else {
-          renderRuntimeBoundary();
+      if (backendComplete) {
+        terminalPollsWithoutArchive += 1;
+
+        if (payload.archiveSaved || payload.archiveError || terminalPollsWithoutArchive >= 50) {
+          // Final post-flush snapshot can contain terminal Agent Runtime events that
+          // were not present in the first terminal poll. Queue them before allowing
+          // visual playback to finish. The bounded fallback prevents the UI from
+          // hanging forever if archive status cannot be reported.
+          fullCaseSnapshot = payload.trace || fullCaseSnapshot;
+          enqueueNewTimeline(fullCaseSnapshot);
+          enqueueAgentRuntime(fullCaseSnapshot);
+          backendSnapshotFinalized = true;
+          if (lastDisplayedStage && !visualPaused) {
+            paintSnapshot(fullCaseSnapshot, lastDisplayedStage);
+          } else {
+            renderRuntimeBoundary();
+          }
+          return;
         }
-        return;
+      } else {
+        terminalPollsWithoutArchive = 0;
       }
       await sleep(100);
     }
@@ -1015,14 +1049,9 @@
       const playbackTask = consumePlayback(prompt);
       await Promise.all([pollTask, playbackTask]);
     } catch (error) {
-      setCollectorState("Run failed", "error");
-      message.textContent = `Run failed: ${error.message}`;
-      document.getElementById("requestState").textContent = "FAILED";
+      failLiveRun(error);
     } finally {
-      liveRunning = false;
-      visualPaused = false;
-      currentLiveId = null;
-      setBusy(false);
+      releaseLiveRunControls();
     }
   });
 
