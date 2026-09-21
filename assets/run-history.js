@@ -54,6 +54,19 @@
     responseText.textContent = text;
   }
 
+  function savedRunResponse(trace, explicitResponse = "") {
+    const directFinal = Array.isArray(trace?.agentRuntime?.events)
+      ? trace.agentRuntime.events.find(event => event?.event === "agent_reply_finalized")?.replyText
+      : "";
+    return String(
+      explicitResponse ||
+      trace?.meta?.response ||
+      trace?.agentRuntime?.finalReply ||
+      directFinal ||
+      ""
+    );
+  }
+
   function waitForCollectorState(timeoutMs = 900) {
     if (typeof window.TRACECLAW_COLLECTOR_READY === "boolean") {
       return Promise.resolve({ ready: window.TRACECLAW_COLLECTOR_READY });
@@ -237,7 +250,7 @@
     renderAll();
     renderLog();
     syncSourceToggle();
-    setResponse(response || trace.meta?.response || "");
+    setResponse(savedRunResponse(trace, response));
 
     const progress = meaningfulStageIds(trace).length;
     const pct = Math.min(100, Math.round((progress / 19) * 100));
