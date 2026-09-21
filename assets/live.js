@@ -1060,7 +1060,20 @@
   const clearButton = document.getElementById("resetBtn");
   if (clearButton) {
     clearButton.onclick = () => {
-      if (liveRunning) return;
+      if (liveRunning) {
+        // Clear is a UI reset, not a backend cancellation. Stop following the
+        // current live run so the poll/playback tasks can unwind naturally; the
+        // collector may still finish and archive that run in the background.
+        currentLiveId = null;
+        visualPaused = false;
+        playbackQueue = [];
+        pendingAgentRuntimeEvents = [];
+        installIdleView({ clearInput: true });
+        runButton.textContent = "Resetting…";
+        message.textContent = "Cleared current view. Finishing the previous viewer task…";
+        return;
+      }
+
       installIdleView({ clearInput: true });
       message.textContent = collectorReady
         ? "Ready. No runtime result is shown until you press Run trace."
