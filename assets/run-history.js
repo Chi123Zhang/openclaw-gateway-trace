@@ -232,7 +232,7 @@
   }
 
   async function loadArchivedRun(archiveId) {
-    if (!archiveId || runButton?.disabled) return;
+    if (!archiveId) return;
     const response = await fetch(`${collectorUrl}/api/runs/${encodeURIComponent(archiveId)}`, {
       cache: "no-store"
     });
