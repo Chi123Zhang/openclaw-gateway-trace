@@ -14,6 +14,7 @@
 
   let liveRunning = false;
   let currentLiveId = null;
+  let liveUiGeneration = 0;
   let collectorReady = false;
   let liveControlsEnabled = true;
   const collectorUnavailableReason = "Live mode needs a local collector. This public page is showing a saved run.";
@@ -75,6 +76,7 @@
     if (askRow && speed && reset) {
       speed.title = "Live visualization speed";
       reset.textContent = "Clear";
+      reset.type = "button";
       askRow.append(pauseButton, speed, reset);
       askRow.style.gridTemplateColumns = "minmax(0,1fr) auto auto auto auto";
       askRow.style.alignItems = "stretch";
@@ -145,8 +147,12 @@
 
     const clearButton = document.getElementById("resetBtn");
     if (clearButton) {
-      clearButton.disabled = Boolean(busy);
-      clearButton.title = busy ? "Clear is available after the live run finishes or fails." : "";
+      // Clear always remains available. It cancels only this browser's playback;
+      // the collector may still finish/archive the already-started backend run.
+      clearButton.disabled = false;
+      clearButton.title = busy
+        ? "Clear this viewer and stop following the current live playback."
+        : "";
     }
 
     const pauseButton = document.getElementById("livePauseBtn");
@@ -1027,6 +1033,7 @@
       if (!collectorReady) return;
     }
 
+    const uiGeneration = ++liveUiGeneration;
     liveRunning = true;
     setBusy(true);
     resetLivePlayback(prompt);
@@ -1049,9 +1056,11 @@
       const playbackTask = consumePlayback(prompt);
       await Promise.all([pollTask, playbackTask]);
     } catch (error) {
-      failLiveRun(error);
+      if (uiGeneration === liveUiGeneration) failLiveRun(error);
     } finally {
-      releaseLiveRunControls();
+      // A Clear followed by a new Run trace creates a newer UI generation.
+      // Never let the older async task release/overwrite the newer run's controls.
+      if (uiGeneration === liveUiGeneration) releaseLiveRunControls();
     }
   });
 
@@ -1059,22 +1068,32 @@
 
   const clearButton = document.getElementById("resetBtn");
   if (clearButton) {
-    clearButton.onclick = () => {
-      if (liveRunning) {
-        // Clear is a UI reset, not a backend cancellation. Stop following the
-        // current live run so the poll/playback tasks can unwind naturally; the
-        // collector may still finish and archive that run in the background.
-        currentLiveId = null;
-        visualPaused = false;
-        playbackQueue = [];
-        pendingAgentRuntimeEvents = [];
-        installIdleView({ clearInput: true });
-        runButton.textContent = "Resetting…";
-        message.textContent = "Cleared current view. Finishing the previous viewer task…";
-        return;
-      }
+    clearButton.type = "button";
+    clearButton.onclick = event => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
 
+      // Invalidate any older poll/playback/finally work before clearing the DOM.
+      // This is viewer cancellation only; the collector keeps the backend run.
+      liveUiGeneration += 1;
+      currentLiveId = null;
+      liveRunning = false;
+      visualPaused = false;
+      playbackQueue = [];
+      pendingAgentRuntimeEvents = [];
+      queuedObservedStages = new Set();
+      queuedAgentRuntimeEvents = new Set();
+      backendComplete = false;
+      backendSnapshotFinalized = false;
+      backendError = null;
+      pendingResponse = "";
+
+      setBusy(false);
       installIdleView({ clearInput: true });
+      setCollectorState(
+        collectorReady ? "Gateway + trace connected" : "Collector unavailable",
+        collectorReady ? "connected" : "error"
+      );
       message.textContent = collectorReady
         ? "Ready. No runtime result is shown until you press Run trace."
         : "Start the local collector, then press Run trace.";
