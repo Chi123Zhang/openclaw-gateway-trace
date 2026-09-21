@@ -21,6 +21,19 @@
       #publicAgentRuntimePanel{display:none!important}
 
       .pipeline .boundary.runtimeBoundaryCompactPublic{
+        position:relative!important;
+        z-index:5!important;
+        pointer-events:auto!important;
+      }
+      .pipeline .boundary.runtimeBoundaryCompactPublic .agentRuntimeLead[data-runtime-key],
+      .pipeline .boundary.runtimeBoundaryCompactPublic .agentRuntimeNode[data-runtime-key]{
+        position:relative!important;
+        z-index:6!important;
+        pointer-events:auto!important;
+        cursor:pointer!important;
+      }
+
+      .pipeline .boundary.runtimeBoundaryCompactPublic{
         display:block!important;
         visibility:visible!important;
         width:100%!important;
@@ -121,6 +134,20 @@
     v.title = v.textContent;
 
     node.append(k, v);
+
+    // Saved/public runs are completed real executions, so each runtime fact
+    // must remain inspectable exactly like the live-run strip.
+    node.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.TRACECLAW_OPEN_AGENT_RUNTIME?.(key);
+    });
+    node.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      window.TRACECLAW_OPEN_AGENT_RUNTIME?.(key);
+    });
+
     return node;
   }
 
@@ -187,6 +214,16 @@
       : (runtime.observed ? "CAPTURED · RUNNING" : "SAVED RUN");
 
     lead.append(title, status);
+    lead.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.TRACECLAW_OPEN_AGENT_RUNTIME?.("overview");
+    });
+    lead.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      window.TRACECLAW_OPEN_AGENT_RUNTIME?.("overview");
+    });
 
     const flow = document.createElement("div");
     flow.className = "agentRuntimeFlow";
