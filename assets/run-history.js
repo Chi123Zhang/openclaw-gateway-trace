@@ -52,6 +52,25 @@
     responseText.textContent = text;
   }
 
+  function waitForCollectorState(timeoutMs = 900) {
+    if (typeof window.TRACECLAW_COLLECTOR_READY === "boolean") {
+      return Promise.resolve({ ready: window.TRACECLAW_COLLECTOR_READY });
+    }
+
+    return new Promise(resolve => {
+      let settled = false;
+      const finish = detail => {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener("traceclaw:collector-state", onState);
+        resolve(detail || { ready: window.TRACECLAW_COLLECTOR_READY === true });
+      };
+      const onState = event => finish(event.detail || {});
+      window.addEventListener("traceclaw:collector-state", onState);
+      window.setTimeout(() => finish(), timeoutMs);
+    });
+  }
+
   function setPublicNotice(visible) {
     if (publicNotice) publicNotice.hidden = !visible;
   }
@@ -116,6 +135,21 @@
     }
     select.value = `static:${loaded.item.id}`;
 
+  }
+
+  async function showBundledLatestRun(options = {}) {
+    setStaticViewerMode(true);
+    populateStaticRuns("latest-live");
+    select.title = "Bundled saved runs for the public GitHub Pages viewer";
+
+    const force = Boolean(options.force);
+    const alreadyShowingSavedRun = requestState?.textContent?.trim() === "SAVED RUN";
+    if (!staticFallbackLoaded || force || !alreadyShowingSavedRun) {
+      staticFallbackLoaded = true;
+      await loadStaticCase("latest-live", {
+        label: "Live mode needs a local collector; showing the latest saved run. Click Replay to watch the path animate."
+      });
+    }
   }
 
   function observedStageIds(trace) {
@@ -272,15 +306,7 @@
         select.value = "";
       }
     } catch (error) {
-      setStaticViewerMode(true);
-      populateStaticRuns("latest-live");
-      select.title = "Bundled saved runs for the public GitHub Pages viewer";
-      if (!staticFallbackLoaded) {
-        staticFallbackLoaded = true;
-        await loadStaticCase("latest-live", {
-          label: "Live mode needs a local collector; showing the latest saved run. Click Replay to watch the path animate."
-        });
-      }
+      await showBundledLatestRun({ force: true });
       console.warn("Could not load run history:", error);
     }
   }
@@ -337,6 +363,11 @@
         const state = requestState.textContent.trim();
         if (state === "FINISHED" || state === "FAILED") scheduleRefresh();
       }).observe(requestState, { childList: true, subtree: true, characterData: true });
+    }
+
+    const collector = await waitForCollectorState();
+    if (!collector.ready) {
+      await showBundledLatestRun();
     }
 
     await refreshRunHistory();
