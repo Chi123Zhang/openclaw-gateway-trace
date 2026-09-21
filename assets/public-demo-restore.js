@@ -20,42 +20,6 @@
     style.textContent = `
       #publicAgentRuntimePanel{display:none!important}
 
-      /* Public portfolio viewport: keep the six overview pillars readable, but
-         stop them from stretching to consume the whole first screen. This keeps
-         the one-row Deeper Agent Run handoff visibly attached to the overview. */
-      @media (min-width:1041px){
-        html body .pipeline{
-          flex:0 0 auto!important;
-        }
-
-        html body .pipeline .moduleWrap{
-          flex:0 0 auto!important;
-          height:clamp(360px,44vh,500px)!important;
-          min-height:360px!important;
-          max-height:500px!important;
-          overflow:hidden!important;
-        }
-
-        html body #moduleRow.moduleFlowRow{
-          height:100%!important;
-          min-height:0!important;
-          max-height:500px!important;
-          align-items:stretch!important;
-        }
-
-        html body #moduleRow.moduleFlowRow > .module,
-        html body #moduleRow.moduleFlowRow > .moduleConnector,
-        html body #moduleRow.moduleFlowRow > .connectionRequestHandoff{
-          height:100%!important;
-          min-height:0!important;
-          max-height:500px!important;
-        }
-
-        .pipeline .boundary.runtimeBoundaryCompactPublic{
-          margin-top:5px!important;
-        }
-      }
-
       .pipeline .boundary.runtimeBoundaryCompactPublic{
         display:block!important;
         visibility:visible!important;
