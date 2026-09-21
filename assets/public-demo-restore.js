@@ -55,31 +55,31 @@
       html body .pipeline .moduleWrap{
         display:block!important;
         width:100%!important;
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
+        height:clamp(430px,52vh,590px)!important;
+        min-height:430px!important;
+        max-height:590px!important;
         margin-top:12px!important;
         padding-bottom:8px!important;
         overflow-x:auto!important;
-        overflow-y:visible!important;
+        overflow-y:hidden!important;
       }
       html body #moduleRow.moduleFlowRow{
         display:grid!important;
         grid-template-columns:
-          minmax(230px,1fr) 84px
-          minmax(230px,1fr) 84px
-          minmax(230px,1fr) 84px
-          minmax(230px,1fr) 96px
-          minmax(230px,1fr)
-          84px
-          minmax(230px,1fr)!important;
+          minmax(210px,1fr) 54px
+          minmax(210px,1fr) 54px
+          minmax(210px,1fr) 54px
+          minmax(210px,1fr) 64px
+          minmax(210px,1fr)
+          54px
+          minmax(210px,1fr)!important;
         gap:0!important;
         align-items:stretch!important;
-        width:auto!important;
-        min-width:1780px!important;
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
+        width:100%!important;
+        min-width:1540px!important;
+        height:clamp(430px,52vh,590px)!important;
+        min-height:430px!important;
+        max-height:590px!important;
         overflow:visible!important;
       }
       html body #moduleRow.moduleFlowRow > .module{
