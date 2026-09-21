@@ -290,7 +290,9 @@
 
       setStaticViewerMode(false);
       staticFallbackLoaded = false;
-      const runs = (Array.isArray(payload.runs) ? payload.runs : [])\n        .filter(run => String(run.status || "").toLowerCase() === "complete")\n        .slice(0, 5);
+      const runs = (Array.isArray(payload.runs) ? payload.runs : [])
+        .filter(run => String(run.status || "").toLowerCase() === "complete")
+        .slice(0, 5);
       select.replaceChildren();
 
       if (!runs.length) {
