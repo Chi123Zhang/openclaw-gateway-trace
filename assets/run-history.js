@@ -259,7 +259,7 @@
     );
   }
 
-  async function refreshRunHistory(preferredId = "") {
+  async function refreshRunHistory(preferredId = "", options = {}) {
     try {
       if (!collectorUrl) throw new Error("Collector URL is not configured.");
 
@@ -302,6 +302,12 @@
       const wanted = preferredId || lastSelectedArchive;
       if (wanted && [...select.options].some(option => option.value === `run:${wanted}`)) {
         select.value = `run:${wanted}`;
+      } else if (options.loadLatest && runs.length) {
+        // Keep the portfolio and owner view anchored on the most recent completed
+        // run instead of dropping back to the empty/source-model state.
+        const latestId = runs[0].id;
+        select.value = `run:${latestId}`;
+        await loadArchivedRun(latestId);
       } else {
         select.value = "";
       }
@@ -374,7 +380,7 @@
 
     if (collector.ready) {
       setStaticViewerMode(false);
-      await refreshRunHistory();
+      await refreshRunHistory("", { loadLatest: true });
       return;
     }
 
