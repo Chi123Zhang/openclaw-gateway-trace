@@ -1,151 +1,83 @@
 (() => {
-  const STYLE_ID = "traceclaw-public-demo-restore";
+  const STYLE_ID = "traceclaw-public-runtime-details";
+  const PANEL_ID = "publicAgentRuntimePanel";
+  let lastSignature = "";
 
   function installStyle() {
     if (document.getElementById(STYLE_ID)) return;
+
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
-      html body:not(.stageModalOpen) .detail.stageModalTarget{
-        display:block!important;
-        position:static!important;
-        transform:none!important;
-        width:auto!important;
-        height:auto!important;
-        max-height:none!important;
-        overflow:visible!important;
-        margin-top:14px!important;
-        border:1px solid var(--line)!important;
-        border-radius:10px!important;
-        box-shadow:none!important;
+      .publicAgentRuntimePanel{
+        margin-top:14px;
+        padding:14px 16px;
       }
-      html body:not(.stageModalOpen) .detail.stageModalTarget .detailHead{
-        position:static!important;
-        padding:16px 18px!important;
+      .publicAgentRuntimeHead{
+        display:flex;
+        align-items:flex-end;
+        justify-content:space-between;
+        gap:12px;
       }
-      html body:not(.stageModalOpen) .detail.stageModalTarget .detailHead::after,
-      html body:not(.stageModalOpen) .stageModalClose,
-      html body:not(.stageModalOpen) .stageModalBackdrop{
-        display:none!important;
+      .publicAgentRuntimeStatus{
+        flex:0 0 auto;
+        border:1px solid #365847;
+        border-radius:999px;
+        padding:4px 8px;
+        color:#9fd0b7;
+        background:#132019;
+        font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+        letter-spacing:.04em;
       }
-      html body .layout main.main > section.card.output{
-        display:flex!important;
-        visibility:visible!important;
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
-        margin-top:14px!important;
-        padding:14px 16px!important;
-        border:1px solid var(--line)!important;
-        opacity:1!important;
-        overflow:visible!important;
-        pointer-events:auto!important;
+      .publicAgentRuntimeGrid{
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:10px;
+        margin-top:10px;
       }
-      html body .pipeline{
-        display:block!important;
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
-        overflow:visible!important;
-        padding:18px!important;
+      .publicAgentRuntimeItem{
+        min-width:0;
+        border:1px solid #303a43;
+        border-radius:7px;
+        background:#10161a;
+        padding:10px 11px;
       }
-      html body .pipeline .archBand{
-        display:none!important;
+      .publicAgentRuntimeItem span{
+        display:block;
+        color:var(--muted);
+        font:700 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
+        letter-spacing:.06em;
+        text-transform:uppercase;
       }
-      html body .pipeline .moduleWrap{
-        display:block!important;
-        width:100%!important;
-        height:clamp(430px,52vh,590px)!important;
-        min-height:430px!important;
-        max-height:590px!important;
-        margin-top:12px!important;
-        padding-bottom:8px!important;
-        overflow-x:auto!important;
-        overflow-y:hidden!important;
+      .publicAgentRuntimeItem strong{
+        display:block;
+        margin-top:5px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        color:#e7edf1;
+        font:700 12px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;
       }
-      html body #moduleRow.moduleFlowRow{
-        display:grid!important;
-        grid-template-columns:
-          minmax(210px,1fr) 54px
-          minmax(210px,1fr) 54px
-          minmax(210px,1fr) 54px
-          minmax(210px,1fr) 64px
-          minmax(210px,1fr)
-          54px
-          minmax(210px,1fr)!important;
-        gap:0!important;
-        align-items:stretch!important;
-        width:100%!important;
-        min-width:1540px!important;
-        height:clamp(430px,52vh,590px)!important;
-        min-height:430px!important;
-        max-height:590px!important;
-        overflow:visible!important;
+      .publicAgentRuntimeNote{
+        margin-top:9px;
+        color:var(--muted);
+        font-size:11px;
+        line-height:1.5;
       }
-      html body #moduleRow.moduleFlowRow > .module{
-        display:block!important;
-        position:relative!important;
-        min-width:0!important;
-        height:clamp(430px,52vh,590px)!important;
-        min-height:430px!important;
-        max-height:590px!important;
-        padding:22px 18px 16px!important;
-        overflow:hidden!important;
+      @media(max-width:1100px){
+        .publicAgentRuntimeGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
       }
-      html body #moduleRow.moduleFlowRow > .module > h3{
-        font-size:17px!important;
-        line-height:1.2!important;
-        margin:13px 0 12px!important;
-      }
-      html body #moduleRow.moduleFlowRow > .module > p{
-        display:block!important;
-        font-size:10px!important;
-        line-height:1.35!important;
-        -webkit-line-clamp:unset!important;
-      }
-      html body #moduleRow.moduleFlowRow > .module > .mid{
-        font-size:8px!important;
-      }
-      html body #moduleRow.moduleFlowRow > .module > .mresult{
-        left:18px!important;
-        bottom:16px!important;
-        font-size:8px!important;
-      }
-      html body #moduleRow.moduleFlowRow > .moduleConnector{
-        display:flex!important;
-        min-width:0!important;
-        min-height:430px!important;
-        height:clamp(430px,52vh,590px)!important;
-        max-height:590px!important;
-        align-items:center!important;
-        justify-content:center!important;
-        overflow:visible!important;
-      }
-      html body #moduleRow.moduleFlowRow .moduleStageList{
-        min-height:0!important;
-      }
-      html body .pipeline .boundary{
-        display:block!important;
-        visibility:visible!important;
-        width:100%!important;
-        height:auto!important;
-        min-height:0!important;
-        max-height:none!important;
-        margin-top:8px!important;
-        overflow:visible!important;
+      @media(max-width:620px){
+        .publicAgentRuntimeGrid{grid-template-columns:1fr}
       }
     `;
+
     document.head.append(style);
   }
 
   function text(value, fallback = "not captured") {
-    const clean = String(value || "").trim();
+    const clean = String(value ?? "").trim();
     return clean || fallback;
-  }
-
-  function uniqueToolNames(runtime) {
-    if (!Array.isArray(runtime?.tools)) return "";
-    return [...new Set(runtime.tools.map(tool => tool?.name).filter(Boolean))].join(", ");
   }
 
   function currentCase() {
@@ -156,117 +88,121 @@
     try { return CASE2 || {}; } catch { return {}; }
   }
 
-  function runtimeNode(label, value, options = {}) {
-    const observed = Boolean(value);
+  function uniqueToolNames(runtime) {
+    if (!Array.isArray(runtime?.tools)) return "";
+    return [...new Set(runtime.tools.map(tool => tool?.name).filter(Boolean))].join(", ");
+  }
+
+  function item(label, value) {
     const node = document.createElement("div");
-    node.dataset.runtimeKey = options.key || label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    node.tabIndex = 0;
-    node.setAttribute("role", "button");
-    node.setAttribute("aria-label", `Open ${label} runtime details`);
-    node.className = `agentRuntimeNode ${
-      observed
-        ? (options.neutral ? "agentRuntimeNode-neutral" : "agentRuntimeNode-observed")
-        : "agentRuntimeNode-missing"
-    }`;
+    node.className = "publicAgentRuntimeItem";
+
     const key = document.createElement("span");
     key.textContent = label;
+
     const val = document.createElement("strong");
     val.textContent = text(value);
     val.title = val.textContent;
+
     node.append(key, val);
     return node;
   }
 
-  function renderAgentRuntimeBoundary() {
+  function render() {
+    installStyle();
+
     const pipeline = document.querySelector("section.pipeline");
     if (!pipeline) return;
 
     const active = currentCase();
     const runtime = active?.agentRuntime || {};
     const meta = active?.meta || currentMeta();
-    if (!runtime.observed && !meta.response) return;
 
-    document.getElementById("publicAgentRuntimePanel")?.remove();
-
-    let boundary = pipeline.querySelector(":scope > .boundary");
-    if (!boundary) {
-      boundary = document.createElement("div");
-      boundary.className = "boundary";
-      pipeline.append(boundary);
+    if (!runtime.observed && !meta.response) {
+      document.getElementById(PANEL_ID)?.remove();
+      lastSignature = "";
+      return;
     }
-    boundary.hidden = false;
-    boundary.removeAttribute("hidden");
 
-    const providerModel = [runtime.provider, runtime.model].filter(Boolean).join(" · ");
+    const providerModel =
+      [runtime.provider, runtime.model].filter(Boolean).join(" · ") ||
+      [meta.provider, meta.model].filter(Boolean).join(" · ");
+
     const tools = runtime.toolCalled
       ? uniqueToolNames(runtime) || `${runtime.toolCount || 0} tool call(s)`
       : (runtime.runEnded ? "no tool call" : "");
 
-    const grid = document.createElement("div");
-    grid.className = "boundaryGrid";
+    const rows = [
+      ["Agent", runtime.finalAgent || meta.agent],
+      ["Resolver", runtime.resolverSource || runtime.resolver || meta.resolverSource || meta.resolver],
+      ["Runtime", runtime.runner || (runtime.runStarted ? "started" : "")],
+      ["Provider / Model", providerModel],
+      ["Tools", tools],
+      ["Final reply", runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved ? "observed" : ""],
+      ["Return", runtime.returnToG16Observed ? "G16 observed" : ""],
+      ["Status", runtime.runEnded ? "complete" : (runtime.runStarted ? "running" : "captured")]
+    ];
 
-    const legacy = document.createElement("div");
-    legacy.className = "boundaryBox runtimeBoundaryLegacy";
-    const legacyTitle = document.createElement("strong");
-    legacyTitle.textContent = "G18 · Reply Resolver Boundary";
-    const legacyText = document.createElement("span");
-    legacyText.id = "resolverBoundaryText";
-    legacyText.textContent = `resolver: ${runtime.resolverSource || runtime.resolver || meta.resolverSource || meta.resolver || "observed"}`;
-    legacy.append(legacyTitle, legacyText);
+    const signature = JSON.stringify(rows);
+    let panel = document.getElementById(PANEL_ID);
 
-    const arrow = document.createElement("div");
-    arrow.className = "returnArrow";
-    arrow.innerHTML = "→<br>←";
+    if (panel && signature === lastSignature) return;
 
-    const runtimeBox = document.createElement("div");
-    runtimeBox.className = "boundaryBox agentRuntimeObservedPanel";
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = PANEL_ID;
+      panel.className = "card publicAgentRuntimePanel";
+      pipeline.insertAdjacentElement("afterend", panel);
+    }
 
-    const lead = document.createElement("div");
-    lead.className = "agentRuntimeLead";
-    lead.dataset.runtimeKey = "overview";
-    lead.tabIndex = 0;
-    lead.setAttribute("role", "button");
-    lead.setAttribute("aria-label", "Open Deeper Agent Run details");
-    const leadTitle = document.createElement("strong");
-    leadTitle.textContent = "Deeper Agent Run";
+    panel.replaceChildren();
+
+    const head = document.createElement("div");
+    head.className = "publicAgentRuntimeHead";
+
+    const heading = document.createElement("div");
+    const kicker = document.createElement("div");
+    kicker.className = "kicker";
+    kicker.textContent = "Deeper Agent Run";
+
+    const title = document.createElement("div");
+    title.className = "sectionTitle";
+    title.textContent = "Captured runtime details";
+
+    heading.append(kicker, title);
+
     const status = document.createElement("span");
-    status.className = "agentRuntimeStatus";
-    status.dataset.tone = runtime.runEnded ? "complete" : "running";
+    status.className = "publicAgentRuntimeStatus";
     status.textContent = runtime.runEnded ? "CAPTURED · COMPLETE" : "CAPTURED · RUNNING";
-    lead.append(leadTitle, status);
 
-    const flow = document.createElement("div");
-    flow.className = "agentRuntimeFlow";
-    [
-      ["agent", "Agent", runtime.finalAgent || meta.agent],
-      ["resolver", "Resolver", runtime.resolverSource || runtime.resolver || meta.resolverSource || meta.resolver],
-      ["runtime", "Runtime", runtime.runner || (runtime.runStarted ? "started" : "")],
-      ["provider-model", "Provider / Model", providerModel || [meta.provider, meta.model].filter(Boolean).join(" · ")],
-      ["tools", "Tools", tools, !runtime.toolCalled],
-      ["final-reply", "Final reply", runtime.agentReplyDirectlyObserved || runtime.downstreamAssistantResponseObserved ? "observed" : ""],
-      ["return", "Return", runtime.returnToG16Observed ? "G16 observed" : ""]
-    ].forEach(([key, label, value, neutral]) => flow.append(runtimeNode(label, value, { key, neutral })));
+    head.append(heading, status);
 
-    runtimeBox.append(lead, flow);
-    grid.append(legacy, arrow, runtimeBox);
+    const grid = document.createElement("div");
+    grid.className = "publicAgentRuntimeGrid";
+    rows.forEach(([label, value]) => grid.append(item(label, value)));
 
     const note = document.createElement("div");
-    note.className = "returnNote";
-    note.textContent = "replyResult returns to the original G16 → filter / deliver / complete → DispatchFromConfigResult → G14 finalization";
+    note.className = "publicAgentRuntimeNote";
+    note.textContent =
+      "Detailed downstream runtime information from the selected saved run. The compact Deeper Agent Run strip above is preserved.";
 
-    boundary.replaceChildren(grid, note);
+    panel.append(head, grid, note);
+    lastSignature = signature;
   }
 
-  function restore() {
-    installStyle();
-    renderAgentRuntimeBoundary();
+  function scheduleRender() {
+    window.clearTimeout(scheduleRender.timer);
+    scheduleRender.timer = window.setTimeout(render, 80);
   }
 
-  const observer = new MutationObserver(() => {
-    window.clearTimeout(restore._timer);
-    restore._timer = window.setTimeout(restore, 80);
+  render();
+
+  const observer = new MutationObserver(scheduleRender);
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true
   });
 
-  restore();
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  document.getElementById("caseSelect")?.addEventListener("change", scheduleRender);
 })();
