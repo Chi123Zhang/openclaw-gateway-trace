@@ -250,7 +250,6 @@
     renderAll();
     renderLog();
     syncSourceToggle();
-    setResponse(savedRunResponse(trace, response));
 
     const progress = meaningfulStageIds(trace).length;
     const pct = Math.min(100, Math.round((progress / 19) * 100));
@@ -266,6 +265,20 @@
     }
     if (message) message.textContent = label;
     if (promptInput && trace.meta?.prompt) promptInput.value = trace.meta.prompt;
+
+    // A saved-run selection is an idle inspection state. Re-enable Clear even if
+    // a previous live playback left the button disabled, and paint the response
+    // after every other viewer mutation so it cannot be wiped by render/init work.
+    const clearButton = document.getElementById("resetBtn");
+    if (clearButton) {
+      clearButton.disabled = false;
+      clearButton.title = "";
+    }
+
+    const finalResponse = savedRunResponse(trace, response);
+    setResponse(finalResponse);
+    requestAnimationFrame(() => setResponse(finalResponse));
+    setTimeout(() => setResponse(finalResponse), 0);
   }
 
   async function loadArchivedRun(archiveId) {
@@ -404,7 +417,6 @@
 
       const selectedPrompt = select.selectedOptions?.[0]?.dataset?.prompt || "";
       if (promptInput && selectedPrompt) promptInput.value = selectedPrompt;
-      setResponse("");
 
       try {
         if (value === "reference:cake") {
