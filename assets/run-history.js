@@ -58,11 +58,15 @@
     const directFinal = Array.isArray(trace?.agentRuntime?.events)
       ? trace.agentRuntime.events.find(event => event?.event === "agent_reply_finalized")?.replyText
       : "";
+
+    // The Agent Runtime reply is correlated to this exact runId and is therefore
+    // the strongest source for a saved-run answer. Older archive envelopes can
+    // contain a stale outer response string, so use that only as a last fallback.
     return String(
-      explicitResponse ||
-      trace?.meta?.response ||
       trace?.agentRuntime?.finalReply ||
       directFinal ||
+      trace?.meta?.response ||
+      explicitResponse ||
       ""
     );
   }
