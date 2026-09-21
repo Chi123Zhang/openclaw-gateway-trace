@@ -42,11 +42,84 @@
         pointer-events:auto!important;
       }
       html body .pipeline{
+        display:block!important;
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+        overflow:visible!important;
+        padding:18px!important;
+      }
+      html body .pipeline .archBand{
+        display:none!important;
+      }
+      html body .pipeline .moduleWrap{
+        display:block!important;
+        width:100%!important;
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+        margin-top:12px!important;
+        padding-bottom:8px!important;
+        overflow-x:auto!important;
+        overflow-y:visible!important;
+      }
+      html body #moduleRow.moduleFlowRow{
+        display:grid!important;
+        grid-template-columns:
+          minmax(230px,1fr) 84px
+          minmax(230px,1fr) 84px
+          minmax(230px,1fr) 84px
+          minmax(230px,1fr) 96px
+          minmax(230px,1fr)
+          84px
+          minmax(230px,1fr)!important;
+        gap:0!important;
+        align-items:stretch!important;
+        width:auto!important;
+        min-width:1780px!important;
+        height:auto!important;
+        min-height:0!important;
         max-height:none!important;
         overflow:visible!important;
       }
-      html body #moduleRow.moduleFlowRow{
-        align-items:start!important;
+      html body #moduleRow.moduleFlowRow > .module{
+        display:block!important;
+        position:relative!important;
+        min-width:0!important;
+        height:clamp(430px,52vh,590px)!important;
+        min-height:430px!important;
+        max-height:590px!important;
+        padding:22px 18px 16px!important;
+        overflow:hidden!important;
+      }
+      html body #moduleRow.moduleFlowRow > .module > h3{
+        font-size:17px!important;
+        line-height:1.2!important;
+        margin:13px 0 12px!important;
+      }
+      html body #moduleRow.moduleFlowRow > .module > p{
+        display:block!important;
+        font-size:10px!important;
+        line-height:1.35!important;
+        -webkit-line-clamp:unset!important;
+      }
+      html body #moduleRow.moduleFlowRow > .module > .mid{
+        font-size:8px!important;
+      }
+      html body #moduleRow.moduleFlowRow > .module > .mresult{
+        left:18px!important;
+        bottom:16px!important;
+        font-size:8px!important;
+      }
+      html body #moduleRow.moduleFlowRow > .moduleConnector{
+        display:flex!important;
+        min-width:0!important;
+        min-height:430px!important;
+        height:clamp(430px,52vh,590px)!important;
+        max-height:590px!important;
+        align-items:center!important;
+        justify-content:center!important;
+        overflow:visible!important;
       }
       html body #moduleRow.moduleFlowRow .moduleStageList{
         min-height:0!important;
@@ -54,6 +127,12 @@
       html body .pipeline .boundary{
         display:block!important;
         visibility:visible!important;
+        width:100%!important;
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+        margin-top:8px!important;
+        overflow:visible!important;
       }
     `;
     document.head.append(style);
