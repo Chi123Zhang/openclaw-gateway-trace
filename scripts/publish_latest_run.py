@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -29,6 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 RUNS_DIR = REPO_ROOT / "collector" / "runs"
 LATEST_OUTPUT = REPO_ROOT / "data" / "cases" / "latest-live.js"
 RECENT_OUTPUT = REPO_ROOT / "data" / "cases" / "recent-runs.js"
+INDEX_OUTPUT = REPO_ROOT / "index.html"
 LATEST_CASE_ID = "latest-live"
 PUBLIC_HISTORY_LIMIT = 5
 
@@ -215,11 +217,31 @@ def write_recent_cases(records: list[tuple[Path, dict[str, Any]]], published_at:
     RECENT_OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def refresh_public_case_cache_versions() -> None:
+    """Force GitHub Pages visitors to fetch the newest published run bundle."""
+    if not INDEX_OUTPUT.is_file():
+        return
+    text = INDEX_OUTPUT.read_text(encoding="utf-8")
+    token = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    text = re.sub(
+        r'data/cases/latest-live\.js\?v=[^"\\]+',
+        f"data/cases/latest-live.js?v={token}",
+        text,
+    )
+    text = re.sub(
+        r'data/cases/recent-runs\.js\?v=[^"\\]+',
+        f"data/cases/recent-runs.js?v={token}",
+        text,
+    )
+    INDEX_OUTPUT.write_text(text, encoding="utf-8")
+
+
 def push_cases(prompt: str) -> None:
     git(
         "add",
         str(LATEST_OUTPUT.relative_to(REPO_ROOT)),
         str(RECENT_OUTPUT.relative_to(REPO_ROOT)),
+        str(INDEX_OUTPUT.relative_to(REPO_ROOT)),
     )
     diff = git("diff", "--cached", "--quiet", check=False)
     if diff.returncode == 0:
@@ -266,6 +288,7 @@ def main() -> int:
 
     recent = recent_completed_archives(path, PUBLIC_HISTORY_LIMIT)
     write_recent_cases(recent, published_at)
+    refresh_public_case_cache_versions()
 
     prompt = str(latest_trace.get("meta", {}).get("prompt") or "Saved live run")
     print(f"Published local snapshot: {path.name}")
