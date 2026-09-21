@@ -18,6 +18,8 @@
   let lastSelectedArchive = "";
   let refreshTimer = null;
   let staticFallbackLoaded = false;
+  let lastHistorySelection = "";
+  let lastHistorySelectionAt = 0;
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -128,6 +130,7 @@
     saved.forEach((item, index) => {
       const option = document.createElement("option");
       option.value = `static:${item.id}`;
+      option.dataset.prompt = String(item.prompt || "");
       const when = formatSavedAt(item.savedAt || item.startedAt);
       const prompt = shortPrompt(item.prompt || "Saved run", 46);
       option.textContent = index === 0 || item.latest
@@ -262,11 +265,20 @@
 
     lastSelectedArchive = archiveId;
     const when = formatSavedAt(payload.savedAt || payload.startedAt);
+    const trace = payload.trace;
+    if (trace && typeof trace === "object") {
+      trace.meta = {
+        ...(trace.meta || {}),
+        prompt: payload.prompt || trace.meta?.prompt || "",
+        response: payload.response || trace.meta?.response || ""
+      };
+    }
     paintSavedTrace(
-      payload.trace,
+      trace,
       payload.response,
       `Loaded saved run · ${when} · ${shortPrompt(payload.prompt, 70)}`
     );
+    select.value = `run:${archiveId}`;
   }
 
   function loadReferenceCase() {
@@ -305,6 +317,7 @@
       runs.forEach((run, index) => {
         const option = document.createElement("option");
         option.value = `run:${run.id}`;
+        option.dataset.prompt = String(run.prompt || "");
         const when = formatSavedAt(run.savedAt || run.startedAt);
         const prompt = shortPrompt(run.prompt, 46);
         option.textContent = index === 0
@@ -350,9 +363,27 @@
     picker.style.display = "";
     select.title = "Saved local live runs";
 
-    select.onchange = async () => {
+    const handleHistorySelection = async () => {
       const value = select.value;
       if (!value) return;
+
+      // Native select controls can emit both input and change for one choice.
+      // Handle that pair once, but always allow a later re-selection.
+      const now = performance.now();
+      if (value === lastHistorySelection && now - lastHistorySelectionAt < 250) return;
+      lastHistorySelection = value;
+      lastHistorySelectionAt = now;
+
+      // A user-picked history item wins over any pending "load latest" refresh.
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+        refreshTimer = null;
+      }
+
+      const selectedPrompt = select.selectedOptions?.[0]?.dataset?.prompt || "";
+      if (promptInput && selectedPrompt) promptInput.value = selectedPrompt;
+      setResponse("");
+
       try {
         if (value === "reference:cake") {
           loadReferenceCase();
@@ -371,6 +402,11 @@
         if (message) message.textContent = `Could not load saved run: ${error.message}`;
       }
     };
+
+    // input makes the choice responsive immediately; change is the fallback
+    // across browsers. The small guard above prevents duplicate loading.
+    select.oninput = handleHistorySelection;
+    select.onchange = handleHistorySelection;
 
     if (runButton) {
       new MutationObserver(() => {
