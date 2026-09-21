@@ -293,29 +293,34 @@
       const runs = (Array.isArray(payload.runs) ? payload.runs : [])\n        .filter(run => String(run.status || "").toLowerCase() === "complete")\n        .slice(0, 5);
       select.replaceChildren();
 
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = runs.length ? "Choose a saved run" : "No saved runs yet";
-      select.append(placeholder);
+      if (!runs.length) {
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "No saved runs yet";
+        select.append(placeholder);
+      }
 
-      runs.forEach(run => {
+      runs.forEach((run, index) => {
         const option = document.createElement("option");
         option.value = `run:${run.id}`;
         const when = formatSavedAt(run.savedAt || run.startedAt);
-        const suffix = run.status === "error" ? " · failed" : "";
-        option.textContent = `${when} · ${shortPrompt(run.prompt)}${suffix}`;
+        const prompt = shortPrompt(run.prompt, 46);
+        option.textContent = index === 0
+          ? `Latest saved run · ${when} · ${prompt}`
+          : `${when} · ${prompt}`;
         select.append(option);
       });
 
       const wanted = preferredId || lastSelectedArchive;
-      if (wanted && [...select.options].some(option => option.value === `run:${wanted}`)) {
-        select.value = `run:${wanted}`;
-      } else if (options.loadLatest && runs.length) {
-        // Keep the portfolio and owner view anchored on the most recent completed
-        // run instead of dropping back to the empty/source-model state.
+      if (options.loadLatest && runs.length) {
+        // A newly completed run always becomes the active Latest saved run.
         const latestId = runs[0].id;
         select.value = `run:${latestId}`;
         await loadArchivedRun(latestId);
+      } else if (wanted && [...select.options].some(option => option.value === `run:${wanted}`)) {
+        select.value = `run:${wanted}`;
+      } else if (runs.length) {
+        select.value = `run:${runs[0].id}`;
       } else {
         select.value = "";
       }
@@ -327,7 +332,7 @@
 
   function scheduleRefresh() {
     if (refreshTimer) clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(() => refreshRunHistory(), 350);
+    refreshTimer = setTimeout(() => refreshRunHistory("", { loadLatest: true }), 350);
   }
 
   async function initialize() {
