@@ -328,10 +328,16 @@
 
       const wanted = preferredId || lastSelectedArchive;
       if (options.loadLatest && runs.length) {
-        // A newly completed run always becomes the active Latest saved run.
+        // Initial page load: show the latest saved run automatically.
         const latestId = runs[0].id;
         select.value = `run:${latestId}`;
         await loadArchivedRun(latestId);
+      } else if (options.selectLatest && runs.length) {
+        // A just-finished live run is already painted by live.js. Refresh only
+        // the latest-five picker here; do not repaint it as SAVED RUN while the
+        // live controls are still unwinding.
+        select.value = `run:${runs[0].id}`;
+        lastSelectedArchive = runs[0].id;
       } else if (wanted && [...select.options].some(option => option.value === `run:${wanted}`)) {
         select.value = `run:${wanted}`;
       } else if (runs.length) {
@@ -347,7 +353,10 @@
 
   function scheduleRefresh() {
     if (refreshTimer) clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(() => refreshRunHistory("", { loadLatest: true }), 350);
+    refreshTimer = setTimeout(
+      () => refreshRunHistory("", { loadLatest: false, selectLatest: true }),
+      350
+    );
   }
 
   async function initialize() {
