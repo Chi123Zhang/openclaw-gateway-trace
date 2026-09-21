@@ -365,6 +365,16 @@
       }).observe(requestState, { childList: true, subtree: true, characterData: true });
     }
 
+    // GitHub Pages is the public portfolio viewer. It has no local collector,
+    // so show the latest published saved run immediately instead of waiting for
+    // a collector probe. This makes the full trace and Deeper Agent Run strip
+    // visible to recruiters on first load without clicking Run trace.
+    const isPublicGitHubViewer = window.location.hostname.endsWith("github.io");
+    if (isPublicGitHubViewer) {
+      await showBundledLatestRun({ force: true });
+      return;
+    }
+
     const collector = await waitForCollectorState();
     if (!collector.ready) {
       await showBundledLatestRun();
