@@ -399,13 +399,27 @@
   function closePanel() {
     document.body.classList.remove("agentRuntimeInspectOpen");
     const panel = document.getElementById("agentRuntimeInspectPanel");
-    if (panel) panel.replaceChildren();
+    const backdrop = document.getElementById("agentRuntimeInspectBackdrop");
+    if (panel) {
+      panel.replaceChildren();
+      panel.style.setProperty("display", "none", "important");
+    }
+    if (backdrop) backdrop.style.setProperty("display", "none", "important");
   }
 
   function openPanel(key) {
     const runtime = currentRuntime();
     const meta = currentMeta();
-    const {panel} = ensurePanel();
+    const {backdrop, panel} = ensurePanel();
+
+    // Be explicit for saved-run inspection. Later presentation CSS must never
+    // be able to hide a runtime inspector that the user just opened.
+    backdrop.style.setProperty("display", "block", "important");
+    backdrop.style.setProperty("pointer-events", "auto", "important");
+    backdrop.style.setProperty("z-index", "10020", "important");
+    panel.style.setProperty("display", "block", "important");
+    panel.style.setProperty("pointer-events", "auto", "important");
+    panel.style.setProperty("z-index", "10021", "important");
 
     panel.replaceChildren();
 
@@ -414,7 +428,10 @@
     const titles = document.createElement("div");
     const kicker = document.createElement("span");
     kicker.className = "agentRuntimeInspectKicker";
-    kicker.textContent = "CURRENT RUN · POST-G18";
+    const requestState = String(document.getElementById("requestState")?.textContent || "").trim().toUpperCase();
+    kicker.textContent = requestState === "SAVED RUN"
+      ? "LATEST SAVED RUN · POST-G18"
+      : "CURRENT RUN · POST-G18";
     const title = document.createElement("h3");
     title.textContent = LABELS[key] || "Agent Runtime";
     const run = document.createElement("code");
@@ -467,6 +484,18 @@
   // Public/saved-run renderers can call the same inspector explicitly.
   // The document-level delegated handler below remains as a fallback.
   window.TRACECLAW_OPEN_AGENT_RUNTIME = openPanel;
+
+  // Completed saved runs are inspection-first. Open on pointerdown so the
+  // saved-run runtime strip remains inspectable even if another presentation
+  // layer suppresses or retargets the later click event.
+  document.addEventListener("pointerdown", event => {
+    if (event.button !== undefined && event.button !== 0) return;
+    const target = event.target.closest?.(".agentRuntimeNode[data-runtime-key], .agentRuntimeLead[data-runtime-key]");
+    if (!target) return;
+    const state = String(document.getElementById("requestState")?.textContent || "").trim().toUpperCase();
+    if (state !== "SAVED RUN") return;
+    openPanel(target.dataset.runtimeKey || "overview");
+  }, true);
 
   document.addEventListener("click", event => {
     const target = event.target.closest?.(".agentRuntimeNode[data-runtime-key], .agentRuntimeLead[data-runtime-key]");
