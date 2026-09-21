@@ -82,12 +82,30 @@
     if (enabled) select.disabled = false;
   }
 
+  function publicRunItems() {
+    const runs = Array.isArray(window.GATEWAY_PUBLIC_RUNS)
+      ? window.GATEWAY_PUBLIC_RUNS.slice(0, 5)
+      : [];
+    if (runs.length) return runs;
+
+    const latest = window.GATEWAY_CASES?.["latest-live"];
+    return latest ? [{
+      id: "latest-live",
+      savedAt: latest.meta?.savedAt || latest.meta?.publishedAt || "",
+      startedAt: latest.meta?.startedAt || "",
+      prompt: latest.meta?.prompt || latest.meta?.title || "Saved run",
+      latest: true
+    }] : [];
+  }
+
   function staticCaseItem(preferredId = "latest-live") {
+    const publicItem = publicRunItems().find(item => item.id === preferredId);
+    if (publicItem) return publicItem;
+
     const index = window.GATEWAY_CASE_INDEX || [];
     return (
       index.find(item => item.id === preferredId) ||
       index.find(item => item.id === "latest-live") ||
-      index.find(item => item.id === "cake") ||
       index[0]
     );
   }
@@ -106,19 +124,22 @@
   function populateStaticRuns(activeId = "latest-live") {
     select.replaceChildren();
 
-    const index = window.GATEWAY_CASE_INDEX || [];
-    const saved = index.filter(item => item.id === "latest-live" || item.id === "cake");
-    saved.forEach(item => {
+    const saved = publicRunItems().slice(0, 5);
+    saved.forEach((item, index) => {
       const option = document.createElement("option");
       option.value = `static:${item.id}`;
-      option.textContent = item.id === "latest-live"
-        ? "Latest saved run"
-        : item.title || "Reference saved run";
+      const when = formatSavedAt(item.savedAt || item.startedAt);
+      const prompt = shortPrompt(item.prompt || "Saved run", 46);
+      option.textContent = index === 0 || item.latest
+        ? `Latest saved run · ${when} · ${prompt}`
+        : `${when} · ${prompt}`;
       select.append(option);
     });
 
     if ([...select.options].some(option => option.value === `static:${activeId}`)) {
       select.value = `static:${activeId}`;
+    } else if (select.options.length) {
+      select.selectedIndex = 0;
     }
   }
 
@@ -263,13 +284,13 @@
     try {
       if (!collectorUrl) throw new Error("Collector URL is not configured.");
 
-      const response = await fetch(`${collectorUrl}/api/runs?limit=40`, { cache: "no-store" });
+      const response = await fetch(`${collectorUrl}/api/runs?limit=20`, { cache: "no-store" });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
 
       setStaticViewerMode(false);
       staticFallbackLoaded = false;
-      const runs = Array.isArray(payload.runs) ? payload.runs : [];
+      const runs = (Array.isArray(payload.runs) ? payload.runs : [])\n        .filter(run => String(run.status || "").toLowerCase() === "complete")\n        .slice(0, 5);
       select.replaceChildren();
 
       const placeholder = document.createElement("option");
@@ -285,19 +306,6 @@
         option.textContent = `${when} · ${shortPrompt(run.prompt)}${suffix}`;
         select.append(option);
       });
-
-      const reference = window.GATEWAY_CASES?.cake;
-      if (reference) {
-        const divider = document.createElement("option");
-        divider.disabled = true;
-        divider.textContent = "──────── reference ────────";
-        select.append(divider);
-
-        const option = document.createElement("option");
-        option.value = "reference:cake";
-        option.textContent = "Verified Cake reference · Aug 12";
-        select.append(option);
-      }
 
       const wanted = preferredId || lastSelectedArchive;
       if (wanted && [...select.options].some(option => option.value === `run:${wanted}`)) {
