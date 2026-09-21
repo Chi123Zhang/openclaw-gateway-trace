@@ -131,7 +131,25 @@
 
   function hasCurrentLiveExecution() {
     if (isReferenceMode()) return true;
-    return /^(?:STARTING|RUNNING|PAUSED|FINISHED|FAILED)/.test(requestState());
+
+    // A completed saved/published run is still real run evidence. Treating
+    // "SAVED RUN" as idle caused Flow/detail panels to hide its runtime values
+    // and fall back to source-only/reference text.
+    const state = requestState();
+    if (/^(?:STARTING|RUNNING|PAUSED|FINISHED|FAILED|SAVED RUN)/.test(state)) return true;
+
+    try {
+      const trace = typeof ACTIVE_CASE !== "undefined" ? ACTIVE_CASE : null;
+      const observed = trace?._collector?.traceStagesObserved;
+      return Boolean(
+        trace?.meta?.runId ||
+        trace?.meta?.response ||
+        trace?.agentRuntime?.observed ||
+        (Array.isArray(observed) && observed.length)
+      );
+    } catch {
+      return false;
+    }
   }
 
   function forceSourceModelLabels() {
