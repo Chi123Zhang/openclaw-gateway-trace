@@ -308,7 +308,25 @@
         )
       : null;
     const archivedFinalReply = String(archivedFinalEvent?.replyText || "").trim();
-    const exactResponse = archivedFinalReply || String(payload.response || "");
+
+    // Older local archives can carry a stale outer response even though the
+    // published normalized case for the same exact runId is correct. Resolve
+    // by exact runId across the already-loaded public five-run bundle first.
+    const matchingPublicTrace = Object.values(window.GATEWAY_CASES || {}).find(item =>
+      item?.meta?.runId &&
+      payload.runId &&
+      item.meta.runId === payload.runId
+    );
+    const publicRunResponse = String(
+      matchingPublicTrace?.meta?.response ||
+      matchingPublicTrace?.agentRuntime?.finalReply ||
+      ""
+    ).trim();
+
+    const exactResponse =
+      publicRunResponse ||
+      archivedFinalReply ||
+      String(payload.response || "").trim();
 
     if (trace && typeof trace === "object") {
       trace.meta = {
