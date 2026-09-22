@@ -64,6 +64,7 @@
   }
 
   function commitSavedResponse(value, key = "") {
+    if (manualClearActive) return;
     const text = String(value || "").trim();
     expectedSavedResponse = text;
     expectedSavedResponseKey = String(key || "");
@@ -279,6 +280,7 @@
   }
 
   function paintSavedTrace(trace, response, label) {
+    if (manualClearActive) return;
     if (!trace || !trace.stages) throw new Error("Saved run has no trace data.");
 
     ACTIVE_CASE = trace;
@@ -545,6 +547,7 @@
       const value = select.value;
       if (!value) return;
       manualClearActive = false;
+      window.dispatchEvent(new CustomEvent("traceclaw:history-selected"));
 
       // Native select controls can emit both input and change for one choice.
       // Handle that pair once, but always allow a later re-selection.
