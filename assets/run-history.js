@@ -296,16 +296,27 @@
     lastSelectedArchive = archiveId;
     const when = formatSavedAt(payload.savedAt || payload.startedAt);
     const trace = payload.trace;
+
+    const archivedFinalEvent = Array.isArray(payload.agentRuntimeEvents)
+      ? [...payload.agentRuntimeEvents].reverse().find(event =>
+          event?.event === "agent_reply_finalized" &&
+          (!payload.runId || !event?.runId || event.runId === payload.runId) &&
+          String(event?.replyText || "").trim()
+        )
+      : null;
+    const archivedFinalReply = String(archivedFinalEvent?.replyText || "").trim();
+    const exactResponse = archivedFinalReply || String(payload.response || "");
+
     if (trace && typeof trace === "object") {
       trace.meta = {
         ...(trace.meta || {}),
         prompt: payload.prompt || trace.meta?.prompt || "",
-        response: payload.response || trace.meta?.response || ""
+        response: exactResponse || trace.meta?.response || ""
       };
     }
     paintSavedTrace(
       trace,
-      payload.response,
+      exactResponse,
       `Loaded saved run · ${when} · ${shortPrompt(payload.prompt, 70)}`
     );
     select.value = `run:${archiveId}`;
