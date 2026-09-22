@@ -179,7 +179,12 @@ async def _execute(run: LiveRun) -> None:
                 f"visible in chat.history for session {run.session_key!r} within 20s."
             )
 
-        run.response = response
+        # chat.history can contain older assistant text when a session is reused.
+        # The Agent Runtime event is tagged with this exact runId, so it is the
+        # authoritative response for the saved/live viewer whenever available.
+        _scan_new_events(run)
+        runtime_response = _final_reply_from_events(_correlated(run), run.run_id)
+        run.response = runtime_response or response
         run.status = "complete"
     except Exception as exc:  # surfaced to the browser, never hidden
         run.error = str(exc)
@@ -271,6 +276,23 @@ def _correlated(run: LiveRun) -> list[dict[str, Any]]:
     )
 
 
+def _final_reply_from_events(events: Any, run_id: str = "") -> str:
+    """Return the exact assistant reply finalized for one correlated Agent run."""
+    if not isinstance(events, list):
+        return ""
+    wanted = str(run_id or "").strip()
+    for event in reversed(events):
+        if not isinstance(event, dict) or event.get("event") != "agent_reply_finalized":
+            continue
+        event_run_id = str(event.get("runId") or "").strip()
+        if wanted and event_run_id and event_run_id != wanted:
+            continue
+        reply = event.get("replyText")
+        if isinstance(reply, str) and reply.strip():
+            return reply.strip()
+    return ""
+
+
 def _archive_payload(run: LiveRun, *, trace: dict[str, Any], events: list[dict[str, Any]]) -> dict[str, Any]:
     """Build one self-contained, human-inspectable saved-run record."""
     return {
@@ -335,6 +357,25 @@ def _read_archive(path: Path) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"could not read saved run: {exc}") from exc
     if not isinstance(payload, dict):
         raise HTTPException(status_code=500, detail="saved run has invalid format")
+
+    # Repair legacy archives at read time without rewriting the original JSON.
+    # The exact run-correlated agent_reply_finalized event is stronger evidence
+    # than an older outer chat.history response stored by early collector builds.
+    run_id = str(payload.get("runId") or "")
+    runtime_reply = _final_reply_from_events(
+        payload.get("agentRuntimeEvents") or payload.get("runtimeEvents") or [],
+        run_id,
+    )
+    if runtime_reply:
+        payload["response"] = runtime_reply
+        payload["assistantResponseObserved"] = True
+        trace = payload.get("trace")
+        if isinstance(trace, dict):
+            meta = trace.get("meta")
+            if not isinstance(meta, dict):
+                meta = {}
+                trace["meta"] = meta
+            meta["response"] = runtime_reply
     return payload
 
 
