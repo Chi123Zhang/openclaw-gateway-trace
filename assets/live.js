@@ -1067,37 +1067,80 @@
   installControls();
 
   const clearButton = document.getElementById("resetBtn");
+
+  function clearViewer(event = null) {
+    // Own Clear completely. app.js also has a legacy reset handler on this same
+    // button; capture + stopImmediatePropagation prevents that older handler from
+    // repainting the saved trace after the live viewer has cleared it.
+    event?.preventDefault?.();
+    event?.stopImmediatePropagation?.();
+
+    // Invalidate any older poll/playback/finally work before clearing the DOM.
+    // This is viewer cancellation only; the collector keeps an already-started
+    // backend run and may still archive/publish it.
+    liveUiGeneration += 1;
+    currentLiveId = null;
+    liveRunning = false;
+    visualPaused = false;
+    playbackQueue = [];
+    pendingAgentRuntimeEvents = [];
+    queuedObservedStages = new Set();
+    queuedAgentRuntimeEvents = new Set();
+    revealedRuntimeStages = new Set();
+    revealedSourceStages = new Set();
+    revealedTimeline = [];
+    revealedAgentRuntimeEvents = [];
+    backendComplete = false;
+    backendSnapshotFinalized = false;
+    playbackComplete = false;
+    backendError = null;
+    pendingResponse = "";
+    lastQueuedTimelineLength = 0;
+    lastDisplayedStage = null;
+    lastDisplayedRuntimeEvent = "";
+
+    // Stop any legacy replay state too. These bindings live in app.js and are
+    // global to the viewer.
+    try {
+      if (typeof playing !== "undefined") playing = false;
+      if (typeof paused !== "undefined") paused = false;
+    } catch {}
+
+    setBusy(false);
+    installIdleView({ clearInput: true });
+
+    // Be explicit about the editable controls: Clear must always leave the owner
+    // ready to type a brand-new question immediately.
+    if (input) {
+      input.value = "";
+      input.disabled = !liveControlsEnabled;
+      input.readOnly = false;
+    }
+    if (runButton) {
+      runButton.disabled = !liveControlsEnabled;
+      runButton.textContent = "Run trace";
+    }
+    if (responsePanel) responsePanel.hidden = true;
+    if (responseText) responseText.textContent = "";
+
+    setCollectorState(
+      collectorReady ? "Gateway + trace connected" : "Collector unavailable",
+      collectorReady ? "connected" : "error"
+    );
+    message.textContent = collectorReady
+      ? "Ready. Type a new question and press Run trace."
+      : "Start the local collector, then press Run trace.";
+
+    window.dispatchEvent(new CustomEvent("traceclaw:viewer-cleared"));
+    if (liveControlsEnabled) input?.focus?.();
+  }
+
+  window.TRACECLAW_CLEAR_VIEWER = clearViewer;
+
   if (clearButton) {
     clearButton.type = "button";
-    clearButton.onclick = event => {
-      event?.preventDefault?.();
-      event?.stopPropagation?.();
-
-      // Invalidate any older poll/playback/finally work before clearing the DOM.
-      // This is viewer cancellation only; the collector keeps the backend run.
-      liveUiGeneration += 1;
-      currentLiveId = null;
-      liveRunning = false;
-      visualPaused = false;
-      playbackQueue = [];
-      pendingAgentRuntimeEvents = [];
-      queuedObservedStages = new Set();
-      queuedAgentRuntimeEvents = new Set();
-      backendComplete = false;
-      backendSnapshotFinalized = false;
-      backendError = null;
-      pendingResponse = "";
-
-      setBusy(false);
-      installIdleView({ clearInput: true });
-      setCollectorState(
-        collectorReady ? "Gateway + trace connected" : "Collector unavailable",
-        collectorReady ? "connected" : "error"
-      );
-      message.textContent = collectorReady
-        ? "Ready. No runtime result is shown until you press Run trace."
-        : "Start the local collector, then press Run trace.";
-    };
+    clearButton.onclick = null;
+    clearButton.addEventListener("click", clearViewer, true);
   }
 
   async function initializeLiveViewer() {
