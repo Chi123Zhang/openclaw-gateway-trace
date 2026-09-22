@@ -15,6 +15,8 @@
   let liveRunning = false;
   let currentLiveId = null;
   let liveUiGeneration = 0;
+  let manualClearMode = false;
+  let manualClearEpoch = 0;
   let collectorReady = false;
   let liveControlsEnabled = true;
   const collectorUnavailableReason = "Live mode needs a local collector. This public page is showing a saved run.";
@@ -1020,6 +1022,7 @@
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
+    manualClearMode = false;
     const prompt = input.value.trim();
     if (!prompt) {
       message.textContent = "Enter a question first.";
@@ -1068,6 +1071,53 @@
 
   const clearButton = document.getElementById("resetBtn");
 
+  function paintManualClearState() {
+    if (!manualClearMode) return;
+
+    // These are the four visible values the user expects Clear to own.
+    if (input) {
+      input.value = "";
+      input.disabled = !liveControlsEnabled;
+      input.readOnly = false;
+    }
+
+    const queryText = document.getElementById("queryText");
+    const requestState = document.getElementById("requestState");
+    if (queryText) queryText.textContent = "—";
+    if (requestState) {
+      requestState.textContent = "READY";
+      requestState.classList.remove("pausedState");
+    }
+
+    if (responsePanel) responsePanel.hidden = true;
+    if (responseText) responseText.textContent = "";
+
+    if (runButton) {
+      runButton.disabled = !liveControlsEnabled;
+      runButton.textContent = "Run trace";
+    }
+
+    if (clearButton) {
+      clearButton.disabled = false;
+      clearButton.title = "";
+    }
+  }
+
+  function settleManualClear(epoch) {
+    const repaint = () => {
+      if (!manualClearMode || epoch !== manualClearEpoch) return;
+      paintManualClearState();
+    };
+
+    // A saved-run/history paint can already be queued in a microtask, animation
+    // frame, or short timeout when Clear is clicked. Re-assert only while the
+    // user is still in the blank Clear state. As soon as they type/select/run,
+    // manualClearMode is disabled and these callbacks become no-ops.
+    queueMicrotask(repaint);
+    requestAnimationFrame(repaint);
+    [0, 40, 120, 300].forEach(delay => setTimeout(repaint, delay));
+  }
+
   function clearViewer(event = null) {
     // Own Clear completely. app.js also has a legacy reset handler on this same
     // button; capture + stopImmediatePropagation prevents that older handler from
@@ -1075,10 +1125,15 @@
     event?.preventDefault?.();
     event?.stopImmediatePropagation?.();
 
-    // Invalidate any older poll/playback/finally work before clearing the DOM.
-    // This is viewer cancellation only; the collector keeps an already-started
-    // backend run and may still archive/publish it.
     liveUiGeneration += 1;
+    manualClearMode = true;
+    manualClearEpoch += 1;
+    const clearEpoch = manualClearEpoch;
+
+    // Tell history code first, before touching the DOM, so its response guard and
+    // any in-flight saved-run loader stop owning the visible prompt/response.
+    window.dispatchEvent(new CustomEvent("traceclaw:viewer-cleared"));
+
     currentLiveId = null;
     liveRunning = false;
     visualPaused = false;
@@ -1099,8 +1154,6 @@
     lastDisplayedStage = null;
     lastDisplayedRuntimeEvent = "";
 
-    // Stop any legacy replay state too. These bindings live in app.js and are
-    // global to the viewer.
     try {
       if (typeof playing !== "undefined") playing = false;
       if (typeof paused !== "undefined") paused = false;
@@ -1108,20 +1161,8 @@
 
     setBusy(false);
     installIdleView({ clearInput: true });
-
-    // Be explicit about the editable controls: Clear must always leave the owner
-    // ready to type a brand-new question immediately.
-    if (input) {
-      input.value = "";
-      input.disabled = !liveControlsEnabled;
-      input.readOnly = false;
-    }
-    if (runButton) {
-      runButton.disabled = !liveControlsEnabled;
-      runButton.textContent = "Run trace";
-    }
-    if (responsePanel) responsePanel.hidden = true;
-    if (responseText) responseText.textContent = "";
+    paintManualClearState();
+    settleManualClear(clearEpoch);
 
     setCollectorState(
       collectorReady ? "Gateway + trace connected" : "Collector unavailable",
@@ -1131,9 +1172,22 @@
       ? "Ready. Type a new question and press Run trace."
       : "Start the local collector, then press Run trace.";
 
-    window.dispatchEvent(new CustomEvent("traceclaw:viewer-cleared"));
     if (liveControlsEnabled) input?.focus?.();
   }
+
+  // Typing a new prompt or choosing a saved history item exits the protected
+  // blank state, so Clear never erases legitimate user input afterwards.
+  input?.addEventListener("input", () => {
+    if (manualClearMode && String(input.value || "").length > 0) {
+      manualClearMode = false;
+      manualClearEpoch += 1;
+    }
+  });
+
+  window.addEventListener("traceclaw:history-selected", () => {
+    manualClearMode = false;
+    manualClearEpoch += 1;
+  });
 
   window.TRACECLAW_CLEAR_VIEWER = clearViewer;
 
