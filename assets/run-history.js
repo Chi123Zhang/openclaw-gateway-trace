@@ -23,6 +23,7 @@
   let historyLoadGeneration = 0;
   let expectedSavedResponse = "";
   let expectedSavedResponseKey = "";
+  let manualClearActive = false;
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -461,6 +462,15 @@
       });
 
       const wanted = preferredId || lastSelectedArchive;
+
+      // Clear is an intentional blank editing state. Keep the five history
+      // options available, but never let an in-flight/automatic refresh repaint a
+      // saved run over the blank viewer. A history click or new submit exits this.
+      if (manualClearActive) {
+        select.selectedIndex = -1;
+        return;
+      }
+
       if (options.loadLatest && runs.length) {
         // Initial page load: show the latest saved run automatically.
         const latestId = runs[0].id;
@@ -501,14 +511,28 @@
       await sleep(25);
     }
 
-    const clearButton = document.getElementById("resetBtn");
     const askForm = document.getElementById("askForm");
-    clearButton?.addEventListener("click", () => {
+
+    window.addEventListener("traceclaw:viewer-cleared", () => {
       historyLoadGeneration += 1;
+      manualClearActive = true;
       clearExpectedSavedResponse();
-    }, true);
+      lastSelectedArchive = "";
+      lastHistorySelection = "";
+      lastHistorySelectionAt = 0;
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+        refreshTimer = null;
+      }
+      // Keep all five options in the dropdown, but show no saved selection while
+      // the owner is typing a new question.
+      select.selectedIndex = -1;
+      select.disabled = false;
+    });
+
     askForm?.addEventListener("submit", () => {
       historyLoadGeneration += 1;
+      manualClearActive = false;
       clearExpectedSavedResponse();
     }, true);
 
@@ -520,6 +544,7 @@
     const handleHistorySelection = async () => {
       const value = select.value;
       if (!value) return;
+      manualClearActive = false;
 
       // Native select controls can emit both input and change for one choice.
       // Handle that pair once, but always allow a later re-selection.
