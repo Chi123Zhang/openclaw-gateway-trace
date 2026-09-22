@@ -87,11 +87,41 @@ def load_archive(path: Path) -> dict[str, Any]:
     return payload
 
 
+def archive_final_reply(payload: dict[str, Any]) -> str:
+    run_id = str(payload.get("runId") or "").strip()
+    events = payload.get("agentRuntimeEvents")
+    if isinstance(events, list):
+        for event in reversed(events):
+            if not isinstance(event, dict) or event.get("event") != "agent_reply_finalized":
+                continue
+            event_run_id = str(event.get("runId") or "").strip()
+            if run_id and event_run_id and event_run_id != run_id:
+                continue
+            reply = event.get("replyText")
+            if isinstance(reply, str) and reply.strip():
+                return reply.strip()
+
+    trace = payload.get("trace")
+    if isinstance(trace, dict):
+        runtime = trace.get("agentRuntime")
+        if isinstance(runtime, dict):
+            reply = runtime.get("finalReply")
+            if isinstance(reply, str) and reply.strip():
+                return reply.strip()
+        meta = trace.get("meta")
+        if isinstance(meta, dict):
+            reply = meta.get("response")
+            if isinstance(reply, str) and reply.strip():
+                return reply.strip()
+
+    return str(payload.get("response") or "").strip()
+
+
 def is_publishable(payload: dict[str, Any]) -> bool:
     return (
         str(payload.get("status") or "").strip().lower() == "complete"
         and isinstance(payload.get("trace"), dict)
-        and bool(payload.get("response"))
+        and bool(archive_final_reply(payload))
     )
 
 
@@ -119,7 +149,7 @@ def normalized_trace(
         published["meta"] = meta
 
     prompt = str(payload.get("prompt") or meta.get("prompt") or meta.get("title") or "Saved live run")
-    response = str(payload.get("response") or meta.get("response") or "")
+    response = archive_final_reply(payload) or str(meta.get("response") or "")
     saved_at = str(payload.get("savedAt") or "")
     started_at = str(payload.get("startedAt") or "")
 
