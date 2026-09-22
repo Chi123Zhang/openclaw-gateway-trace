@@ -20,6 +20,9 @@
   let staticFallbackLoaded = false;
   let lastHistorySelection = "";
   let lastHistorySelectionAt = 0;
+  let historyLoadGeneration = 0;
+  let expectedSavedResponse = "";
+  let expectedSavedResponseKey = "";
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -54,6 +57,31 @@
     responseText.textContent = text;
   }
 
+  function clearExpectedSavedResponse() {
+    expectedSavedResponse = "";
+    expectedSavedResponseKey = "";
+  }
+
+  function commitSavedResponse(value, key = "") {
+    const text = String(value || "").trim();
+    expectedSavedResponse = text;
+    expectedSavedResponseKey = String(key || "");
+
+    const paint = () => {
+      if (String(key || "") !== expectedSavedResponseKey) return;
+      if (responseText.textContent !== text) responseText.textContent = text;
+      responsePanel.hidden = !text;
+    };
+
+    // Write synchronously and once again after the surrounding viewer render.
+    // The guard below keeps later unrelated render passes from restoring a stale
+    // response from a previously selected saved run.
+    paint();
+    queueMicrotask(paint);
+    requestAnimationFrame(paint);
+    setTimeout(paint, 0);
+  }
+
   function savedRunResponse(trace, explicitResponse = "") {
     const directFinal = Array.isArray(trace?.agentRuntime?.events)
       ? [...trace.agentRuntime.events].reverse()
@@ -61,18 +89,35 @@
           ?.replyText
       : "";
 
-    // loadArchivedRun now passes an exact runId-correlated reply extracted from
-    // the archive's agentRuntimeEvents. That explicit value must win over any
-    // legacy embedded trace.agentRuntime.finalReply, which can be stale in older
-    // saved files. Public bundled runs pass their normalized meta.response here.
     return String(
       explicitResponse ||
       directFinal ||
       trace?.meta?.response ||
       trace?.agentRuntime?.finalReply ||
       ""
-    );
+    ).trim();
   }
+
+  // Keep the visible saved-run answer tied to the selected history item. Several
+  // viewer scripts legitimately re-render surrounding DOM; none should be able
+  // to put an older run's answer back into #responseText.
+  const savedResponseGuard = new MutationObserver(() => {
+    if (requestState?.textContent?.trim() !== "SAVED RUN") return;
+    if (!expectedSavedResponse) return;
+    if (responseText.textContent !== expectedSavedResponse) {
+      responseText.textContent = expectedSavedResponse;
+    }
+    if (responsePanel.hidden) responsePanel.hidden = false;
+  });
+  savedResponseGuard.observe(responseText, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+  savedResponseGuard.observe(responsePanel, {
+    attributes: true,
+    attributeFilter: ["hidden"]
+  });
 
   function waitForCollectorState(timeoutMs = 900) {
     if (typeof window.TRACECLAW_COLLECTOR_READY === "boolean") {
@@ -167,18 +212,27 @@
   }
 
   async function loadStaticCase(id = "latest-live", options = {}) {
+    const generation = ++historyLoadGeneration;
     const loaded = await ensureStaticCase(id);
-    if (!loaded) return;
+    if (!loaded || generation !== historyLoadGeneration) return;
 
     const label = options.label || `Loaded saved run · ${loaded.trace.meta?.title || loaded.item.title || loaded.item.id}`;
+    const response = savedRunResponse(loaded.trace, loaded.trace.meta?.response || "");
+    const responseKey = `static:${loaded.item.id}`;
+
     lastSelectedArchive = "";
-    paintSavedTrace(loaded.trace, loaded.trace.meta?.response || "", label);
+    commitSavedResponse(response, responseKey);
+    try {
+      paintSavedTrace(loaded.trace, response, label);
+    } finally {
+      commitSavedResponse(response, responseKey);
+    }
+
     if (window.TRACECLAW_STATIC_FALLBACK && collectorState) {
       collectorState.textContent = "Saved trace · offline";
       collectorState.className = "collectorState";
     }
-    select.value = `static:${loaded.item.id}`;
-
+    select.value = responseKey;
   }
 
   async function showBundledLatestRun(options = {}) {
@@ -282,19 +336,20 @@
       clearButton.title = "";
     }
 
-    const finalResponse = savedRunResponse(trace, response);
-    setResponse(finalResponse);
-    requestAnimationFrame(() => setResponse(finalResponse));
-    setTimeout(() => setResponse(finalResponse), 0);
+    // Response text is committed by the history loader that owns the current
+    // selection. Keeping it out of this generic trace painter prevents stale
+    // asynchronous paint work from one run overwriting another run's answer.
   }
 
   async function loadArchivedRun(archiveId) {
     if (!archiveId) return;
+    const generation = ++historyLoadGeneration;
     const response = await fetch(`${collectorUrl}/api/runs/${encodeURIComponent(archiveId)}`, {
       cache: "no-store"
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
+    if (generation !== historyLoadGeneration) return;
 
     lastSelectedArchive = archiveId;
     const when = formatSavedAt(payload.savedAt || payload.startedAt);
@@ -309,9 +364,6 @@
       : null;
     const archivedFinalReply = String(archivedFinalEvent?.replyText || "").trim();
 
-    // Older local archives can carry a stale outer response even though the
-    // published normalized case for the same exact runId is correct. Resolve
-    // by exact runId across the already-loaded public five-run bundle first.
     const matchingPublicTrace = Object.values(window.GATEWAY_CASES || {}).find(item =>
       item?.meta?.runId &&
       payload.runId &&
@@ -323,35 +375,55 @@
       ""
     ).trim();
 
+    // /api/runs/<id> is repaired by the collector using the exact runId-correlated
+    // agent_reply_finalized event. Prefer that response first, then two independent
+    // run-correlated fallbacks for older archives.
     const exactResponse =
-      publicRunResponse ||
+      String(payload.response || "").trim() ||
       archivedFinalReply ||
-      String(payload.response || "").trim();
+      publicRunResponse ||
+      String(trace?.meta?.response || "").trim();
 
     if (trace && typeof trace === "object") {
       trace.meta = {
         ...(trace.meta || {}),
         prompt: payload.prompt || trace.meta?.prompt || "",
-        response: exactResponse || trace.meta?.response || ""
+        response: exactResponse
       };
     }
-    paintSavedTrace(
-      trace,
-      exactResponse,
-      `Loaded saved run · ${when} · ${shortPrompt(payload.prompt, 70)}`
-    );
-    select.value = `run:${archiveId}`;
+
+    const responseKey = `run:${archiveId}`;
+    commitSavedResponse(exactResponse, responseKey);
+    try {
+      paintSavedTrace(
+        trace,
+        exactResponse,
+        `Loaded saved run · ${when} · ${shortPrompt(payload.prompt, 70)}`
+      );
+    } finally {
+      if (generation === historyLoadGeneration) {
+        commitSavedResponse(exactResponse, responseKey);
+      }
+    }
+    if (generation === historyLoadGeneration) select.value = responseKey;
   }
 
   function loadReferenceCase() {
     const reference = window.GATEWAY_CASES?.cake;
     if (!reference) return;
+    historyLoadGeneration += 1;
     lastSelectedArchive = "";
-    paintSavedTrace(
-      reference,
-      reference.meta?.response || "",
-      "Loaded verified Cake reference trace."
-    );
+    const response = savedRunResponse(reference, reference.meta?.response || "");
+    commitSavedResponse(response, "reference:cake");
+    try {
+      paintSavedTrace(
+        reference,
+        response,
+        "Loaded verified Cake reference trace."
+      );
+    } finally {
+      commitSavedResponse(response, "reference:cake");
+    }
   }
 
   async function refreshRunHistory(preferredId = "", options = {}) {
@@ -428,6 +500,17 @@
       if (typeof renderAll === "function" && ACTIVE_CASE && requestState) break;
       await sleep(25);
     }
+
+    const clearButton = document.getElementById("resetBtn");
+    const askForm = document.getElementById("askForm");
+    clearButton?.addEventListener("click", () => {
+      historyLoadGeneration += 1;
+      clearExpectedSavedResponse();
+    }, true);
+    askForm?.addEventListener("submit", () => {
+      historyLoadGeneration += 1;
+      clearExpectedSavedResponse();
+    }, true);
 
     const label = picker.querySelector("span");
     if (label) label.textContent = "Run history";
