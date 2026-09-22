@@ -56,17 +56,20 @@
 
   function savedRunResponse(trace, explicitResponse = "") {
     const directFinal = Array.isArray(trace?.agentRuntime?.events)
-      ? trace.agentRuntime.events.find(event => event?.event === "agent_reply_finalized")?.replyText
+      ? [...trace.agentRuntime.events].reverse()
+          .find(event => event?.event === "agent_reply_finalized" && String(event?.replyText || "").trim())
+          ?.replyText
       : "";
 
-    // The Agent Runtime reply is correlated to this exact runId and is therefore
-    // the strongest source for a saved-run answer. Older archive envelopes can
-    // contain a stale outer response string, so use that only as a last fallback.
+    // loadArchivedRun now passes an exact runId-correlated reply extracted from
+    // the archive's agentRuntimeEvents. That explicit value must win over any
+    // legacy embedded trace.agentRuntime.finalReply, which can be stale in older
+    // saved files. Public bundled runs pass their normalized meta.response here.
     return String(
-      trace?.agentRuntime?.finalReply ||
+      explicitResponse ||
       directFinal ||
       trace?.meta?.response ||
-      explicitResponse ||
+      trace?.agentRuntime?.finalReply ||
       ""
     );
   }
