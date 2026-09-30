@@ -876,94 +876,87 @@ all G0--G18 stages must be present, and the Agent Runtime must record
 \texttt{reply\_resolver\_returned}. UI history entries alone are not used
 as experimental evidence.
 
-\begin{table}[H]
-\centering
-\scriptsize
-\begin{adjustbox}{max width=\linewidth}
-\begin{tabularx}{\linewidth}{
+{\scriptsize
+\begin{longtable}{
     @{}
-    >{\raggedright\arraybackslash}p{0.20\linewidth}
-    >{\raggedright\arraybackslash}p{0.19\linewidth}
-    >{\raggedright\arraybackslash}p{0.10\linewidth}
-    >{\raggedright\arraybackslash}p{0.11\linewidth}
-    >{\raggedright\arraybackslash}p{0.08\linewidth}
-    >{\raggedright\arraybackslash}p{0.14\linewidth}
-    >{\raggedright\arraybackslash}p{0.09\linewidth}
-    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}p{0.18\linewidth}
+    >{\raggedright\arraybackslash}p{0.76\linewidth}
     @{}
 }
-\toprule
-\textbf{Run ID} &
-\textbf{Prompt} &
-\textbf{G0--G18} &
-\textbf{Tool} &
-\textbf{Agent} &
-\textbf{Resolver} &
-\textbf{Final Reply} &
-\textbf{G16 Return} \\
-\midrule
-\seqsplit{d9309724-54e1-428c-b8aa-614d468dfaad} &
-\texttt{What is the weather like in NewYork} &
-complete &
-\texttt{web\_search} &
-\texttt{main} &
-\texttt{default\_getReplyFromConfig} &
-observed &
-\texttt{reply\_resolver\_returned}; G16 observed \\
-\addlinespace
-\seqsplit{86fe2560-6d70-4a83-adba-00d0aebc59df} &
-\texttt{What is the weather like in NewYork} &
-complete &
-\texttt{web\_search} &
-\texttt{main} &
-\texttt{default\_getReplyFromConfig} &
-observed &
-\texttt{reply\_resolver\_returned}; G16 observed \\
-\addlinespace
-\seqsplit{c60de4ea-bfe8-4e5c-b344-ab0136e19010} &
-\texttt{What is the weather in NewYork?} &
-complete &
-\texttt{web\_search} &
-\texttt{main} &
-\texttt{default\_getReplyFromConfig} &
-observed &
-\texttt{reply\_resolver\_returned}; G16 observed \\
-\addlinespace
-\seqsplit{cbc16469-829d-4980-80b7-2616763eb41f} &
-\texttt{What is the weather like in new york} &
-complete &
-\texttt{web\_search} &
-\texttt{main} &
-\texttt{default\_getReplyFromConfig} &
-observed &
-\texttt{reply\_resolver\_returned}; G16 observed \\
-\addlinespace
-\seqsplit{cc808a2a-e647-4769-9550-e7367ec388c0} &
-\texttt{What is the weather like in New York} &
-complete &
-\texttt{web\_search} &
-\texttt{main} &
-\texttt{default\_getReplyFromConfig} &
-observed &
-\texttt{reply\_resolver\_returned}; G16 observed \\
-\addlinespace
-\seqsplit{5bf29474-b271-4a9c-88aa-841467980d36} &
-\texttt{What is the weather like in New York?} &
-complete &
-\texttt{web\_search} &
-\texttt{main} &
-\texttt{default\_getReplyFromConfig} &
-observed &
-\texttt{reply\_resolver\_returned}; G16 observed \\
-\bottomrule
-\end{tabularx}
-\end{adjustbox}
 \caption{Weather-run comparison table generated from historical
 \texttt{latest-live.js} snapshots. The table includes only fields that are
 present in the saved trace artifacts.}
-\label{tab:repeated-run-validation}
-\end{table}
-\normalsize
+\label{tab:repeated-run-validation}\\
+\toprule
+\textbf{Field} & \textbf{Verified value} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Field} & \textbf{Verified value} \\
+\midrule
+\endhead
+\textbf{Run} & \textbf{Weather run 1} \\
+\textbf{Run ID} & \texttt{\seqsplit{d9309724-54e1-428c-b8aa-614d468dfaad}} \\
+\textbf{Prompt} & \texttt{What is the weather like in NewYork} \\
+\textbf{G0--G18} & complete \\
+\textbf{Tool} & \texttt{web\_search} \\
+\textbf{Agent} & \texttt{main} \\
+\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
+\textbf{Final reply} & observed \\
+\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
+\midrule
+\textbf{Run} & \textbf{Weather run 2} \\
+\textbf{Run ID} & \texttt{\seqsplit{86fe2560-6d70-4a83-adba-00d0aebc59df}} \\
+\textbf{Prompt} & \texttt{What is the weather like in NewYork} \\
+\textbf{G0--G18} & complete \\
+\textbf{Tool} & \texttt{web\_search} \\
+\textbf{Agent} & \texttt{main} \\
+\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
+\textbf{Final reply} & observed \\
+\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
+\midrule
+\textbf{Run} & \textbf{Weather run 3} \\
+\textbf{Run ID} & \texttt{\seqsplit{c60de4ea-bfe8-4e5c-b344-ab0136e19010}} \\
+\textbf{Prompt} & \texttt{What is the weather in NewYork?} \\
+\textbf{G0--G18} & complete \\
+\textbf{Tool} & \texttt{web\_search} \\
+\textbf{Agent} & \texttt{main} \\
+\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
+\textbf{Final reply} & observed \\
+\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
+\midrule
+\textbf{Run} & \textbf{Weather run 4} \\
+\textbf{Run ID} & \texttt{\seqsplit{cbc16469-829d-4980-80b7-2616763eb41f}} \\
+\textbf{Prompt} & \texttt{What is the weather like in new york} \\
+\textbf{G0--G18} & complete \\
+\textbf{Tool} & \texttt{web\_search} \\
+\textbf{Agent} & \texttt{main} \\
+\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
+\textbf{Final reply} & observed \\
+\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
+\midrule
+\textbf{Run} & \textbf{Weather run 5} \\
+\textbf{Run ID} & \texttt{\seqsplit{cc808a2a-e647-4769-9550-e7367ec388c0}} \\
+\textbf{Prompt} & \texttt{What is the weather like in New York} \\
+\textbf{G0--G18} & complete \\
+\textbf{Tool} & \texttt{web\_search} \\
+\textbf{Agent} & \texttt{main} \\
+\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
+\textbf{Final reply} & observed \\
+\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
+\midrule
+\textbf{Run} & \textbf{Weather run 6} \\
+\textbf{Run ID} & \texttt{\seqsplit{5bf29474-b271-4a9c-88aa-841467980d36}} \\
+\textbf{Prompt} & \texttt{What is the weather like in New York?} \\
+\textbf{G0--G18} & complete \\
+\textbf{Tool} & \texttt{web\_search} \\
+\textbf{Agent} & \texttt{main} \\
+\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
+\textbf{Final reply} & observed \\
+\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
+\bottomrule
+\end{longtable}
+}
 
 \subsection{Repeated-Run Consistency}
 
