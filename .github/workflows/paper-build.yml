@@ -1,0 +1,58 @@
+name: Paper build
+
+on:
+  push:
+    paths:
+      - "paper/**"
+      - "scripts/validate_repeated_weather_runs.py"
+      - "data/cases/**"
+      - ".github/workflows/paper-build.yml"
+  pull_request:
+    paths:
+      - "paper/**"
+      - "scripts/validate_repeated_weather_runs.py"
+      - "data/cases/**"
+      - ".github/workflows/paper-build.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-and-build-paper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Regenerate repeated-run validation artifacts
+        run: python scripts/validate_repeated_weather_runs.py
+
+      - name: Check generated validation artifacts
+        run: |
+          python -m json.tool artifacts/repeated-run-validation.json >/tmp/repeated-run-validation.pretty.json
+          test -s artifacts/repeated-run-validation.csv
+          test -s artifacts/weather-run-comparison-table.tex
+
+      - name: Build main paper and appendix
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: paper
+          root_file: |
+            main.tex
+            appendix_main.tex
+          latexmk_use_xelatex: true
+          latexmk_shell_escape: true
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: traceclaw-paper-pdfs
+          path: |
+            paper/main.pdf
+            paper/appendix_main.pdf

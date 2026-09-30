@@ -1,0 +1,158 @@
+% ======================================================
+% Standalone appendix build entry
+% ======================================================
+\documentclass[12pt,a4paper,twoside]{article}
+
+% ==============================================================
+% Page layout
+% ==============================================================
+
+\usepackage{geometry}
+
+\geometry{
+    left=1.9cm,
+    right=1.9cm,
+    top=1.9cm,
+    bottom=1.9cm
+}
+
+% ==============================================================
+% Graphics
+% ==============================================================
+
+\usepackage{graphicx}
+\usepackage{float}
+
+% ==============================================================
+% Chinese / Unicode
+% ==============================================================
+
+\usepackage{xeCJK}
+
+% ==============================================================
+% Mathematics
+% ==============================================================
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ==============================================================
+% Tables
+% ==============================================================
+
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+% ==============================================================
+% Algorithms / code
+% ==============================================================
+
+\usepackage{seqsplit}
+\usepackage{algorithm}
+\usepackage{listings}
+
+% ==============================================================
+% TikZ / diagrams
+% ==============================================================
+
+\usepackage{tikz}
+\usepackage{adjustbox}
+\usepackage{pdflscape}
+
+\usetikzlibrary{
+    positioning,
+    arrows.meta,
+    fit,
+    backgrounds
+}
+
+% ==============================================================
+% Colors / URLs
+% ==============================================================
+
+\usepackage{xcolor}
+\usepackage{xurl}
+
+% ==============================================================
+% Cross-references
+% ==============================================================
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+% ==============================================================
+% Python-style pseudocode
+% ==============================================================
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\footnotesize,
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    postbreak=\mbox{\scriptsize$\hookrightarrow$\space},
+}
+
+\newcommand{\py}[1]{%
+    \lstinline{#1}%
+}
+
+\newcommand{\pyI}[1]{%
+    \hspace*{1.4em}\lstinline{#1}%
+}
+
+\newcommand{\pyII}[1]{%
+    \hspace*{2.8em}\lstinline{#1}%
+}
+
+\newcommand{\pyIII}[1]{%
+    \hspace*{4.2em}\lstinline{#1}%
+}
+
+\newcommand{\pyIIII}[1]{%
+    \hspace*{5.6em}\lstinline{#1}%
+}
+
+\newcommand{\src}[1]{%
+    \begingroup
+    \color{gray}
+    \scriptsize
+    \ttfamily
+    \raggedright
+    \nolinkurl{#1}%
+    \endgroup
+}
+
+% ==============================================================
+% Table spacing
+% ==============================================================
+
+\setlength{\tabcolsep}{3pt}
+\setlength{\extrarowheight}{0pt}
+\setlength{\LTpre}{2pt}
+\setlength{\LTpost}{5pt}
+
+% ==============================================================
+% Document information
+% ==============================================================
+
+\title{TraceClaw Supplementary Appendix:\\
+G0--G18 Source-Level Trace}
+
+\author{Anonymous Author(s)}
+
+\date{August 2026}
+
+\begin{document}
+
+\maketitle
+
+\input{appendix}
+
+\end{document}
