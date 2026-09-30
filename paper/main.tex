@@ -180,12 +180,12 @@ passes from gateway code into the deeper runtime. This gap matters because
 many safety, reliability, and reproducibility claims depend on decisions
 made before model generation starts.
 
-This paper introduces TraceClaw, a source-anchored auditing method for
-LLM agent control planes. Instead of treating logs, diagrams, or source
-code as sufficient on their own, TraceClaw aligns them around concrete
-requests. Each transition is represented as an auditable claim with four
-fields: source anchors, case values, observation status, and branch
-decision. We apply the method to the OpenClaw Control UI/WebChat
+This paper introduces TraceClaw, a source-anchored way to audit LLM agent
+control planes. Logs, diagrams, and source code each tell part of the
+story, but none of them is enough on its own. TraceClaw puts them around
+concrete requests. Each transition is written as a claim that can be
+checked against source anchors, case values, observation status, and the
+branch that was taken. We apply the method to the OpenClaw Control UI/WebChat
 \texttt{chat.send} path for the Cake2 request, \texttt{How to make a
 cake?}. The resulting trace follows the Cake2 request through G0--G18
 Gateway processing and the G18 resolver boundary. We then audit six
@@ -841,38 +841,36 @@ for Cake2 before making Cake2-specific post-G18 claims.}
 \label{sec:experiments}
 
 The evaluation is a trace-validation study, not a model-quality
-benchmark. The question is not whether an answer is good. The question is
-whether the infrastructure path that produced it can be checked against
-source code and runtime values. We separate the evidence into two roles.
-Cake2 is the Gateway path validation case: it checks whether a single
-request can be followed through G0--G18 and the G18 resolver boundary.
-The weather runs are the tool-using runtime validation case: they check
-whether repeated successful requests preserve the same control-plane shape
-while recording the deeper \texttt{web\_search} runtime path.
+benchmark. We are not asking whether an answer is good; we are asking
+whether the path that produced it can be checked against source code and
+runtime values. The evidence is split deliberately. Cake2 is the Gateway
+path case, used to follow one request through G0--G18 and the G18 resolver
+boundary. The weather runs serve a different purpose: they test whether
+successful tool-using requests keep the same control-plane shape while
+recording the deeper \texttt{web\_search} runtime path.
 
 \subsection{Gateway Path Validation -- Cake2}
 
-The Cake2 request validates the Gateway path. It can be followed through
-all G0--G18 stages, not only the early G0--G8 checks. The trace explains
-how the connection is accepted, how \texttt{chat.send} is authorized and
-normalized, how the Session and Agent are resolved, how duplicate work is
-excluded, and where the default resolver is selected.
+The Cake2 request is the main Gateway-path case. It can be followed
+through all G0--G18 stages, not only the early G0--G8 checks. The trace
+shows how the connection is accepted, how \texttt{chat.send} is authorized
+and normalized, how the Session and Agent are resolved, how duplicate work
+is excluded, and where the default resolver is selected.
 
-The useful result is not that Cake2 is an important task. The result is
-that an ordinary accepted request exposes the control decisions that must
-be explained before any answer-level claim is meaningful. Cake2 shows that
-the effective Agent comes from Session state, that admission depends on a
-sequence of Gateway checks, and that G18 is the boundary where control
-moves toward the deeper Agent Runtime. The archived Cake2 case does not
-contain a complete top-level post-G18 \texttt{agentRuntime} object, so this
-paper does not claim a Cake2-specific internal tool loop.
+The point is not that Cake2 is special. Its value is that it is ordinary:
+an accepted request still depends on many quiet control decisions. Cake2
+shows that the effective Agent comes from Session state, that admission is
+the result of several Gateway checks, and that G18 is the place where
+control moves toward the deeper Agent Runtime. The archived Cake2 case
+does not contain a complete top-level post-G18 \texttt{agentRuntime}
+object, so this paper does not claim a Cake2-specific internal tool loop.
 
 \subsection{Tool-Using Runtime Validation -- Weather}
 
 We then audited New York weather requests saved on September 21, 2026 in
-the trace repository and its git history. A weather run is counted only
-when an embedded trace object is present, all G0--G18 stages are observed,
-and the Agent Runtime records the sequence
+the trace repository and its git history. We count a weather run only when
+the saved artifact contains the trace itself, not just a history entry:
+all G0--G18 stages must be present, and the Agent Runtime must record
 \texttt{web\_search} \(\rightarrow\) \texttt{tool\_result}
 \(\rightarrow\) final reply \(\rightarrow\)
 \texttt{reply\_resolver\_returned}. UI history entries alone are not used
@@ -961,26 +959,26 @@ observed &
 \end{tabularx}
 \end{adjustbox}
 \caption{Weather-run comparison table generated from historical
-\texttt{latest-live.js} snapshots. Every listed field is present in the
-saved trace artifact.}
+\texttt{latest-live.js} snapshots. The table includes only fields that are
+present in the saved trace artifacts.}
 \label{tab:repeated-run-validation}
 \end{table}
 \normalsize
 
 \subsection{Repeated-Run Consistency}
 
-The validation script recovered six independent weather traces. Each one
+The repository audit recovered six independent weather traces. Each run
 has a different \texttt{RUN\_ID}, \texttt{SESSION\_ID}, and
-\texttt{SESSION\_KEY}. Each one preserves the G0--G18 ordering, resolves
-Agent \texttt{main}, selects
-\texttt{default\_getReplyFromConfig}, records \texttt{web\_search} and its
-tool result, captures a final assistant reply, and records
+\texttt{SESSION\_KEY}. All six preserve the G0--G18 ordering, resolve
+Agent \texttt{main}, select
+\texttt{default\_getReplyFromConfig}, record \texttt{web\_search} and its
+tool result, capture a final assistant reply, and record
 \texttt{reply\_resolver\_returned} before returning to G16.
 
-This is a small but useful consistency result. It shows that TraceClaw can
-preserve the same control-plane skeleton across repeated successful
-executions while still keeping run-specific runtime evidence. The result
-also strengthens the AR2 part of the model, because the weather task
+This is a small consistency result, but it matters. It shows that
+TraceClaw can keep the same control-plane skeleton across repeated
+successful executions without collapsing the runs into one generic story.
+The weather case also strengthens the AR2 part of the model, because it
 exercises a real tool path rather than only a text-only reply.
 
 \subsection{Current Coverage and Failure Conditions}
@@ -988,9 +986,9 @@ exercises a real tool path rather than only a text-only reply.
 The current evidence supports a conservative claim: Cake2 validates the
 Gateway path, and Weather validates repeated tool-using runtime behavior
 for a small set of successful requests. It does not support broad claims
-about every OpenClaw branch. The evaluation does not yet cover rejected
-requests, failed tool calls, retries, cancellations, concurrent conflicts,
-or cross-version drift.
+about every OpenClaw branch. The evaluation still needs rejected requests,
+failed tool calls, retries, cancellations, concurrent conflicts, and
+cross-version drift.
 
 A trace passes validation only if each required stage has a source anchor
 and the selected branch is consistent with the observed values. It fails

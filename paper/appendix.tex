@@ -9,20 +9,18 @@
     \hspace*{5.6em}\lstinline{#1}%
 }
 
-This appendix contains the detailed source-code and runtime evidence
-trace for the Gateway G0--G18 path. The main text keeps the core
-runtime argument and concrete Cake2 values up front; the full
-source-grounded breakdown is preserved here for auditability.
+This appendix keeps the detailed source-code and runtime evidence for the
+Gateway G0--G18 path. The main text gives the argument and the compact
+tables; this file keeps the longer audit trail so that each claim can be
+checked against source and observed values.
 
 \phantomsection
 \subsection*{Appendix Reading Guide}
 \label{app:reading-guide}
 
-This appendix follows one rule throughout: detailed source evidence stays
-here, while the main text keeps only the argument, the compact tables, and
-the figures. Each stage entry is organized around four pieces of evidence:
-purpose, source path, Cake2 value, and evidence status. The status labels
-mean the following.
+The appendix follows one rule: source detail belongs here, not in the main
+paper. Each stage entry records its purpose, source path, Cake2 value, and
+evidence status. The status labels mean the following.
 
 \begin{itemize}
     \item \textsc{Observed}: a runtime trace or concrete recorded value
@@ -14830,7 +14828,8 @@ Runtime-to-Gateway return evidence. \\
 \midrule
 Evidence source &
 Six anonymized New York weather runs recovered from historical
-\texttt{latest-live.js} snapshots. These are not the Cake2 case. \\
+\texttt{latest-live.js} snapshots. They support the runtime-return claim;
+they are not treated as Cake2 evidence. \\
 \addlinespace
 \texttt{agentRuntime.observed} &
 \texttt{true} \\
@@ -14859,8 +14858,8 @@ Return edge &
 \bottomrule
 \end{tabularx}
 
-Observed event order. The \texttt{bash} skill-loading probe appears only
-in the runs that loaded the weather skill:
+Common event order. The \texttt{bash} skill-loading probe appears only in
+the runs that loaded the weather skill:
 
 \begin{verbatim}
 agent_runtime_selected
@@ -14874,12 +14873,12 @@ agent_run_ended
 reply_resolver_returned
 \end{verbatim}
 
-\textbf{Use in paper:} validates the AR0--AR6 event vocabulary and the
-\texttt{reply\_resolver\_returned} return edge for successful
-tool-using runs.
+\textbf{Use in paper:} supports the AR0--AR6 event vocabulary and the
+\texttt{reply\_resolver\_returned} return edge for successful tool-using
+runs.
 
-\textbf{Do not claim:} that the archived Cake2 file contains these
-post-G18 events.
+\textbf{Do not claim:} that these post-G18 events came from the archived
+Cake2 file.
 
 \begin{tabularx}{\linewidth}{
     @{}
