@@ -1045,7 +1045,10 @@ the WebChat client carries an administrator scope in the Cake2 case, so
 \texttt{operator.write} check. Third, G1 records a shared-credential deny,
 but the connection continues through the device-token path; this is a
 normal path in the trace, but it is exactly the kind of fallback that an
-operator may want surfaced. Finally, G10, G14, G16, and G18 show a common
+operator may want surfaced. Fourth, G2 records the final authentication
+pass, but the native trace does not separately expose the device-token
+rate-limit state or the exact pairing sub-branch that made the role and
+scope check succeed. Finally, G10, G14, G16, and G18 show a common
 observability gap: the final control decision is visible, but some
 internal branch reason or returned object fields are not directly emitted.
 These gaps are direct outputs of the ledger, not assumptions about the
