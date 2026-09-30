@@ -38,6 +38,8 @@ jobs:
           python -m json.tool artifacts/repeated-run-validation.json >/tmp/repeated-run-validation.pretty.json
           test -s artifacts/repeated-run-validation.csv
           test -s artifacts/weather-run-comparison-table.tex
+          test -s artifacts/coverage-observation-table.tex
+          test -s artifacts/stage-run-matrix.tex
 
       - name: Build main paper and appendix
         uses: xu-cheng/latex-action@v3

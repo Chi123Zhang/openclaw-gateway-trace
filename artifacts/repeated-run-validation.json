@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T05:52:14.998591Z",
+  "generatedAt": "2026-09-30T06:46:23.050568Z",
   "repository": "/Users/mac/Documents/Codex/2026-09-23/https-latex-cstcloud-cn-project-6a7ae451a2ae2b9eff0eb0d6/work/openclaw-gateway-trace",
   "scope": "Sep. 21 local-time New York weather traces. Historical latest-live.js is used for publish-time evidence; current recent-runs.js is only added when it embeds a non-duplicate case.",
   "recoverableRuns": [
@@ -11,7 +11,7 @@
       "commitDate": "2026-09-21T16:47:24-04:00",
       "subject": "Publish live trace: What is the weather like in NewYork",
       "provenanceType": "historical_latest_live",
-      "classification": "genuine_independent_saved_trace",
+      "classification": "genuine_repeated_saved_trace",
       "prompt": "What is the weather like in NewYork",
       "runId": "d9309724-54e1-428c-b8aa-614d468dfaad",
       "sessionKey": "agent:main:dashboard:trace-3aaba72fec8e",
@@ -70,7 +70,279 @@
         "G16",
         "G17",
         "G18"
-      ]
+      ],
+      "stageLedger": {
+        "G0": {
+          "result": "authorized",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G1": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G2": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G3": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G4": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+          "concreteInputEvidence": "RUNTIME + REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G5": {
+          "result": "unchanged",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = unchanged\nmessageLength = 35\nmessageChangedBySanitization = False",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G6": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "requestedAgentId = none\nresult = resolved",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-DERIVED"
+        },
+        "G7": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "canonicalSessionKey = agent:main:dashboard:trace-3aaba72fec8e\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G8": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G9": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "agentId = main\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G10": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sendPolicy = allow\nresult = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G11": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "dedupeDecision = new_dispatch\nresult = pass",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G12": {
+          "result": "admitted",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "admissionDecision = admitted\nresult = admitted",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G13": {
+          "result": "constructed",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "MsgContext.Body = 'What is the weather like in NewYork'\nMsgContext.SessionKey = agent:main:dashboard:trace-3aaba72fec8e\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = d9309724-54e1-428c-b8aa-614d468dfaad\nmedia fields = absent",
+          "concreteInputEvidence": "RUNTIME + REQUEST + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED"
+        },
+        "G14": {
+          "result": "entered",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchInboundResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G15": {
+          "result": "finalized",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "FinalizedMsgContext.Body = 'What is the weather like in NewYork'\nFinalizedMsgContext.BodyForAgent = 'What is the weather like in NewYork'\nFinalizedMsgContext.BodyForCommands = 'What is the weather like in NewYork'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-3aaba72fec8e\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE-DERIVED FOR THIS RUN + RUNTIME-SUPPORTED HANDOFF"
+        },
+        "G16": {
+          "result": "normal_path",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchFromConfigResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED THROUGH G15",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G17": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED / OBSERVATION LIMIT"
+        },
+        "G18": {
+          "result": "selected",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "replyResult = returned to G16",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / REPLYRESULT FIELDS NOT DIRECTLY LOGGED"
+        }
+      },
+      "coverageCount": 19,
+      "observationCount": 19,
+      "coverageScore": 1.0,
+      "observationScore": 1.0
     },
     {
       "caseId": "latest-live",
@@ -80,7 +352,7 @@
       "commitDate": "2026-09-21T16:49:07-04:00",
       "subject": "Publish live trace: What is the weather like in NewYork",
       "provenanceType": "historical_latest_live",
-      "classification": "genuine_independent_saved_trace",
+      "classification": "genuine_repeated_saved_trace",
       "prompt": "What is the weather like in NewYork",
       "runId": "86fe2560-6d70-4a83-adba-00d0aebc59df",
       "sessionKey": "agent:main:dashboard:trace-cab478cd361e",
@@ -139,7 +411,279 @@
         "G16",
         "G17",
         "G18"
-      ]
+      ],
+      "stageLedger": {
+        "G0": {
+          "result": "authorized",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G1": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G2": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G3": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G4": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+          "concreteInputEvidence": "RUNTIME + REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G5": {
+          "result": "unchanged",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = unchanged\nmessageLength = 35\nmessageChangedBySanitization = False",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G6": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "requestedAgentId = none\nresult = resolved",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-DERIVED"
+        },
+        "G7": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "canonicalSessionKey = agent:main:dashboard:trace-cab478cd361e\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G8": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G9": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "agentId = main\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G10": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sendPolicy = allow\nresult = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G11": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "dedupeDecision = new_dispatch\nresult = pass",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G12": {
+          "result": "admitted",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "admissionDecision = admitted\nresult = admitted",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G13": {
+          "result": "constructed",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "MsgContext.Body = 'What is the weather like in NewYork'\nMsgContext.SessionKey = agent:main:dashboard:trace-cab478cd361e\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 86fe2560-6d70-4a83-adba-00d0aebc59df\nmedia fields = absent",
+          "concreteInputEvidence": "RUNTIME + REQUEST + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED"
+        },
+        "G14": {
+          "result": "entered",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchInboundResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G15": {
+          "result": "finalized",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "FinalizedMsgContext.Body = 'What is the weather like in NewYork'\nFinalizedMsgContext.BodyForAgent = 'What is the weather like in NewYork'\nFinalizedMsgContext.BodyForCommands = 'What is the weather like in NewYork'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-cab478cd361e\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE-DERIVED FOR THIS RUN + RUNTIME-SUPPORTED HANDOFF"
+        },
+        "G16": {
+          "result": "normal_path",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchFromConfigResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED THROUGH G15",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G17": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED / OBSERVATION LIMIT"
+        },
+        "G18": {
+          "result": "selected",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "replyResult = returned to G16",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / REPLYRESULT FIELDS NOT DIRECTLY LOGGED"
+        }
+      },
+      "coverageCount": 19,
+      "observationCount": 19,
+      "coverageScore": 1.0,
+      "observationScore": 1.0
     },
     {
       "caseId": "latest-live",
@@ -149,7 +693,7 @@
       "commitDate": "2026-09-21T17:01:51-04:00",
       "subject": "Publish live trace: What is the weather in NewYork?",
       "provenanceType": "historical_latest_live",
-      "classification": "genuine_independent_saved_trace",
+      "classification": "genuine_repeated_saved_trace",
       "prompt": "What is the weather in NewYork?",
       "runId": "c60de4ea-bfe8-4e5c-b344-ab0136e19010",
       "sessionKey": "agent:main:dashboard:trace-9aef25c14ae3",
@@ -217,7 +761,279 @@
         "G16",
         "G17",
         "G18"
-      ]
+      ],
+      "stageLedger": {
+        "G0": {
+          "result": "authorized",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G1": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G2": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G3": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G4": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+          "concreteInputEvidence": "RUNTIME + REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G5": {
+          "result": "unchanged",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = unchanged\nmessageLength = 31\nmessageChangedBySanitization = False",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G6": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "requestedAgentId = none\nresult = resolved",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-DERIVED"
+        },
+        "G7": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "canonicalSessionKey = agent:main:dashboard:trace-9aef25c14ae3\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G8": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G9": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "agentId = main\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G10": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sendPolicy = allow\nresult = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G11": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "dedupeDecision = new_dispatch\nresult = pass",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G12": {
+          "result": "admitted",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "admissionDecision = admitted\nresult = admitted",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G13": {
+          "result": "constructed",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "MsgContext.Body = 'What is the weather in NewYork?'\nMsgContext.SessionKey = agent:main:dashboard:trace-9aef25c14ae3\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = c60de4ea-bfe8-4e5c-b344-ab0136e19010\nmedia fields = absent",
+          "concreteInputEvidence": "RUNTIME + REQUEST + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED"
+        },
+        "G14": {
+          "result": "entered",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchInboundResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G15": {
+          "result": "finalized",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "FinalizedMsgContext.Body = 'What is the weather in NewYork?'\nFinalizedMsgContext.BodyForAgent = 'What is the weather in NewYork?'\nFinalizedMsgContext.BodyForCommands = 'What is the weather in NewYork?'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-9aef25c14ae3\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE-DERIVED FOR THIS RUN + RUNTIME-SUPPORTED HANDOFF"
+        },
+        "G16": {
+          "result": "normal_path",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchFromConfigResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED THROUGH G15",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G17": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED / OBSERVATION LIMIT"
+        },
+        "G18": {
+          "result": "selected",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "replyResult = returned to G16",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / REPLYRESULT FIELDS NOT DIRECTLY LOGGED"
+        }
+      },
+      "coverageCount": 19,
+      "observationCount": 19,
+      "coverageScore": 1.0,
+      "observationScore": 1.0
     },
     {
       "caseId": "latest-live",
@@ -227,7 +1043,7 @@
       "commitDate": "2026-09-21T17:18:14-04:00",
       "subject": "Publish live trace: What is the weather like in new york",
       "provenanceType": "historical_latest_live",
-      "classification": "genuine_independent_saved_trace",
+      "classification": "genuine_repeated_saved_trace",
       "prompt": "What is the weather like in new york",
       "runId": "cbc16469-829d-4980-80b7-2616763eb41f",
       "sessionKey": "agent:main:dashboard:trace-a074f39472f7",
@@ -286,7 +1102,279 @@
         "G16",
         "G17",
         "G18"
-      ]
+      ],
+      "stageLedger": {
+        "G0": {
+          "result": "authorized",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G1": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G2": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G3": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G4": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+          "concreteInputEvidence": "RUNTIME + REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G5": {
+          "result": "unchanged",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = unchanged\nmessageLength = 36\nmessageChangedBySanitization = False",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G6": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "requestedAgentId = none\nresult = resolved",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-DERIVED"
+        },
+        "G7": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "canonicalSessionKey = agent:main:dashboard:trace-a074f39472f7\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G8": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G9": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "agentId = main\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G10": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sendPolicy = allow\nresult = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G11": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "dedupeDecision = new_dispatch\nresult = pass",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G12": {
+          "result": "admitted",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "admissionDecision = admitted\nresult = admitted",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G13": {
+          "result": "constructed",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "MsgContext.Body = 'What is the weather like in new york'\nMsgContext.SessionKey = agent:main:dashboard:trace-a074f39472f7\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = cbc16469-829d-4980-80b7-2616763eb41f\nmedia fields = absent",
+          "concreteInputEvidence": "RUNTIME + REQUEST + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED"
+        },
+        "G14": {
+          "result": "entered",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchInboundResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G15": {
+          "result": "finalized",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "FinalizedMsgContext.Body = 'What is the weather like in new york'\nFinalizedMsgContext.BodyForAgent = 'What is the weather like in new york'\nFinalizedMsgContext.BodyForCommands = 'What is the weather like in new york'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-a074f39472f7\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE-DERIVED FOR THIS RUN + RUNTIME-SUPPORTED HANDOFF"
+        },
+        "G16": {
+          "result": "normal_path",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchFromConfigResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED THROUGH G15",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G17": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED / OBSERVATION LIMIT"
+        },
+        "G18": {
+          "result": "selected",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "replyResult = returned to G16",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / REPLYRESULT FIELDS NOT DIRECTLY LOGGED"
+        }
+      },
+      "coverageCount": 19,
+      "observationCount": 19,
+      "coverageScore": 1.0,
+      "observationScore": 1.0
     },
     {
       "caseId": "latest-live",
@@ -296,7 +1384,7 @@
       "commitDate": "2026-09-21T17:26:18-04:00",
       "subject": "Publish live trace: What is the weather like in New York",
       "provenanceType": "historical_latest_live",
-      "classification": "genuine_independent_saved_trace",
+      "classification": "genuine_repeated_saved_trace",
       "prompt": "What is the weather like in New York",
       "runId": "cc808a2a-e647-4769-9550-e7367ec388c0",
       "sessionKey": "agent:main:dashboard:trace-9f4b31a5ddb4",
@@ -364,7 +1452,279 @@
         "G16",
         "G17",
         "G18"
-      ]
+      ],
+      "stageLedger": {
+        "G0": {
+          "result": "authorized",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G1": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G2": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G3": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G4": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+          "concreteInputEvidence": "RUNTIME + REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G5": {
+          "result": "unchanged",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = unchanged\nmessageLength = 36\nmessageChangedBySanitization = False",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G6": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "requestedAgentId = none\nresult = resolved",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-DERIVED"
+        },
+        "G7": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "canonicalSessionKey = agent:main:dashboard:trace-9f4b31a5ddb4\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G8": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G9": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "agentId = main\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G10": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sendPolicy = allow\nresult = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G11": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "dedupeDecision = new_dispatch\nresult = pass",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G12": {
+          "result": "admitted",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "admissionDecision = admitted\nresult = admitted",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G13": {
+          "result": "constructed",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "MsgContext.Body = 'What is the weather like in New York'\nMsgContext.SessionKey = agent:main:dashboard:trace-9f4b31a5ddb4\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = cc808a2a-e647-4769-9550-e7367ec388c0\nmedia fields = absent",
+          "concreteInputEvidence": "RUNTIME + REQUEST + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED"
+        },
+        "G14": {
+          "result": "entered",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchInboundResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G15": {
+          "result": "finalized",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "FinalizedMsgContext.Body = 'What is the weather like in New York'\nFinalizedMsgContext.BodyForAgent = 'What is the weather like in New York'\nFinalizedMsgContext.BodyForCommands = 'What is the weather like in New York'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-9f4b31a5ddb4\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE-DERIVED FOR THIS RUN + RUNTIME-SUPPORTED HANDOFF"
+        },
+        "G16": {
+          "result": "normal_path",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchFromConfigResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED THROUGH G15",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G17": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED / OBSERVATION LIMIT"
+        },
+        "G18": {
+          "result": "selected",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "replyResult = returned to G16",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / REPLYRESULT FIELDS NOT DIRECTLY LOGGED"
+        }
+      },
+      "coverageCount": 19,
+      "observationCount": 19,
+      "coverageScore": 1.0,
+      "observationScore": 1.0
     },
     {
       "caseId": "latest-live",
@@ -374,7 +1734,7 @@
       "commitDate": "2026-09-21T21:27:41-04:00",
       "subject": "Publish live trace: What is the weather like in New York?",
       "provenanceType": "historical_latest_live",
-      "classification": "genuine_independent_saved_trace",
+      "classification": "genuine_repeated_saved_trace",
       "prompt": "What is the weather like in New York?",
       "runId": "5bf29474-b271-4a9c-88aa-841467980d36",
       "sessionKey": "agent:main:dashboard:trace-a7ef2f269577",
@@ -433,12 +1793,607 @@
         "G16",
         "G17",
         "G18"
-      ]
+      ],
+      "stageLedger": {
+        "G0": {
+          "result": "authorized",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G1": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G2": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+          "concreteInputEvidence": "REQUEST + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G3": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G4": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+          "concreteInputEvidence": "RUNTIME + REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G5": {
+          "result": "unchanged",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = unchanged\nmessageLength = 37\nmessageChangedBySanitization = False",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G6": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "requestedAgentId = none\nresult = resolved",
+          "concreteInputEvidence": "REQUEST",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-DERIVED"
+        },
+        "G7": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "canonicalSessionKey = agent:main:dashboard:trace-a7ef2f269577\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G8": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "result = pass",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G9": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "agentId = main\nresult = resolved",
+          "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G10": {
+          "result": "allow",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sendPolicy = allow\nresult = allow",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G11": {
+          "result": "pass",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "dedupeDecision = new_dispatch\nresult = pass",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G12": {
+          "result": "admitted",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "admissionDecision = admitted\nresult = admitted",
+          "concreteInputEvidence": "RUNTIME",
+          "concreteOutputEvidence": "RUNTIME"
+        },
+        "G13": {
+          "result": "constructed",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "MsgContext.Body = 'What is the weather like in New York?'\nMsgContext.SessionKey = agent:main:dashboard:trace-a7ef2f269577\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 5bf29474-b271-4a9c-88aa-841467980d36\nmedia fields = absent",
+          "concreteInputEvidence": "RUNTIME + REQUEST + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED"
+        },
+        "G14": {
+          "result": "entered",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchInboundResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G15": {
+          "result": "finalized",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "FinalizedMsgContext.Body = 'What is the weather like in New York?'\nFinalizedMsgContext.BodyForAgent = 'What is the weather like in New York?'\nFinalizedMsgContext.BodyForCommands = 'What is the weather like in New York?'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-a7ef2f269577\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+          "concreteInputEvidence": "SOURCE-MAPPED FROM G13",
+          "concreteOutputEvidence": "SOURCE-DERIVED FOR THIS RUN + RUNTIME-SUPPORTED HANDOFF"
+        },
+        "G16": {
+          "result": "normal_path",
+          "evidence": [
+            "source",
+            "derived"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "DispatchFromConfigResult = returned",
+          "concreteInputEvidence": "SOURCE-MAPPED THROUGH G15",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / RETURN FIELDS NOT DIRECTLY LOGGED"
+        },
+        "G17": {
+          "result": "resolved",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "RUNTIME + SOURCE-MAPPED / OBSERVATION LIMIT"
+        },
+        "G18": {
+          "result": "selected",
+          "evidence": [
+            "runtime",
+            "source"
+          ],
+          "hasSourceAnchor": true,
+          "hasCaseValue": true,
+          "covered": true,
+          "observed": true,
+          "concreteOutput": "replyResult = returned to G16",
+          "concreteInputEvidence": "RUNTIME + SOURCE-MAPPED",
+          "concreteOutputEvidence": "SOURCE + RUNTIME-SUPPORTED / REPLYRESULT FIELDS NOT DIRECTLY LOGGED"
+        }
+      },
+      "coverageCount": 19,
+      "observationCount": 19,
+      "coverageScore": 1.0,
+      "observationScore": 1.0
     }
   ],
+  "primaryCase": {
+    "caseId": "cake",
+    "sourceFile": "data/cases/cake.js",
+    "commit": "HEAD",
+    "commitFull": "ac3bcf691d92a3dc20ef1cb1a3ed29bdd5dc8e2f",
+    "commitDate": null,
+    "subject": "primary Cake2 gateway-path case",
+    "provenanceType": "current_primary_case",
+    "classification": "primary_gateway_path_case",
+    "prompt": "How to make a cake?",
+    "runId": "808b4380-f27b-4c2e-9421-74e043c3badd",
+    "sessionKey": null,
+    "sessionId": "af48dd1c-2e18-4d4d-9b08-432df4352674",
+    "savedAt": null,
+    "startedAt": null,
+    "agent": "main",
+    "g0_g18_complete": true,
+    "stage_order_ok": true,
+    "runtimeObserved": false,
+    "provider": null,
+    "model": null,
+    "runner": null,
+    "resolver": null,
+    "resolverSource": "default_getReplyFromConfig",
+    "toolCalls": [],
+    "webSearchObserved": false,
+    "finalReplyObserved": false,
+    "finalReplyEventObserved": false,
+    "replyResolverReturned": false,
+    "returnToG16Observed": false,
+    "eventNames": [],
+    "stagesObserved": [
+      "G0",
+      "G1",
+      "G2",
+      "G3",
+      "G4",
+      "G5",
+      "G6",
+      "G7",
+      "G8",
+      "G9",
+      "G10",
+      "G11",
+      "G12",
+      "G13",
+      "G14",
+      "G15",
+      "G16",
+      "G17",
+      "G18"
+    ],
+    "stageLedger": {
+      "G0": {
+        "result": "not_authorized",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "shared auth = not_authorized\nfallback device-token candidate = preserved\nconnection is not rejected at G0",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "RUNTIME + SOURCE"
+      },
+      "G1": {
+        "result": "deny",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "shared credential result = deny\ncontrol returns to G0",
+        "concreteInputEvidence": "SOURCE-DERIVED",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G2": {
+        "result": "pass",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "authMethod = device-token\nrole = operator\nresult = pass\nGateway connection = ready",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G3": {
+        "result": "allow",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "authorization = allow\nreason = admin_scope",
+        "concreteInputEvidence": "RUNTIME",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G4": {
+        "result": "pass",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "request validation = pass\nprivileged origin metadata = none",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G5": {
+        "result": "unchanged",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "normalized message = \"How to make a cake?\"\nmessageLength = 19\ntransformation = unchanged",
+        "concreteInputEvidence": "RUNTIME",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G6": {
+        "result": "resolved",
+        "evidence": [
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": false,
+        "concreteOutput": "requested Agent override = none\nresolution = resolved",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G7": {
+        "result": "resolved",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "canonical SessionKey = agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4\nSessionEntry = resolved\nbacking Session state = loaded",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "RUNTIME + SOURCE"
+      },
+      "G8": {
+        "result": "pass",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "Agent / Session validation = pass\nbacking sessionId = af48dd1c-2e18-4d4d-9b08-432df4352674",
+        "concreteInputEvidence": "SOURCE-DERIVED",
+        "concreteOutputEvidence": "RUNTIME + SOURCE"
+      },
+      "G9": {
+        "result": "main",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "effective AgentId = main",
+        "concreteInputEvidence": "SOURCE-DERIVED",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G10": {
+        "result": "allow",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "sendPolicy = allow\ndeny gate = not taken\nexact allow-producing branch = not separately observed",
+        "concreteInputEvidence": "SOURCE-DERIVED",
+        "concreteOutputEvidence": "RUNTIME + SOURCE"
+      },
+      "G11": {
+        "result": "new_dispatch",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "run classification = new_dispatch\ncached / pending / active duplicate = not selected",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G12": {
+        "result": "admitted",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "work admission = admitted\nlatest_session_revalidated = true",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "RUNTIME"
+      },
+      "G13": {
+        "result": "constructed",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "MsgContext.Body = \"How to make a cake?\"\nMsgContext.SessionKey = agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 808b4380-f27b-4c2e-9421-74e043c3badd\nmedia = none",
+        "concreteInputEvidence": "RUNTIME + SOURCE",
+        "concreteOutputEvidence": "SOURCE-DERIVED"
+      },
+      "G14": {
+        "result": "entered",
+        "evidence": [
+          "native",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "dispatchInboundMessage = entered\nfinal DispatchInboundResult fields = not separately observed in Case 2",
+        "concreteInputEvidence": "NATIVE + SOURCE",
+        "concreteOutputEvidence": "SOURCE + OBSERVATION LIMIT"
+      },
+      "G15": {
+        "result": "finalized",
+        "evidence": [
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": false,
+        "concreteOutput": "FinalizedMsgContext.Body = \"How to make a cake?\"\nFinalizedMsgContext.SessionKey = agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nmedia changes = none",
+        "concreteInputEvidence": "SOURCE-DERIVED",
+        "concreteOutputEvidence": "SOURCE-DERIVED"
+      },
+      "G16": {
+        "result": "normal_path",
+        "evidence": [
+          "source",
+          "derived"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": false,
+        "concreteOutput": "path = normal dispatch path\nG17 = main → main\nG18 resolver = default_getReplyFromConfig\nDispatchFromConfigResult fields = not separately observed",
+        "concreteInputEvidence": "SOURCE-DERIVED",
+        "concreteOutputEvidence": "RUNTIME + SOURCE-DERIVED"
+      },
+      "G17": {
+        "result": "main → main",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "sessionAgentId = main\ndownstream Agent = main → main\nsessionAgentCfg = main Agent config",
+        "concreteInputEvidence": "SOURCE-DERIVED",
+        "concreteOutputEvidence": "RUNTIME + SOURCE"
+      },
+      "G18": {
+        "result": "selected",
+        "evidence": [
+          "runtime",
+          "source"
+        ],
+        "hasSourceAnchor": true,
+        "hasCaseValue": true,
+        "covered": true,
+        "observed": true,
+        "concreteOutput": "resolverSource = default_getReplyFromConfig\nresolver = getReplyFromConfig\nresult = selected\nreplyResult = returned later to G16\nreplyResult payload = not separately captured here",
+        "concreteInputEvidence": "RUNTIME + SOURCE-DERIVED",
+        "concreteOutputEvidence": "RUNTIME + SOURCE"
+      }
+    },
+    "coverageCount": 19,
+    "observationCount": 16,
+    "coverageScore": 1.0,
+    "observationScore": 0.842
+  },
   "currentPublicRunMetadata": [],
   "validation": {
-    "independentRunCount": 6,
+    "repeatedSavedRunCount": 6,
     "allExpectedStagesPresent": true,
     "stageOrderingStable": true,
     "agentStable": true,

@@ -2,81 +2,34 @@
 {\scriptsize
 \begin{longtable}{
     @{}
-    >{\raggedright\arraybackslash}p{0.18\linewidth}
-    >{\raggedright\arraybackslash}p{0.76\linewidth}
+    >{\raggedright\arraybackslash}p{0.08\linewidth}
+    >{\raggedright\arraybackslash}p{0.31\linewidth}
+    >{\raggedright\arraybackslash}p{0.16\linewidth}
+    >{\raggedright\arraybackslash}p{0.14\linewidth}
+    >{\raggedright\arraybackslash}p{0.12\linewidth}
+    >{\raggedright\arraybackslash}p{0.13\linewidth}
     @{}
 }
-\caption{Weather-run comparison table generated from historical
-\texttt{latest-live.js} snapshots. The table includes only fields that are
-present in the saved trace artifacts.}
+\caption{Compact weather-run comparison generated from historical
+\texttt{latest-live.js} snapshots. Common verified fields for all six runs:
+G0--G18 complete, Agent \texttt{main}, resolver
+\texttt{default\_getReplyFromConfig}, tool \texttt{web\_search},
+final reply observed, and return to G16 observed.}
 \label{tab:repeated-run-validation}\\
 \toprule
-\textbf{Field} & \textbf{Verified value} \\
+\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{cov} & \textbf{obs} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Field} & \textbf{Verified value} \\
+\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{cov} & \textbf{obs} \\
 \midrule
 \endhead
-\textbf{Run} & \textbf{Weather run 1} \\
-\textbf{Run ID} & \texttt{\seqsplit{d9309724-54e1-428c-b8aa-614d468dfaad}} \\
-\textbf{Prompt} & \texttt{What is the weather like in NewYork} \\
-\textbf{G0--G18} & complete \\
-\textbf{Tool} & \texttt{web\_search} \\
-\textbf{Agent} & \texttt{main} \\
-\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
-\textbf{Final reply} & observed \\
-\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
-\midrule
-\textbf{Run} & \textbf{Weather run 2} \\
-\textbf{Run ID} & \texttt{\seqsplit{86fe2560-6d70-4a83-adba-00d0aebc59df}} \\
-\textbf{Prompt} & \texttt{What is the weather like in NewYork} \\
-\textbf{G0--G18} & complete \\
-\textbf{Tool} & \texttt{web\_search} \\
-\textbf{Agent} & \texttt{main} \\
-\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
-\textbf{Final reply} & observed \\
-\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
-\midrule
-\textbf{Run} & \textbf{Weather run 3} \\
-\textbf{Run ID} & \texttt{\seqsplit{c60de4ea-bfe8-4e5c-b344-ab0136e19010}} \\
-\textbf{Prompt} & \texttt{What is the weather in NewYork?} \\
-\textbf{G0--G18} & complete \\
-\textbf{Tool} & \texttt{web\_search} \\
-\textbf{Agent} & \texttt{main} \\
-\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
-\textbf{Final reply} & observed \\
-\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
-\midrule
-\textbf{Run} & \textbf{Weather run 4} \\
-\textbf{Run ID} & \texttt{\seqsplit{cbc16469-829d-4980-80b7-2616763eb41f}} \\
-\textbf{Prompt} & \texttt{What is the weather like in new york} \\
-\textbf{G0--G18} & complete \\
-\textbf{Tool} & \texttt{web\_search} \\
-\textbf{Agent} & \texttt{main} \\
-\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
-\textbf{Final reply} & observed \\
-\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
-\midrule
-\textbf{Run} & \textbf{Weather run 5} \\
-\textbf{Run ID} & \texttt{\seqsplit{cc808a2a-e647-4769-9550-e7367ec388c0}} \\
-\textbf{Prompt} & \texttt{What is the weather like in New York} \\
-\textbf{G0--G18} & complete \\
-\textbf{Tool} & \texttt{web\_search} \\
-\textbf{Agent} & \texttt{main} \\
-\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
-\textbf{Final reply} & observed \\
-\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
-\midrule
-\textbf{Run} & \textbf{Weather run 6} \\
-\textbf{Run ID} & \texttt{\seqsplit{5bf29474-b271-4a9c-88aa-841467980d36}} \\
-\textbf{Prompt} & \texttt{What is the weather like in New York?} \\
-\textbf{G0--G18} & complete \\
-\textbf{Tool} & \texttt{web\_search} \\
-\textbf{Agent} & \texttt{main} \\
-\textbf{Resolver} & \texttt{\seqsplit{default\_getReplyFromConfig}} \\
-\textbf{Final reply} & observed \\
-\textbf{Runtime return} & \texttt{reply\_resolver\_returned}; G16 observed \\
+\textbf{W1} & \texttt{What is the weather like in NewYork} & \texttt{d9309724} & \texttt{1a4417dc} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W2} & \texttt{What is the weather like in NewYork} & \texttt{86fe2560} & \texttt{067cb8b5} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W3} & \texttt{What is the weather in NewYork?} & \texttt{c60de4ea} & \texttt{73ca2f5a} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W4} & \texttt{What is the weather like in new york} & \texttt{cbc16469} & \texttt{f897740b} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W5} & \texttt{What is the weather like in New York} & \texttt{cc808a2a} & \texttt{07a37ec5} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W6} & \texttt{What is the weather like in New York?} & \texttt{5bf29474} & \texttt{edd61f0e} & 19/19 (1.00) & 19/19 (1.00) \\
 \bottomrule
 \end{longtable}
 }

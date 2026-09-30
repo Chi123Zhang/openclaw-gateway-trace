@@ -20,6 +20,53 @@ from typing import Any
 
 
 EXPECTED_STAGES = [f"G{i}" for i in range(19)]
+EXPECTED_STAGE_COUNT = len(EXPECTED_STAGES)
+
+CLASS_SAVED_TRACE = "genuine_repeated_saved_trace"
+
+STAGE_NOTES = {
+    "G0": "auth branch",
+    "G1": "shared credential",
+    "G2": "final auth",
+    "G3": "method authorization",
+    "G4": "request envelope",
+    "G5": "message normalization",
+    "G6": "requested Agent",
+    "G7": "Session lookup",
+    "G8": "Agent/Session check",
+    "G9": "effective Agent",
+    "G10": "send policy",
+    "G11": "dedupe",
+    "G12": "admission",
+    "G13": "context build",
+    "G14": "dispatch entry",
+    "G15": "context finalization",
+    "G16": "reply dispatch",
+    "G17": "Agent re-check",
+    "G18": "resolver boundary",
+}
+
+VALUE_CHANGE_NOTES = {
+    "G0": "Weather repeats use token/shared-auth success; Cake2 falls back to device-token.",
+    "G1": "Weather repeats are allow; Cake2 records shared-credential deny.",
+    "G2": "All runs pass; auth method differs between Cake2 and Weather.",
+    "G3": "All runs allow; Cake2 uses admin scope, Weather uses operator.write.",
+    "G4": "Run ID, Session key, and prompt vary by run.",
+    "G5": "Prompt text varies; normalization branch remains unchanged.",
+    "G6": "No explicit Agent override is selected.",
+    "G7": "Session key and Session ID vary by run.",
+    "G8": "No Agent/Session mismatch is selected.",
+    "G9": "Effective Agent remains main.",
+    "G10": "Final policy result is allow; exact internal allow sub-branch is not always logged.",
+    "G11": "Each run has a distinct run ID and is classified as new_dispatch.",
+    "G12": "Each run is admitted after Session revalidation.",
+    "G13": "Message and Session values vary; context shape is stable.",
+    "G14": "Dispatch entry is reached; detailed return fields are not logged.",
+    "G15": "Text-only context finalization; no media branch is selected.",
+    "G16": "Normal reply-dispatch path; return fields are only partially logged.",
+    "G17": "Downstream Agent remains main.",
+    "G18": "Default resolver is selected; full replyResult payload is not logged here.",
+}
 
 
 def git(repo: pathlib.Path, args: list[str], check: bool = True) -> str:
@@ -70,6 +117,13 @@ def extract_cases(text: str) -> dict[str, dict[str, Any]]:
         if literal_start < 0:
             continue
         cases[case_id] = json.loads(parse_balanced(text, literal_start))
+    dot_pattern = r"window\.GATEWAY_CASES\.([A-Za-z_$][\w$]*)\s*="
+    for match in re.finditer(dot_pattern, text):
+        case_id = match.group(1)
+        literal_start = text.find("{", match.end())
+        if literal_start < 0:
+            continue
+        cases[case_id] = json.loads(parse_balanced(text, literal_start))
     return cases
 
 
@@ -98,6 +152,47 @@ def iso_from_ms(value: Any) -> str | None:
         .isoformat()
         .replace("+00:00", "Z")
     )
+
+
+def stage_has_values(stage: dict[str, Any] | None) -> bool:
+    if not stage:
+        return False
+    return any(
+        bool(stage.get(key))
+        for key in ["result", "case2", "concreteInput", "concreteOutput"]
+    )
+
+
+def stage_has_source_anchor(stage: dict[str, Any] | None) -> bool:
+    if not stage:
+        return False
+    evidence = set(stage.get("evidence") or [])
+    return bool(evidence & {"source", "derived", "native"})
+
+
+def stage_is_observed(stage: dict[str, Any] | None) -> bool:
+    if not stage:
+        return False
+    evidence = set(stage.get("evidence") or [])
+    return bool(stage.get("runtimeObserved")) or bool(evidence & {"runtime", "native"})
+
+
+def summarize_stage(stage: dict[str, Any] | None) -> dict[str, Any]:
+    result = (stage or {}).get("result") if stage else None
+    has_source = stage_has_source_anchor(stage)
+    has_values = stage_has_values(stage)
+    observed = stage_is_observed(stage)
+    return {
+        "result": result or "missing",
+        "evidence": (stage or {}).get("evidence") or [],
+        "hasSourceAnchor": has_source,
+        "hasCaseValue": has_values,
+        "covered": has_source and has_values,
+        "observed": observed,
+        "concreteOutput": (stage or {}).get("concreteOutput"),
+        "concreteInputEvidence": (stage or {}).get("concreteInputEvidence"),
+        "concreteOutputEvidence": (stage or {}).get("concreteOutputEvidence"),
+    }
 
 
 def summarize_case(
@@ -145,11 +240,20 @@ def summarize_case(
         tool.get("started") and tool.get("resultObserved")
         for tool in web_search_tools
     )
+    stage_ledger = {
+        stage_id: summarize_stage(stages.get(stage_id)) for stage_id in EXPECTED_STAGES
+    }
+    coverage_count = sum(
+        1 for stage_id in EXPECTED_STAGES if stage_ledger[stage_id]["covered"]
+    )
+    observation_count = sum(
+        1 for stage_id in EXPECTED_STAGES if stage_ledger[stage_id]["observed"]
+    )
 
     return {
         **provenance,
         "classification": (
-            "genuine_independent_saved_trace"
+            CLASS_SAVED_TRACE
             if g0_g18_complete and runtime_observed and bool(events)
             else "partial_or_missing_runtime_evidence"
         ),
@@ -185,7 +289,22 @@ def summarize_case(
         "returnToG16Observed": return_to_g16_observed,
         "eventNames": [event.get("event") for event in events],
         "stagesObserved": observed_stages,
+        "stageLedger": stage_ledger,
+        "coverageCount": coverage_count,
+        "observationCount": observation_count,
+        "coverageScore": round(coverage_count / EXPECTED_STAGE_COUNT, 3),
+        "observationScore": round(observation_count / EXPECTED_STAGE_COUNT, 3),
     }
+
+
+def summarize_named_case(
+    case_id: str,
+    case: dict[str, Any],
+    provenance: dict[str, Any],
+) -> dict[str, Any]:
+    row = summarize_case(case, {"caseId": case_id, **provenance})
+    row["classification"] = provenance.get("classification", row["classification"])
+    return row
 
 
 def weather_publish_commits(repo: pathlib.Path) -> list[tuple[str, str, str, str]]:
@@ -214,6 +333,24 @@ def weather_publish_commits(repo: pathlib.Path) -> list[tuple[str, str, str, str
 
 def build_artifact(repo: pathlib.Path) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
+    primary_case = None
+    cake_path = repo / "data" / "cases" / "cake.js"
+    if cake_path.exists():
+        cake_cases = extract_cases(cake_path.read_text(encoding="utf-8"))
+        if "cake" in cake_cases:
+            primary_case = summarize_named_case(
+                "cake",
+                cake_cases["cake"],
+                {
+                    "sourceFile": "data/cases/cake.js",
+                    "commit": "HEAD",
+                    "commitFull": git(repo, ["rev-parse", "HEAD"]).strip(),
+                    "commitDate": None,
+                    "subject": "primary Cake2 gateway-path case",
+                    "provenanceType": "current_primary_case",
+                    "classification": "primary_gateway_path_case",
+                },
+            )
     for full, short, commit_date, subject in weather_publish_commits(repo):
         text = git(repo, ["show", f"{full}:data/cases/latest-live.js"], check=False)
         for case_id, case in extract_cases(text).items():
@@ -291,10 +428,10 @@ def build_artifact(repo: pathlib.Path) -> dict[str, Any]:
     rows = unique_rows
 
     valid = [
-        row for row in rows if row["classification"] == "genuine_independent_saved_trace"
+        row for row in rows if row["classification"] == CLASS_SAVED_TRACE
     ]
     validation = {
-        "independentRunCount": len({row.get("runId") for row in valid}),
+        "repeatedSavedRunCount": len({row.get("runId") for row in valid}),
         "allExpectedStagesPresent": bool(valid)
         and all(row["g0_g18_complete"] for row in valid),
         "stageOrderingStable": bool(valid)
@@ -331,6 +468,7 @@ def build_artifact(repo: pathlib.Path) -> dict[str, Any]:
             "recent-runs.js is only added when it embeds a non-duplicate case."
         ),
         "recoverableRuns": rows,
+        "primaryCase": primary_case,
         "currentPublicRunMetadata": public_metadata,
         "validation": validation,
         "unsupportedClaims": [
@@ -366,9 +504,13 @@ def write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
         "finalReplyEventObserved",
         "replyResolverReturned",
         "returnToG16Observed",
+        "coverageCount",
+        "observationCount",
+        "coverageScore",
+        "observationScore",
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=columns)
+        writer = csv.DictWriter(handle, fieldnames=columns, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({column: row.get(column) for column in columns})
@@ -378,57 +520,171 @@ def latex_bool(value: bool, true_label: str = "observed") -> str:
     return true_label if value else "missing"
 
 
+def run_label(idx: int) -> str:
+    return f"W{idx + 1}"
+
+
+def short_id(value: str | None, length: int = 8) -> str:
+    return (value or "")[:length]
+
+
+def score_text(count: int, score: float) -> str:
+    return f"{count}/{EXPECTED_STAGE_COUNT} ({score:.2f})"
+
+
+def branch_label(row: dict[str, Any], stage_id: str) -> str:
+    stage = row.get("stageLedger", {}).get(stage_id, {})
+    result = stage.get("result", "missing")
+    output = stage.get("concreteOutput") or ""
+    if stage_id in {"G9", "G17"} and "main" in output and "main" not in result:
+        return f"{result} (main)"
+    if stage_id == "G11" and "new_dispatch" in output and "new_dispatch" not in result:
+        return f"{result} (new_dispatch)"
+    return result
+
+
 def write_latex_table(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
     lines = [
         "% Auto-generated by scripts/validate_repeated_weather_runs.py.",
         "{\\scriptsize",
         "\\begin{longtable}{",
         "    @{}",
-        "    >{\\raggedright\\arraybackslash}p{0.18\\linewidth}",
-        "    >{\\raggedright\\arraybackslash}p{0.76\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.08\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.31\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.16\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.14\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.12\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.13\\linewidth}",
         "    @{}",
         "}",
-        "\\caption{Weather-run comparison table generated from historical",
-        "\\texttt{latest-live.js} snapshots. The table includes only fields that are",
-        "present in the saved trace artifacts.}",
+        "\\caption{Compact weather-run comparison generated from historical",
+        "\\texttt{latest-live.js} snapshots. Common verified fields for all six runs:",
+        "G0--G18 complete, Agent \\texttt{main}, resolver",
+        "\\texttt{default\\_getReplyFromConfig}, tool \\texttt{web\\_search},",
+        "final reply observed, and return to G16 observed.}",
         "\\label{tab:repeated-run-validation}\\\\",
         "\\toprule",
-        "\\textbf{Field} & \\textbf{Verified value} \\\\",
+        "\\textbf{Run} & \\textbf{Prompt} & \\textbf{Run ID} & \\textbf{Session} & \\textbf{cov} & \\textbf{obs} \\\\",
         "\\midrule",
         "\\endfirsthead",
         "\\toprule",
-        "\\textbf{Field} & \\textbf{Verified value} \\\\",
+        "\\textbf{Run} & \\textbf{Prompt} & \\textbf{Run ID} & \\textbf{Session} & \\textbf{cov} & \\textbf{obs} \\\\",
         "\\midrule",
         "\\endhead",
     ]
     valid_rows = [
-        row for row in rows if row["classification"] == "genuine_independent_saved_trace"
+        row for row in rows if row["classification"] == CLASS_SAVED_TRACE
     ]
     for idx, row in enumerate(valid_rows):
-        if idx:
-            lines.append("\\midrule")
-        run_label = f"Weather run {idx + 1}"
-        runtime_return = (
-            "\\texttt{reply\\_resolver\\_returned}; G16 observed"
-            if row["replyResolverReturned"] and row["returnToG16Observed"]
-            else "missing"
+        lines.append(
+            " & ".join(
+                [
+                    f"\\textbf{{{run_label(idx)}}}",
+                    f"\\texttt{{{escape_latex(row['prompt'] or '')}}}",
+                    f"\\texttt{{{short_id(row.get('runId'))}}}",
+                    f"\\texttt{{{short_id(row.get('sessionId'))}}}",
+                    score_text(row["coverageCount"], row["coverageScore"]),
+                    score_text(row["observationCount"], row["observationScore"]),
+                ]
+            )
+            + " \\\\"
         )
-        values = [
-            ("Run", f"\\textbf{{{run_label}}}"),
-            ("Run ID", f"\\texttt{{\\seqsplit{{{row['runId']}}}}}"),
-            ("Prompt", f"\\texttt{{{escape_latex(row['prompt'] or '')}}}"),
-            ("G0--G18", "complete" if row["g0_g18_complete"] else "missing"),
-            ("Tool", "\\texttt{web\\_search}" if row["webSearchObserved"] else "missing"),
-            ("Agent", f"\\texttt{{{escape_latex(row['agent'] or '')}}}"),
-            (
-                "Resolver",
-                f"\\texttt{{\\seqsplit{{{escape_latex(row['resolverSource'] or '')}}}}}",
-            ),
-            ("Final reply", latex_bool(row["finalReplyEventObserved"])),
-            ("Runtime return", runtime_return),
+    lines.extend(
+        [
+            "\\bottomrule",
+            "\\end{longtable}",
+            "}",
         ]
-        for field, value in values:
-            lines.append(f"\\textbf{{{field}}} & {value} \\\\")
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def write_coverage_table(
+    path: pathlib.Path,
+    primary_case: dict[str, Any] | None,
+    rows: list[dict[str, Any]],
+) -> None:
+    valid_rows = [row for row in rows if row["classification"] == CLASS_SAVED_TRACE]
+    table_rows: list[tuple[str, dict[str, Any], str]] = []
+    if primary_case:
+        table_rows.append(("Cake2", primary_case, "Gateway path case"))
+    table_rows.extend(
+        (run_label(idx), row, "Weather tool run") for idx, row in enumerate(valid_rows)
+    )
+    lines = [
+        "% Auto-generated by scripts/validate_repeated_weather_runs.py.",
+        "{\\scriptsize",
+        "\\begin{tabularx}{\\linewidth}{@{}lccX@{}}",
+        "\\toprule",
+        "\\textbf{Run} & \\textbf{cov} & \\textbf{obs} & \\textbf{Interpretation} \\\\",
+        "\\midrule",
+    ]
+    for label, row, note in table_rows:
+        lines.append(
+            f"{label} & "
+            f"{score_text(row['coverageCount'], row['coverageScore'])} & "
+            f"{score_text(row['observationCount'], row['observationScore'])} & "
+            f"{note} \\\\"
+        )
+    lines.extend(
+        [
+            "\\bottomrule",
+            "\\end{tabularx}",
+            "}",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def write_stage_matrix_table(
+    path: pathlib.Path,
+    primary_case: dict[str, Any] | None,
+    rows: list[dict[str, Any]],
+) -> None:
+    valid_rows = [row for row in rows if row["classification"] == CLASS_SAVED_TRACE]
+    lines = [
+        "% Auto-generated by scripts/validate_repeated_weather_runs.py.",
+        "{\\scriptsize",
+        "\\begin{longtable}{",
+        "    @{}",
+        "    >{\\raggedright\\arraybackslash}p{0.08\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.17\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.18\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.51\\linewidth}",
+        "    @{}",
+        "}",
+        "\\caption{Compressed stage-by-run ledger matrix. The Weather column",
+        "is aggregated only when W1--W6 share the same branch; otherwise the",
+        "mixed values are shown explicitly.}",
+        "\\label{tab:stage-run-matrix}\\\\",
+        "\\toprule",
+        "\\textbf{Stage} & \\textbf{Cake2 branch} & \\textbf{Weather W1--W6 branch} & \\textbf{Values and audit note} \\\\",
+        "\\midrule",
+        "\\endfirsthead",
+        "\\toprule",
+        "\\textbf{Stage} & \\textbf{Cake2 branch} & \\textbf{Weather W1--W6 branch} & \\textbf{Values and audit note} \\\\",
+        "\\midrule",
+        "\\endhead",
+    ]
+    for stage_id in EXPECTED_STAGES:
+        cake_result = branch_label(primary_case, stage_id) if primary_case else "n/a"
+        weather_results = [
+            branch_label(row, stage_id)
+            for row in valid_rows
+        ]
+        distinct_weather = sorted(set(weather_results))
+        weather_result = (
+            distinct_weather[0]
+            if len(distinct_weather) == 1
+            else "mixed: " + ", ".join(distinct_weather)
+        )
+        note = f"{STAGE_NOTES.get(stage_id, '')}. {VALUE_CHANGE_NOTES.get(stage_id, '')}"
+        lines.append(
+            f"{stage_id} & "
+            f"\\texttt{{{escape_latex(cake_result)}}} & "
+            f"\\texttt{{{escape_latex(weather_result)}}} & "
+            f"{escape_latex(note)} \\\\"
+        )
     lines.extend(
         [
             "\\bottomrule",
@@ -476,6 +732,8 @@ def main() -> None:
     json_path = out_dir / "repeated-run-validation.json"
     csv_path = out_dir / "repeated-run-validation.csv"
     tex_path = out_dir / "weather-run-comparison-table.tex"
+    coverage_path = out_dir / "coverage-observation-table.tex"
+    stage_matrix_path = out_dir / "stage-run-matrix.tex"
 
     json_path.write_text(
         json.dumps(artifact, indent=2, ensure_ascii=False) + "\n",
@@ -483,16 +741,20 @@ def main() -> None:
     )
     write_csv(csv_path, rows)
     write_latex_table(tex_path, rows)
+    write_coverage_table(coverage_path, artifact.get("primaryCase"), rows)
+    write_stage_matrix_table(stage_matrix_path, artifact.get("primaryCase"), rows)
 
     print(
         json.dumps(
             {
                 "recoverableRuns": len(rows),
-                "genuineRuns": artifact["validation"]["independentRunCount"],
+                "genuineRuns": artifact["validation"]["repeatedSavedRunCount"],
                 "validation": artifact["validation"],
                 "json": str(json_path),
                 "csv": str(csv_path),
                 "latexTable": str(tex_path),
+                "coverageTable": str(coverage_path),
+                "stageMatrix": str(stage_matrix_path),
             },
             indent=2,
         )
