@@ -49,22 +49,22 @@ STAGE_NOTES = {
 VALUE_CHANGE_NOTES = {
     "G0": "Weather repeats use token/shared-auth success; Cake2 falls back to device-token.",
     "G1": "Weather repeats are allow; Cake2 records shared-credential deny.",
-    "G2": "All runs pass; auth method differs between Cake2 and Weather.",
-    "G3": "All runs allow; Cake2 uses admin scope, Weather uses operator.write.",
+    "G2": "All runs pass; the exact authentication sub-branch and rate-limit state are not equally visible.",
+    "G3": "All runs allow. Cake2 carries admin scope; Weather is authorized through operator.write. The current traces show co-occurrence, not a causal proof that authentication method alone determines scope.",
     "G4": "Run ID, Session key, and prompt vary by run.",
     "G5": "Prompt text varies; normalization branch remains unchanged.",
     "G6": "No explicit Agent override is selected.",
     "G7": "Session key and Session ID vary by run.",
     "G8": "No Agent/Session mismatch is selected.",
-    "G9": "Effective Agent remains main.",
+    "G9": "Effective Agent value remains main.",
     "G10": "Final policy result is allow; exact internal allow sub-branch is not always logged.",
-    "G11": "Each run has a distinct run ID and is classified as new_dispatch.",
+    "G11": "Each run has a distinct run ID; the branch is new_dispatch.",
     "G12": "Each run is admitted after Session revalidation.",
     "G13": "Message and Session values vary; context shape is stable.",
     "G14": "Dispatch entry is reached; detailed return fields are not logged.",
     "G15": "Text-only context finalization; no media branch is selected.",
     "G16": "Normal reply-dispatch path; return fields are only partially logged.",
-    "G17": "Downstream Agent remains main.",
+    "G17": "Downstream Agent value remains main.",
     "G18": "Default resolver is selected; full replyResult payload is not logged here.",
 }
 
@@ -475,6 +475,7 @@ def build_artifact(repo: pathlib.Path) -> dict[str, Any]:
             "No rejected, failed, retried, cancelled, or cross-version weather paths are evidenced by this audit.",
             "UI history entries alone are not counted without an embedded case object and runtime events.",
             "Cake2 does not yet provide a full top-level post-G18 agentRuntime object.",
+            "For weather runs, reply_resolver_returned is directly observed; later G16/G14 resume is source-derived unless separately instrumented.",
         ],
     }
 
@@ -536,11 +537,18 @@ def branch_label(row: dict[str, Any], stage_id: str) -> str:
     stage = row.get("stageLedger", {}).get(stage_id, {})
     result = stage.get("result", "missing")
     output = stage.get("concreteOutput") or ""
-    if stage_id in {"G9", "G17"} and "main" in output and "main" not in result:
-        return f"{result} (main)"
-    if stage_id == "G11" and "new_dispatch" in output and "new_dispatch" not in result:
-        return f"{result} (new_dispatch)"
+    if stage_id in {"G9", "G17"} and ("main" in output or result == "main"):
+        return "resolved"
+    if stage_id == "G11" and ("new_dispatch" in output or result in {"pass", "new_dispatch"}):
+        return "new_dispatch"
     return result
+
+
+def tool_summary(row: dict[str, Any]) -> str:
+    tools = [tool.get("name") for tool in row.get("toolCalls") or [] if tool.get("name")]
+    if not tools:
+        return "missing"
+    return " + ".join(tools)
 
 
 def write_latex_table(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
@@ -549,26 +557,27 @@ def write_latex_table(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
         "{\\scriptsize",
         "\\begin{longtable}{",
         "    @{}",
-        "    >{\\raggedright\\arraybackslash}p{0.08\\linewidth}",
-        "    >{\\raggedright\\arraybackslash}p{0.31\\linewidth}",
-        "    >{\\raggedright\\arraybackslash}p{0.16\\linewidth}",
-        "    >{\\raggedright\\arraybackslash}p{0.14\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.07\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.22\\linewidth}",
         "    >{\\raggedright\\arraybackslash}p{0.12\\linewidth}",
-        "    >{\\raggedright\\arraybackslash}p{0.13\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.11\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.14\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.09\\linewidth}",
+        "    >{\\raggedright\\arraybackslash}p{0.11\\linewidth}",
         "    @{}",
         "}",
         "\\caption{Compact weather-run comparison generated from historical",
         "\\texttt{latest-live.js} snapshots. Common verified fields for all six runs:",
         "G0--G18 complete, Agent \\texttt{main}, resolver",
-        "\\texttt{default\\_getReplyFromConfig}, tool \\texttt{web\\_search},",
-        "final reply observed, and return to G16 observed.}",
+        "\\texttt{default\\_getReplyFromConfig}, observed \\texttt{web\\_search}",
+        "tool result, final reply observed, and resolver return observed.}",
         "\\label{tab:repeated-run-validation}\\\\",
         "\\toprule",
-        "\\textbf{Run} & \\textbf{Prompt} & \\textbf{Run ID} & \\textbf{Session} & \\textbf{cov} & \\textbf{obs} \\\\",
+        "\\textbf{Run} & \\textbf{Prompt} & \\textbf{Run ID} & \\textbf{Session} & \\textbf{Tools} & \\textbf{cov} & \\textbf{obs outcome} \\\\",
         "\\midrule",
         "\\endfirsthead",
         "\\toprule",
-        "\\textbf{Run} & \\textbf{Prompt} & \\textbf{Run ID} & \\textbf{Session} & \\textbf{cov} & \\textbf{obs} \\\\",
+        "\\textbf{Run} & \\textbf{Prompt} & \\textbf{Run ID} & \\textbf{Session} & \\textbf{Tools} & \\textbf{cov} & \\textbf{obs outcome} \\\\",
         "\\midrule",
         "\\endhead",
     ]
@@ -583,6 +592,7 @@ def write_latex_table(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
                     f"\\texttt{{{escape_latex(row['prompt'] or '')}}}",
                     f"\\texttt{{{short_id(row.get('runId'))}}}",
                     f"\\texttt{{{short_id(row.get('sessionId'))}}}",
+                    f"\\texttt{{{escape_latex(tool_summary(row))}}}",
                     score_text(row["coverageCount"], row["coverageScore"]),
                     score_text(row["observationCount"], row["observationScore"]),
                 ]
@@ -616,7 +626,7 @@ def write_coverage_table(
         "{\\scriptsize",
         "\\begin{tabularx}{\\linewidth}{@{}lccX@{}}",
         "\\toprule",
-        "\\textbf{Run} & \\textbf{cov} & \\textbf{obs} & \\textbf{Interpretation} \\\\",
+        "\\textbf{Run} & \\textbf{cov} & \\textbf{obs outcome} & \\textbf{Interpretation} \\\\",
         "\\midrule",
     ]
     for label, row, note in table_rows:

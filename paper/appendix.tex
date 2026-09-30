@@ -14809,8 +14809,9 @@ Lifecycle completion evidence. \\
 \addlinespace
 \texttt{reply\_resolver\_returned} &
 Records resolver source, reply-result kind, and reply count when control
-returns to G16. &
-Runtime-to-Gateway return evidence. \\
+returns from the resolver to \texttt{dispatchFromConfig}. Later G16/G14
+post-processing is source-derived unless separately instrumented. &
+Resolver-return evidence. \\
 \bottomrule
 \end{tabularx}
 
@@ -14854,7 +14855,8 @@ Reply result kind &
 \texttt{single} \\
 \addlinespace
 Return edge &
-\texttt{returnToG16Observed = true} \\
+\texttt{reply\_resolver\_returned = observed}; later G16/G14 resume is
+source-derived. \\
 \bottomrule
 \end{tabularx}
 
@@ -14907,7 +14909,7 @@ G0--G18 complete &
 W17:01 &
 \texttt{5392b60:latest-live.js} &
 G0--G18 complete &
-\texttt{web\_search}, final reply, resolver return. \\
+\texttt{bash}, \texttt{web\_search}, final reply, resolver return. \\
 \addlinespace
 W17:18 &
 \texttt{00a70e6:latest-live.js} &
@@ -14917,7 +14919,7 @@ G0--G18 complete &
 W17:26 &
 \texttt{a9193fd:latest-live.js} &
 G0--G18 complete &
-\texttt{web\_search}, final reply, resolver return. \\
+\texttt{bash}, \texttt{web\_search}, final reply, resolver return. \\
 \addlinespace
 W21:27 &
 \texttt{cd549d0:latest-live.js} &

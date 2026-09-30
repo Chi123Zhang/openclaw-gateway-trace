@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T06:46:23.050568Z",
+  "generatedAt": "2026-09-30T16:32:03.239086Z",
   "repository": "/Users/mac/Documents/Codex/2026-09-23/https-latex-cstcloud-cn-project-6a7ae451a2ae2b9eff0eb0d6/work/openclaw-gateway-trace",
   "scope": "Sep. 21 local-time New York weather traces. Historical latest-live.js is used for publish-time evidence; current recent-runs.js is only added when it embeds a non-duplicate case.",
   "recoverableRuns": [
@@ -2072,7 +2072,7 @@
     "caseId": "cake",
     "sourceFile": "data/cases/cake.js",
     "commit": "HEAD",
-    "commitFull": "ac3bcf691d92a3dc20ef1cb1a3ed29bdd5dc8e2f",
+    "commitFull": "074479379e6e7867b86e76fd07db23525e7d10ba",
     "commitDate": null,
     "subject": "primary Cake2 gateway-path case",
     "provenanceType": "current_primary_case",
@@ -2406,6 +2406,7 @@
   "unsupportedClaims": [
     "No rejected, failed, retried, cancelled, or cross-version weather paths are evidenced by this audit.",
     "UI history entries alone are not counted without an embedded case object and runtime events.",
-    "Cake2 does not yet provide a full top-level post-G18 agentRuntime object."
+    "Cake2 does not yet provide a full top-level post-G18 agentRuntime object.",
+    "For weather runs, reply_resolver_returned is directly observed; later G16/G14 resume is source-derived unless separately instrumented."
   ]
 }

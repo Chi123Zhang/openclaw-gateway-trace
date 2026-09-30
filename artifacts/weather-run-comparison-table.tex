@@ -2,34 +2,35 @@
 {\scriptsize
 \begin{longtable}{
     @{}
-    >{\raggedright\arraybackslash}p{0.08\linewidth}
-    >{\raggedright\arraybackslash}p{0.31\linewidth}
-    >{\raggedright\arraybackslash}p{0.16\linewidth}
-    >{\raggedright\arraybackslash}p{0.14\linewidth}
+    >{\raggedright\arraybackslash}p{0.07\linewidth}
+    >{\raggedright\arraybackslash}p{0.22\linewidth}
     >{\raggedright\arraybackslash}p{0.12\linewidth}
-    >{\raggedright\arraybackslash}p{0.13\linewidth}
+    >{\raggedright\arraybackslash}p{0.11\linewidth}
+    >{\raggedright\arraybackslash}p{0.14\linewidth}
+    >{\raggedright\arraybackslash}p{0.09\linewidth}
+    >{\raggedright\arraybackslash}p{0.11\linewidth}
     @{}
 }
 \caption{Compact weather-run comparison generated from historical
 \texttt{latest-live.js} snapshots. Common verified fields for all six runs:
 G0--G18 complete, Agent \texttt{main}, resolver
-\texttt{default\_getReplyFromConfig}, tool \texttt{web\_search},
-final reply observed, and return to G16 observed.}
+\texttt{default\_getReplyFromConfig}, observed \texttt{web\_search}
+tool result, final reply observed, and resolver return observed.}
 \label{tab:repeated-run-validation}\\
 \toprule
-\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{cov} & \textbf{obs} \\
+\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{Tools} & \textbf{cov} & \textbf{obs outcome} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{cov} & \textbf{obs} \\
+\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{Tools} & \textbf{cov} & \textbf{obs outcome} \\
 \midrule
 \endhead
-\textbf{W1} & \texttt{What is the weather like in NewYork} & \texttt{d9309724} & \texttt{1a4417dc} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W2} & \texttt{What is the weather like in NewYork} & \texttt{86fe2560} & \texttt{067cb8b5} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W3} & \texttt{What is the weather in NewYork?} & \texttt{c60de4ea} & \texttt{73ca2f5a} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W4} & \texttt{What is the weather like in new york} & \texttt{cbc16469} & \texttt{f897740b} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W5} & \texttt{What is the weather like in New York} & \texttt{cc808a2a} & \texttt{07a37ec5} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W6} & \texttt{What is the weather like in New York?} & \texttt{5bf29474} & \texttt{edd61f0e} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W1} & \texttt{What is the weather like in NewYork} & \texttt{d9309724} & \texttt{1a4417dc} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W2} & \texttt{What is the weather like in NewYork} & \texttt{86fe2560} & \texttt{067cb8b5} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W3} & \texttt{What is the weather in NewYork?} & \texttt{c60de4ea} & \texttt{73ca2f5a} & \texttt{bash + web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W4} & \texttt{What is the weather like in new york} & \texttt{cbc16469} & \texttt{f897740b} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W5} & \texttt{What is the weather like in New York} & \texttt{cc808a2a} & \texttt{07a37ec5} & \texttt{bash + web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
+\textbf{W6} & \texttt{What is the weather like in New York?} & \texttt{5bf29474} & \texttt{edd61f0e} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
 \bottomrule
 \end{longtable}
 }
