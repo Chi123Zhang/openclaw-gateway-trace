@@ -96,7 +96,7 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 | Verification result | Count |
 |---|---:|
 | MATCH | 230 |
-| MISMATCH_FIXED | 5 |
+| MISMATCH_FIXED | 28 |
 | NOT_RECORDED | 58 |
 | SOURCE_DERIVED | 4 |
 | AUDIT_DERIVED | 0 |
@@ -113,6 +113,9 @@ Important field separations:
   `isDeviceTokenAuth` are treated as separate fields. R1 records
   `hasDeviceIdentity=False`; it does not record `hasDeviceTokenCandidate` or a
   concrete `deviceTokenCandidate`.
+- G0/G1/G2/G3 figure text was rechecked against R1. The corrected path is
+  shared-token authorization with `G1 allow`, `G2 pass`, G3
+  `operator.write`; no G3 `operator.admin` shortcut is taken.
 - Raw R1 Agent Runtime events record an AR-layer `sessionId`, but G7
   `entry.sessionId` is not recorded as a Gateway-stage runtime field. The
   appendix keeps G7 `entry.sessionId` as `NOT RECORDED`.

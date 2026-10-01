@@ -1,7 +1,7 @@
 # Appendix Value Verification Summary
 
 - MATCH: 230
-- MISMATCH_FIXED: 5
+- MISMATCH_FIXED: 28
 - NOT_RECORDED: 58
 - SOURCE_DERIVED: 4
 - AUDIT_DERIVED: 0

@@ -131,7 +131,7 @@ Generated verification artifacts:
 Verification counts:
 
 - MATCH: 230
-- MISMATCH_FIXED: 5
+- MISMATCH_FIXED: 28
 - NOT_RECORDED: 58
 - SOURCE_DERIVED: 4
 - AUDIT_DERIVED: 0
@@ -140,6 +140,10 @@ Corrections made during this pass:
 
 - Removed claims that R1 runtime records `hasDeviceTokenCandidate=False`; raw R1
   runtime events do not contain that field.
+- Removed stale G0/G1/G2/G3 figure claims inherited from the old Cake2 path:
+  R1 is now consistently written as shared-token `G1 allow`, G2 shared-token
+  pass, and G3 `operator.write` authorization with no `operator.admin`
+  shortcut.
 - Kept `deviceTokenCandidate` as `NOT RECORDED`.
 - Kept device-token fallback as not reached only where supported by observed
   shared-auth success plus upstream source.

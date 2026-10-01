@@ -905,7 +905,7 @@ Inputs to\\
 \quad\texttt{= handshake auth material}\\[2mm]
 
 \texttt{hasDeviceIdentity}\\
-\quad\texttt{= True}\\[2mm]
+\quad\texttt{= False}\\[2mm]
 
 \texttt{req}\\
 \quad\texttt{= WebSocket upgrade request}\\[2mm]
@@ -940,16 +940,16 @@ Returned\\
 \texttt{ConnectAuthState}:\\[3mm]
 
 \texttt{authResult}\\
-\quad\texttt{ok = False}\\[2mm]
+\quad\texttt{ok = True}\\[2mm]
 
 \texttt{authOk}\\
-\quad\texttt{= False}\\[2mm]
+\quad\texttt{= True}\\[2mm]
 
 \texttt{authMethod}\\
 \quad\texttt{= "token"}\\[2mm]
 
 \texttt{sharedAuthOk}\\
-\quad\texttt{= False}\\[2mm]
+\quad\texttt{= True}\\[2mm]
 
 \texttt{sharedAuthProvided}\\
 \quad\texttt{= True}\\[2mm]
@@ -958,16 +958,16 @@ Returned\\
 \quad\texttt{= None}\\[2mm]
 
 \texttt{deviceTokenCandidate}\\
-\quad\texttt{= present}\\[2mm]
+\quad\texttt{= NOT RECORDED}\\[2mm]
 
 \texttt{deviceTokenCandidateSource}\\
-\quad\texttt{= None}\\[3mm]
+\quad\texttt{= NOT RECORDED}\\[3mm]
 
 Runtime observation:\\
 \texttt{result = "authorized"}\\[3mm]
 
 Next:\\
-\texttt{device-token candidate}\\
+\texttt{shared-token auth state}\\
 \texttt{continues to G2}
 };
 
@@ -1019,9 +1019,9 @@ Inside the helper:\\
 
 R1:\\
 \texttt{explicit device token is not present}\\
-\texttt{deviceTokenCandidate = none}\\
+\texttt{deviceTokenCandidate = NOT RECORDED}\\
 \texttt{deviceTokenCandidateSource = NOT RECORDED}\\
-\texttt{device-token helper fallback is not reached}\\[3mm]
+\texttt{no concrete device-token candidate is archived}\\[3mm]
 
 \textbf{Step 4: Invoke initial shared-credential authorization}\\
 \texttt{authResult = await}\\
@@ -1042,7 +1042,7 @@ Inputs include:\\
 
 R1:\\
 \texttt{G1 result = "allow"}\\
-\texttt{authResult.ok = False}\\[3mm]
+\texttt{authResult.ok = True}\\[3mm]
 
 \textbf{Step 5: Probe shared-auth validity}\\
 Because shared authentication material exists, G0 also evaluates:\\
@@ -2009,12 +2009,12 @@ Returned\\
 
 R1:\\[1mm]
 
-\texttt{ok = False}\\[2mm]
+\texttt{ok = True}\\[2mm]
 
-\texttt{method = undefined}\\[2mm]
+\texttt{method = "token"}\\[2mm]
 
-\texttt{reason = unknown}\\
-\textit{not recorded by G1 trace}\\[3mm]
+\texttt{reason = none}\\
+\textit{no denial reason recorded}\\[3mm]
 
 Runtime observation:\\[1mm]
 
@@ -2023,8 +2023,8 @@ Runtime observation:\\[1mm]
 \texttt{result = "allow"}\\[3mm]
 
 Meaning:\\
-\textit{shared credential did not}\\
-\textit{authorize this connection}\\[3mm]
+\textit{shared credential authorized}\\
+\textit{this connection}\\[3mm]
 
 Next:\\
 \texttt{return to G0 aggregation}
@@ -2094,8 +2094,8 @@ R1:\\
 \textit{Source: auth.ts:537--540}\\[1mm]
 
 R1:\\
-\textit{The G1 trace does not record whether this guard itself}\\
-\textit{produced the denial or execution continued further.}\\[3mm]
+\textit{The G1 trace does not record whether this guard was checked;}\\
+\textit{the observed stage outcome is allow.}\\[3mm]
 
 \textbf{Step 7: Exclude the optional Tailscale success path}\\
 The Tailscale branch requires:\\
@@ -2127,8 +2127,8 @@ or, on success:\\
 
 R1 runtime:\\
 \texttt{G1 result = "allow"}\\
-\texttt{authResult.ok = False}\\
-\textit{The exact native failure reason is not recorded.}\\[3mm]
+\texttt{authResult.ok = True}\\
+\textit{No denial reason is emitted for the observed allow result.}\\[3mm]
 
 \textbf{Step 10: Return the G1 decision to G0}\\
 The resulting \texttt{GatewayAuthResult} becomes G0's
@@ -2136,7 +2136,7 @@ The resulting \texttt{GatewayAuthResult} becomes G0's
 resolved bootstrap/device-token candidates.\\[1mm]
 
 R1:\\
-\texttt{G1 = deny}\\
+\texttt{G1 = allow}\\
 $\downarrow$\\
 \texttt{G0 result = "authorized"}\\
 $\downarrow$\\
@@ -2199,7 +2199,7 @@ succeeds, the surrounding WebSocket connection handler revalidates
 Gateway-auth generation, checks device pairing and approved role/scope
 access, constructs the authenticated Gateway client, and sends the
 \texttt{hello-ok} response. For the WebSocket connection carrying
-R1, the shared-auth path from G1 was denied, but the explicit
+R1, the shared-auth path from G1 succeeds and the explicit
 shared-token authorization is carried into G2.
 The resulting connection uses
 \texttt{authMethod = "token"}, role
@@ -3399,7 +3399,7 @@ R1:\\
 \texttt{authOk = True}\\
 \texttt{hasDeviceIdentity = False}\\
 \texttt{deviceId = NOT RECORDED / not needed}\\
-\texttt{deviceTokenCandidate = none}\\
+\texttt{deviceTokenCandidate = NOT RECORDED}\\
 \texttt{-> device-token verification is not reached}\\[3mm]
 
 \textbf{Step 6: Apply the device-token rate-limit guard}\\
@@ -3961,31 +3961,30 @@ DERIVED:
 role != "node"
 \\[2mm]
 
-admin\_scope\_present = True
+admin\_scope\_present = False
 &
 DERIVED:
 "operator.admin" is not present
 in the observed scopes
 \\[2mm]
 
-admin\_shortcut\_taken = True
+admin\_shortcut\_taken = False
 &
 DERIVED:
-lines 288--290 execute
+condition at lines 288--290 is false
 \\[2mm]
 
-operator\_write\_check\_reached = False
+operator\_write\_check\_reached = True
 &
 DERIVED:
-return at line 289 occurs
-before line 291
+execution continues past line 290
 \\[2mm]
 
-registered\_scope\_lookup\_reached = False
+registered\_scope\_lookup\_reached = True
 &
 DERIVED:
 method\_registry.getScope(method)
-at line 291 is not executed
+at line 291 is reached
 \\[2mm]
 
 auth\_error = None
@@ -4001,10 +4000,10 @@ RUNTIME:
 G3 TraceClaw event
 \\[2mm]
 
-auth\_reason = "admin\_scope"
+auth\_reason = NOT RECORDED
 &
-RUNTIME:
-G3 TraceClaw event
+NOT RECORDED:
+R1 G3 runtime event has result only
 \\[2mm]
 
 \bottomrule
@@ -4023,8 +4022,8 @@ This step performs method-level authorization for the authenticated
 Gateway client. It checks whether the current operator is allowed to
 invoke \texttt{chat.send}. In R1, the authenticated connection
 contains \texttt{operator.write}; the administrator shortcut is not
-taken and the normal \texttt{operator.write} scope-checking branch is
-not reached.
+taken, so the normal \texttt{operator.write} scope-checking branch is
+reached.
 
 \begin{center}
 
@@ -4115,8 +4114,10 @@ Executed helper functions:\\[1mm]
 $\downarrow$\\
 \texttt{isRoleAuthorizedForMethod(...)}\\[3mm]
 
-Then inline authorization branch:\\
-\texttt{scopes.includes(ADMIN\_SCOPE)}\\
+Then inline authorization branches:\\
+\texttt{admin shortcut check}\\
+$\downarrow$\\
+\texttt{required-scope check}\\
 $\downarrow$\\
 \texttt{return null}
 };
@@ -4151,16 +4152,16 @@ $\downarrow$\\
 \texttt{auth\_result = "allow"}\\[1mm]
 
 \texttt{auth\_reason =}\\
-\quad\texttt{"admin\_scope"}\\[1mm]
+\quad\texttt{NOT RECORDED}\\[1mm]
 
 \texttt{admin\_scope\_present}\\
-\quad\texttt{= True}\\[1mm]
+\quad\texttt{= False}\\[1mm]
 
 \texttt{admin\_shortcut\_taken}\\
-\quad\texttt{= True}\\[1mm]
+\quad\texttt{= False}\\[1mm]
 
 \texttt{operator\_write\_check}\\
-\quad\texttt{\_reached = False}
+\quad\texttt{\_reached = True}
 };
 
 % ==============================================================
@@ -4220,8 +4221,7 @@ R1:\\
 R1:\\
 \texttt{"operator.admin" is not present}\\
 \texttt{-> admin shortcut not taken}\\
-\texttt{-> auth\_error = None}\\
-\texttt{-> authorization succeeds}\\[3mm]
+\texttt{-> continue to required-scope check}\\[3mm]
 
 \textbf{Step 7: Perform required-scope authorization}\\
 \texttt{registered\_scope = methodRegistry.getScope(method)}\\
@@ -4470,11 +4470,10 @@ provenance or routing fields when the caller lacks administrator scope.
 
 \textit{Strict note:}
 \texttt{sessionId} is optional in the RPC schema and is conditionally
-included by the Control UI. The R1 Session identity
-\texttt{NOT RECORDED} is known from the runtime
-SessionEntry, but the historical raw WebSocket frame was not archived.
-Therefore this table does not claim that the field was unconditionally
-present in the original G4 RPC payload.
+included by the Control UI. The R1 G4 RPC payload does not archive a
+Gateway Session identifier, and this appendix does not fill it from a
+different layer. Therefore this table does not claim that the field was
+unconditionally present in the original G4 RPC payload.
 
 % ==============================================================
 % G4
