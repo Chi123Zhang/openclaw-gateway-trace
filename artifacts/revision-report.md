@@ -10,8 +10,9 @@ Previous paper CI: GitHub Actions run `36814141719` succeeded on commit
 `7a3c52e`. The workflow compiled both `paper/main.tex` and
 `paper/appendix_main.tex` and uploaded the `traceclaw-paper-pdfs` artifact.
 
-Current restoration status: working tree updated after `ad58771`; a fresh Paper
-Build CI run is still required for the restored appendix.
+Current restoration status: complete on branch
+`revision-r1-r7-controlled` at commit
+`6f5af13c48266f65c6ffdef59fec61a4c3b0608d`.
 
 ## Modified Files
 
@@ -123,6 +124,15 @@ Current restoration validation:
   recipient email, old Cake2 run/session IDs, or absolute `/Users/mac` paths.
   One expected historical-note hit remains for the phrase
   `device-token/operator-admin path`; it is not an R1 claim.
+- Paper Build run `36819135472` succeeded on commit `6f5af13`:
+  `https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36819135472`.
+- The workflow compiled both `paper/main.tex` and `paper/appendix_main.tex` and
+  uploaded the `traceclaw-paper-pdfs` artifact.
+- Downloaded artifact: `/tmp/traceclaw-paper-pdfs-36819135472/`.
+- Downloaded files: `main.pdf` (10 pages, A4) and `appendix_main.pdf`
+  (12 pages, A4).
+- Text extraction confirmed no remaining `Appendix ??` or unresolved `??`
+  markers in `main.pdf`.
 
 Completed through CI:
 
