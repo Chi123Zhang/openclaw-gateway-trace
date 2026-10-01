@@ -31,6 +31,8 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 |---|---|---|
 | Every controlled run covers all G0--G18 Gateway stages. | `artifacts/controlled/controlled-runs.json`, `runs[].cov`; stage extraction from `trace.stages.G0...G18`. | `19/19` for R1--R7. |
 | Every controlled run directly observes stage outcomes. | `artifacts/controlled/controlled-runs.json`, `runs[].obs`; stage evidence/runtime flags. | `19/19` for R1--R7. |
+| R1 coverage remains `19/19` after NOT RECORDED subfield audit. | `artifacts/controlled/r1-coverage-verification.csv`. | Each G0--G18 row has a source anchor and at least one concrete case value; missing internal subfields do not zero the whole stage. |
+| R1 observation remains `19/19` after NOT RECORDED subfield audit. | `artifacts/controlled/r1-coverage-verification.csv`; raw R1 `data/cases/latest-live.js@a68e6d7`, `stages.G0...G18.runtimeObserved`. | All G0--G18 stage outcomes are directly observed. |
 | R1/R7 and R5/R6 have no G0--G18 branch differences. | `artifacts/controlled/controlled-runs.json`, `repeatability[].stageBranchDiff`. | Empty for both pairs. |
 | Agent, resolver, tool/no-tool class, stop reason, and AR structure match for both repeated prompt pairs. | `artifacts/controlled/controlled-runs.json`, `repeatability[]`. | `true` for all listed checks. |
 | AR6 is source-derived by design. | `artifacts/controlled/controlled-runs.json`, `agentRuntime[].arStage.AR6`. | `SourceDerived` for R1--R7. |
@@ -77,7 +79,7 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 
 | Location / old value | Replacement | Evidence basis | Classification |
 |---|---|---|---|
-| G0 concrete state: `deviceTokenCandidate = present` | `deviceTokenCandidate = NOT RECORDED` | R1 records `sharedAuthProvided=True`, `sharedAuthOk=True`, `hasDeviceIdentity=False`, and `hasDeviceTokenCandidate=False`; no concrete candidate field is archived. | NOT RECORDED |
+| G0 concrete state: `deviceTokenCandidate = present` | `deviceTokenCandidate = NOT RECORDED` | R1 records `sharedAuthProvided=True`, `sharedAuthOk=True`, and `hasDeviceIdentity=False`. It does not record `hasDeviceTokenCandidate` or a concrete `deviceTokenCandidate` value. | NOT RECORDED |
 | G0 preserved state: `state.deviceTokenCandidate = present` | `state.deviceTokenCandidate = NOT RECORDED` | Same R1 G0 evidence; source may preserve a branch input, but R1 does not record a concrete candidate. | NOT RECORDED |
 | G2 input: `deviceTokenCandidate = present` | `deviceTokenCandidate = NOT RECORDED` | R1 G2 records role `operator`, scope `operator.write`, and `result=pass`, but not a concrete device-token candidate. | NOT RECORDED |
 | G2 registration: `R1: isDeviceTokenAuth = True` | `R1: isDeviceTokenAuth = False` | Source-derived from shared-token path and not-reached device-token fallback; no direct R1 event records this boolean. | SOURCE-DERIVED |
@@ -88,6 +90,34 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 | Framework diagram: `ACK: 0.219 ms` | `ACK: NOT RECORDED` | R1 metadata does not archive the numeric ACK timing. | NOT RECORDED |
 | Framework diagram: `title sync: 6655.825 ms` | `title sync: NOT RECORDED` | R1 metadata does not archive the numeric title-sync timing. | NOT RECORDED |
 | Runtime diagram and settings: `available tools: 33` / `availableTools = 33` | `available tools: NOT RECORDED`; tools invoked in R1 = `0` | R1 records no tool invocations (`tools=none`, `toolCount=0`), but not an available-tool inventory count. | NOT RECORDED for inventory; RUNTIME for invoked-tool count |
+
+## Appendix Value Verification
+
+| Verification result | Count |
+|---|---:|
+| MATCH | 230 |
+| MISMATCH_FIXED | 5 |
+| NOT_RECORDED | 58 |
+| SOURCE_DERIVED | 4 |
+| AUDIT_DERIVED | 0 |
+
+Verification artifacts:
+
+- `artifacts/controlled/appendix-value-verification.csv`
+- `artifacts/controlled/r1-coverage-verification.csv`
+- `artifacts/controlled/appendix-value-verification-summary.md`
+
+Important field separations:
+
+- `deviceTokenCandidate`, `hasDeviceTokenCandidate`, `hasDeviceIdentity`, and
+  `isDeviceTokenAuth` are treated as separate fields. R1 records
+  `hasDeviceIdentity=False`; it does not record `hasDeviceTokenCandidate` or a
+  concrete `deviceTokenCandidate`.
+- Raw R1 Agent Runtime events record an AR-layer `sessionId`, but G7
+  `entry.sessionId` is not recorded as a Gateway-stage runtime field. The
+  appendix keeps G7 `entry.sessionId` as `NOT RECORDED`.
+- R1 records invoked tools as `0`; it does not record an available-tool
+  inventory count.
 
 ## Privacy
 

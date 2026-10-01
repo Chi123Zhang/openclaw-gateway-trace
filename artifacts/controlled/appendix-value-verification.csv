@@ -1,0 +1,338 @@
+line,stage,field,appendix value,evidence class,exact evidence artifact,exact field/event path,verification result,notes
+,meta,prompt,How to make a cake?,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.prompt,MATCH,
+,meta,response,"Here’s a simple vanilla cake you can make without anything fancy.
+
+**Ingredients**
+- 1 1/2 cups all-purpose flour
+- 1 cup sugar
+- 1 1/2 tsp baking powder
+- 1/2 tsp salt
+- 1/2 cup unsalted butter, softened
+- 2 large eggs
+- 1/2 cup milk
+- 2 tsp vanilla extract
+
+**Steps**
+1. Heat oven to **350°F / 175°C**. Grease an 8-inch round pan or loaf pan.
+2. Mix flour, sugar, baking powder, and salt in a bowl.
+3. Add butter, eggs, milk, and vanilla. Beat until smooth, about 1-2 minutes.
+4. Pour into the pan and smooth the top.
+5. Bake **30-35 minutes**, until a toothpick inserted in the center comes out clean.
+6. Cool for 10 minutes in the pan, then turn out and cool fully.
+
+For a quick frosting, beat **1/2 cup softened butter + 1 1/2 cups powdered sugar + 1 tsp vanilla + 1-2 tbsp milk** until fluffy.",RUNTIME,data/cases/latest-live.js@a68e6d7,meta.response,MATCH,
+,meta,rawSessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.rawSessionKey,MATCH,
+,meta,canonicalSessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.canonicalSessionKey,MATCH,
+,meta,sessionId,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,meta.sessionId,NOT_RECORDED,
+,meta,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.runId,MATCH,
+,meta,agent,main,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.agent,MATCH,
+,meta,sendPolicy,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.sendPolicy,MATCH,
+,meta,dedupeDecision,new_dispatch,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.dedupeDecision,MATCH,
+,meta,admissionDecision,admitted,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.admissionDecision,MATCH,
+,meta,resolver,getReplyFromConfig,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.resolver,MATCH,
+,meta,resolverSource,default_getReplyFromConfig,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.resolverSource,MATCH,
+,meta,provider,openai,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.provider,MATCH,
+,meta,model,gpt-5.5,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.model,MATCH,
+,meta,tools,none,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.tools,MATCH,
+,meta,ack,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,meta.ack,NOT_RECORDED,
+,meta,titleSync,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,meta.titleSync,NOT_RECORDED,
+,meta,runner,embedded,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.runner,MATCH,
+,meta,startedAt,2026-09-30T17:05:15.517938+00:00,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.startedAt,MATCH,
+,meta,savedAt,2026-09-30T17:05:29.708531+00:00,RUNTIME,data/cases/latest-live.js@a68e6d7,meta.savedAt,MATCH,
+,G0,stage result/branch,authorized,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.result,MATCH,
+,G0,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeObserved,MATCH,
+,G0,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.scope,MATCH,
+,G0,authMode,token,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.authMode,MATCH,
+,G0,authMethod,token,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.authMethod,MATCH,
+,G0,authOk,True,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.authOk,MATCH,
+,G0,sharedAuthOk,True,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.sharedAuthOk,MATCH,
+,G0,sharedAuthProvided,True,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.sharedAuthProvided,MATCH,
+,G0,hasDeviceIdentity,False,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.hasDeviceIdentity,MATCH,
+,G0,result,authorized,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[-1].fields.result,MATCH,
+,G1,stage result/branch,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.result,MATCH,
+,G1,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.runtimeObserved,MATCH,
+,G1,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.runtimeEvents[-1].fields.scope,MATCH,
+,G1,authMode,token,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.runtimeEvents[-1].fields.authMode,MATCH,
+,G1,authMethod,token,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.runtimeEvents[-1].fields.authMethod,MATCH,
+,G1,sharedAuthProvided,True,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.runtimeEvents[-1].fields.sharedAuthProvided,MATCH,
+,G1,sharedAuthOk,True,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.runtimeEvents[-1].fields.sharedAuthOk,MATCH,
+,G1,result,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G1.runtimeEvents[-1].fields.result,MATCH,
+,G2,stage result/branch,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.result,MATCH,
+,G2,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.runtimeObserved,MATCH,
+,G2,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.runtimeEvents[-1].fields.scope,MATCH,
+,G2,authMode,token,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.runtimeEvents[-1].fields.authMode,MATCH,
+,G2,authMethod,token,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.runtimeEvents[-1].fields.authMethod,MATCH,
+,G2,role,operator,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.runtimeEvents[-1].fields.role,MATCH,
+,G2,scopes,"[""operator.write""]",RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.runtimeEvents[-1].fields.scopes,MATCH,
+,G2,result,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G2.runtimeEvents[-1].fields.result,MATCH,
+,G3,stage result/branch,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G3.result,MATCH,
+,G3,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G3.runtimeObserved,MATCH,
+,G3,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G3.runtimeEvents[-1].fields.scope,MATCH,
+,G3,method,chat.send,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G3.runtimeEvents[-1].fields.method,MATCH,
+,G3,role,operator,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G3.runtimeEvents[-1].fields.role,MATCH,
+,G3,scopes,"[""operator.write""]",RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G3.runtimeEvents[-1].fields.scopes,MATCH,
+,G3,result,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G3.runtimeEvents[-1].fields.result,MATCH,
+,G4,stage result/branch,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.result,MATCH,
+,G4,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeObserved,MATCH,
+,G4,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeEvents[-1].fields.scope,MATCH,
+,G4,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeEvents[-1].fields.runId,MATCH,
+,G4,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G4,method,chat.send,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeEvents[-1].fields.method,MATCH,
+,G4,hasPrivilegedFields,False,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeEvents[-1].fields.hasPrivilegedFields,MATCH,
+,G4,hasExplicitOrigin,False,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeEvents[-1].fields.hasExplicitOrigin,MATCH,
+,G4,result,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G4.runtimeEvents[-1].fields.result,MATCH,
+,G5,stage result/branch,unchanged,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.result,MATCH,
+,G5,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeObserved,MATCH,
+,G5,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeEvents[-1].fields.scope,MATCH,
+,G5,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeEvents[-1].fields.runId,MATCH,
+,G5,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G5,messageLength,19,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeEvents[-1].fields.messageLength,MATCH,
+,G5,attachmentCount,0,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeEvents[-1].fields.attachmentCount,MATCH,
+,G5,messageChangedBySanitization,False,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeEvents[-1].fields.messageChangedBySanitization,MATCH,
+,G5,result,unchanged,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G5.runtimeEvents[-1].fields.result,MATCH,
+,G6,stage result/branch,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G6.result,MATCH,
+,G6,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G6.runtimeObserved,MATCH,
+,G6,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G6.runtimeEvents[-1].fields.scope,MATCH,
+,G6,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G6.runtimeEvents[-1].fields.runId,MATCH,
+,G6,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G6.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G6,result,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G6.runtimeEvents[-1].fields.result,MATCH,
+,G7,stage result/branch,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.result,MATCH,
+,G7,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.runtimeObserved,MATCH,
+,G7,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.runtimeEvents[-1].fields.scope,MATCH,
+,G7,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.runtimeEvents[-1].fields.runId,MATCH,
+,G7,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G7,rawSessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.runtimeEvents[-1].fields.rawSessionKey,MATCH,
+,G7,canonicalSessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.runtimeEvents[-1].fields.canonicalSessionKey,MATCH,
+,G7,result,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G7.runtimeEvents[-1].fields.result,MATCH,
+,G8,stage result/branch,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G8.result,MATCH,
+,G8,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G8.runtimeObserved,MATCH,
+,G8,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G8.runtimeEvents[-1].fields.scope,MATCH,
+,G8,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G8.runtimeEvents[-1].fields.runId,MATCH,
+,G8,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G8.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G8,result,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G8.runtimeEvents[-1].fields.result,MATCH,
+,G9,stage result/branch,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G9.result,MATCH,
+,G9,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G9.runtimeObserved,MATCH,
+,G9,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G9.runtimeEvents[-1].fields.scope,MATCH,
+,G9,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G9.runtimeEvents[-1].fields.runId,MATCH,
+,G9,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G9.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G9,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G9.runtimeEvents[-1].fields.agentId,MATCH,
+,G9,result,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G9.runtimeEvents[-1].fields.result,MATCH,
+,G10,stage result/branch,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.result,MATCH,
+,G10,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.runtimeObserved,MATCH,
+,G10,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.runtimeEvents[-1].fields.scope,MATCH,
+,G10,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.runtimeEvents[-1].fields.runId,MATCH,
+,G10,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G10,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.runtimeEvents[-1].fields.agentId,MATCH,
+,G10,sendPolicy,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.runtimeEvents[-1].fields.sendPolicy,MATCH,
+,G10,result,allow,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G10.runtimeEvents[-1].fields.result,MATCH,
+,G11,stage result/branch,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.result,MATCH,
+,G11,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.runtimeObserved,MATCH,
+,G11,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.runtimeEvents[-1].fields.scope,MATCH,
+,G11,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.runtimeEvents[-1].fields.runId,MATCH,
+,G11,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G11,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.runtimeEvents[-1].fields.agentId,MATCH,
+,G11,dedupeDecision,new_dispatch,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.runtimeEvents[-1].fields.dedupeDecision,MATCH,
+,G11,result,pass,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G11.runtimeEvents[-1].fields.result,MATCH,
+,G12,stage result/branch,admitted,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.result,MATCH,
+,G12,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeObserved,MATCH,
+,G12,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.scope,MATCH,
+,G12,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.runId,MATCH,
+,G12,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G12,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.agentId,MATCH,
+,G12,attemptId,112e48dc-0f62-411e-9b36-de23976815ee,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.attemptId,MATCH,
+,G12,admissionDecision,admitted,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.admissionDecision,MATCH,
+,G12,latestSessionRevalidated,True,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.latestSessionRevalidated,MATCH,
+,G12,result,admitted,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G12.runtimeEvents[-1].fields.result,MATCH,
+,G13,stage result/branch,constructed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.result,MATCH,
+,G13,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeObserved,MATCH,
+,G13,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.scope,MATCH,
+,G13,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.runId,MATCH,
+,G13,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G13,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.agentId,MATCH,
+,G13,body,How to make a cake?,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.body,MATCH,
+,G13,chatType,direct,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.chatType,MATCH,
+,G13,messageSid,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.messageSid,MATCH,
+,G13,hasMedia,False,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.hasMedia,MATCH,
+,G13,result,constructed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G13.runtimeEvents[-1].fields.result,MATCH,
+,G14,stage result/branch,entered,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G14.result,MATCH,
+,G14,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G14.runtimeObserved,MATCH,
+,G14,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G14.runtimeEvents[-1].fields.scope,MATCH,
+,G14,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G14.runtimeEvents[-1].fields.runId,MATCH,
+,G14,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G14.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G14,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G14.runtimeEvents[-1].fields.agentId,MATCH,
+,G14,result,entered,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G14.runtimeEvents[-1].fields.result,MATCH,
+,G15,stage result/branch,finalized,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.result,MATCH,
+,G15,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeObserved,MATCH,
+,G15,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeEvents[-1].fields.scope,MATCH,
+,G15,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeEvents[-1].fields.runId,MATCH,
+,G15,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G15,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeEvents[-1].fields.agentId,MATCH,
+,G15,body,How to make a cake?,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeEvents[-1].fields.body,MATCH,
+,G15,chatType,direct,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeEvents[-1].fields.chatType,MATCH,
+,G15,result,finalized,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G15.runtimeEvents[-1].fields.result,MATCH,
+,G16,stage result/branch,normal_path,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G16.result,MATCH,
+,G16,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G16.runtimeObserved,MATCH,
+,G16,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G16.runtimeEvents[-1].fields.scope,MATCH,
+,G16,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G16.runtimeEvents[-1].fields.runId,MATCH,
+,G16,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G16.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G16,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G16.runtimeEvents[-1].fields.agentId,MATCH,
+,G16,result,entered,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G16.runtimeEvents[-1].fields.result,MATCH,
+,G17,stage result/branch,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.result,MATCH,
+,G17,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.runtimeObserved,MATCH,
+,G17,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.runtimeEvents[-1].fields.scope,MATCH,
+,G17,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.runtimeEvents[-1].fields.runId,MATCH,
+,G17,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G17,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.runtimeEvents[-1].fields.agentId,MATCH,
+,G17,downstreamAgentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.runtimeEvents[-1].fields.downstreamAgentId,MATCH,
+,G17,result,resolved,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G17.runtimeEvents[-1].fields.result,MATCH,
+,G18,stage result/branch,selected,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.result,MATCH,
+,G18,observation status,Observed,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeObserved,MATCH,
+,G18,scope,gateway-runtime,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeEvents[-1].fields.scope,MATCH,
+,G18,runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeEvents[-1].fields.runId,MATCH,
+,G18,sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeEvents[-1].fields.sessionKey,MATCH,
+,G18,agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeEvents[-1].fields.agentId,MATCH,
+,G18,resolverSource,default_getReplyFromConfig,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeEvents[-1].fields.resolverSource,MATCH,
+,G18,resolver,getReplyFromConfig,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeEvents[-1].fields.resolver,MATCH,
+,G18,result,selected,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G18.runtimeEvents[-1].fields.result,MATCH,
+,AR,observed,True,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.observed,MATCH,
+,AR,status,completed,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.status,MATCH,
+,AR,finalAgent,main,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.finalAgent,MATCH,
+,AR,resolver,getReplyFromConfig,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.resolver,MATCH,
+,AR,resolverSource,default_getReplyFromConfig,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.resolverSource,MATCH,
+,AR,runner,embedded,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.runner,MATCH,
+,AR,provider,openai,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.provider,MATCH,
+,AR,model,gpt-5.5,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.model,MATCH,
+,AR,toolCount,0,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.toolCount,MATCH,
+,AR,tools,[],RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.tools,MATCH,
+,AR,toolCalled,False,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.toolCalled,MATCH,
+,AR,finalReply,"Here’s a simple vanilla cake you can make without anything fancy.
+
+**Ingredients**
+- 1 1/2 cups all-purpose flour
+- 1 cup sugar
+- 1 1/2 tsp baking powder
+- 1/2 tsp salt
+- 1/2 cup unsalted butter, softened
+- 2 large eggs
+- 1/2 cup milk
+- 2 tsp vanilla extract
+
+**Steps**
+1. Heat oven to **350°F / 175°C**. Grease an 8-inch round pan or loaf pan.
+2. Mix flour, sugar, baking powder, and salt in a bowl.
+3. Add butter, eggs, milk, and vanilla. Beat until smooth, about 1-2 minutes.
+4. Pour into the pan and smooth the top.
+5. Bake **30-35 minutes**, until a toothpick inserted in the center comes out clean.
+6. Cool for 10 minutes in the pan, then turn out and cool fully.
+
+For a quick frosting, beat **1/2 cup softened butter + 1 1/2 cups powdered sugar + 1 tsp vanilla + 1-2 tbsp milk** until fluffy.",RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.finalReply,MATCH,
+,AR,stopReason,stop,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.stopReason,MATCH,
+,AR,replyResultKind,single,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.replyResultKind,MATCH,
+,AR,replyCount,1,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.replyCount,MATCH,
+,AR,agentRuntime.events[0].event,agent_runtime_selected,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[0].event,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[0].runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[0].runId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[0].sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[0].sessionKey,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[0].agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[0].agentId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[0].provider,openai,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[0].provider,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[0].model,gpt-5.5,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[0].model,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[1].event,agent_run_started,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[1].event,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[1].runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[1].runId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[1].sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[1].sessionKey,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[1].sessionId,97cfbfa1-84e1-48e8-9279-f17b323064f2,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[1].sessionId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[1].agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[1].agentId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[2].event,agent_reply_finalized,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[2].event,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[2].runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[2].runId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[2].sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[2].sessionKey,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[2].agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[2].agentId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[2].provider,openai,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[2].provider,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[2].model,gpt-5.5,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[2].model,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[2].stopReason,stop,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[2].stopReason,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[3].event,agent_run_ended,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[3].event,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[3].runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[3].runId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[3].sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[3].sessionKey,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[3].sessionId,97cfbfa1-84e1-48e8-9279-f17b323064f2,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[3].sessionId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[3].agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[3].agentId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[3].stopReason,stop,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[3].stopReason,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[4].event,reply_resolver_returned,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[4].event,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[4].runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[4].runId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[4].sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[4].sessionKey,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[4].agentId,main,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[4].agentId,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[4].replyResultKind,single,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[4].replyResultKind,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,AR,agentRuntime.events[4].replyCount,1,RUNTIME,data/cases/latest-live.js@a68e6d7,agentRuntime.events[4].replyCount,MATCH,AR sessionId is runtime-recorded here but is not treated as Gateway G7 entry.sessionId.
+,controlled,controlled R1 cov,19/19,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].cov,MATCH,
+,controlled,controlled R1 obs,19/19,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].obs,MATCH,
+,controlled,controlled R1 toolCount,0,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].toolCount,MATCH,
+,controlled,controlled R1 tools,none,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].tools,MATCH,
+,controlled,controlled R1 sessionId,NOT RECORDED,NOT_RECORDED,artifacts/controlled/controlled-runs.json,runs[label=R1].sessionId,NOT_RECORDED,
+,controlled,controlled R1 runId,8d07c88e-188f-4347-9f9a-7fc90412c604,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].runId,MATCH,
+,controlled,controlled R1 sessionKey,agent:main:dashboard:trace-82fbff4483c4,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].sessionKey,MATCH,
+,controlled,controlled R1 agent,main,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].agent,MATCH,
+,controlled,controlled R1 provider,openai,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].provider,MATCH,
+,controlled,controlled R1 model,gpt-5.5,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].model,MATCH,
+,controlled,controlled R1 resolverSource,default_getReplyFromConfig,RUNTIME,artifacts/controlled/controlled-runs.json,runs[label=R1].resolverSource,MATCH,
+,G0/G2,deviceTokenCandidate,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,searched stages.G0-G18.runtimeEvents[*].fields; field absent,NOT_RECORDED,
+,G0/G2,hasDeviceTokenCandidate,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,searched stages.G0-G18.runtimeEvents[*].fields; field absent,NOT_RECORDED,
+,G0/G2,isDeviceTokenAuth,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,searched stages.G0-G18.runtimeEvents[*].fields; field absent,NOT_RECORDED,
+,G0,hasDeviceIdentity,False,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[0].fields.hasDeviceIdentity,MATCH,
+,G0,hasDeviceIdentity,False,RUNTIME,data/cases/latest-live.js@a68e6d7,stages.G0.runtimeEvents[1].fields.hasDeviceIdentity,MATCH,
+67,frontmatter,\seqsplit{NOT RECORDED} &,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+365,G0,\py{R1: device\_token\_candidate = NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+367,G0,\py{R1: device\_token\_candidate = NOT RECORDED} | \src{NOT RECORDED: no R1 runtime field stores the concrete candidate},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+662,G0,\py{device\_token\_candidate = NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+664,G0,\py{device\_token\_candidate = NOT RECORDED} | \src{NOT RECORDED: no R1 runtime field stores the concrete candidate},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+728,G0,\py{hasDeviceTokenCandidate = NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+730,G0,\src{NOT RECORDED: absent from R1 runtime event fields},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+733,G0,\src{NOT RECORDED: absent from R1 runtime event fields} | \py{deviceTokenCandidateSource = NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+1023,G0,\texttt{deviceTokenCandidate = none}\\ | \texttt{explicit device token is not present}\\ | \texttt{deviceTokenCandidateSource = NOT RECORDED}\\,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+1088,G0,\texttt{deviceTokenCandidate = NOT RECORDED}\\,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+1089,G0,\texttt{deviceTokenCandidate = NOT RECORDED}\\ | \texttt{deviceTokenCandidateSource = NOT RECORDED}\\[3mm],NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+1793,G1,\py{R1: auth\_result.reason = NOT RECORDED / no denial reason},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+2431,G2,\py{state.deviceTokenCandidate = NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+2433,G2,\py{state.deviceTokenCandidate = NOT RECORDED} | \src{NOT RECORDED: no concrete candidate field archived},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+2436,G2,\src{NOT RECORDED: no concrete candidate field archived} | \py{state.deviceTokenCandidateSource = NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+2833,G2,\py{R1: device-token issuer generation = NOT RECORDED / not applicable},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+3383,G2,\texttt{deviceTokenCandidate = NOT RECORDED}\\[3mm],NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+3401,G2,\texttt{deviceId = NOT RECORDED / not needed}\\,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+3425,G2,\texttt{tokenCheck.ok = NOT RECORDED / NOT APPLICABLE}\\,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+4474,G4,\texttt{sessionId} is optional in the RPC schema and is conditionally | \texttt{NOT RECORDED} is known from the runtime,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+5894,G7,\src{DERIVED: session-utils.ts:1542--1592} | \py{R1: store_path = NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+5896,G7,\py{R1: store_path = NOT RECORDED} | \src{NOT RECORDED in R1 trace; source computes target.storePath},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+5914,G7,"\src{entry returned at session-utils.ts:1064} | \py{R1: session_id = ""NOT RECORDED""}",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+5929,G7,"\src{session-utils.ts:1059,1067} | \py{R1: session_load_ms = NOT RECORDED}",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+5931,G7,\py{R1: session_load_ms = NOT RECORDED} | \src{NOT RECORDED in R1 trace; timing source exists in code},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+5952,G7,"Session resolves to the \texttt{main} Agent store, the canonical key is | \texttt{NOT RECORDED}, and the measured",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+5953,G7,"Session resolves to the \texttt{main} Agent store, the canonical key is | Session-load duration is \texttt{NOT RECORDED}.",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6122,G7,\texttt{store\_path =}\\ | \texttt{NOT RECORDED}\\[2mm],NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6125,G7,"\texttt{entry.sessionId =}\\ | \texttt{""NOT RECORDED""}\\[2mm]",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6130,G7,\texttt{session\_load\_ms}\\ | \quad\texttt{= NOT RECORDED},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6184,G7,"\texttt{store\_path =}\\ | \texttt{""NOT RECORDED""}\\[3mm]",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6196,G7,"\texttt{entry.sessionId =}\\ | \texttt{""NOT RECORDED""}\\[3mm]",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6218,G7,\texttt{session\_load\_ms = NOT RECORDED}\\[3mm],NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6513,G8,\py{R1: entry.sessionId =} | \src{NOT RECORDED in R1 trace; persistent entry existence observed},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6516,G8,"\pyI{""NOT RECORDED""}",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6518,G8,\src{NOT RECORDED in R1 trace},NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6526,G8,"\src{DERIVED: chat.ts:3849 + G7 entry.sessionId} | \pyI{""NOT RECORDED""}",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6712,G8,"\texttt{entry.sessionId =}\\ | \texttt{""NOT RECORDED}\\",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6738,G8,"\texttt{backing\_session\_id =}\\ | \texttt{""NOT RECORDED""}\\[3mm]",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6804,G8,"\texttt{backing\_session\_id =}\\ | \texttt{entry exists -> entry.sessionId is selected}\\ | \texttt{""NOT RECORDED""}\\[3mm]",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+6866,G8,\texttt{NOT RECORDED}. Since the source at,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+9149,G12,"\pyI{""NOT RECORDED""}",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+9398,G12,"\texttt{""NOT RECORDED}\\",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+9402,G12,\texttt{storePath =}\\ | \texttt{NOT RECORDED}\\[3mm],NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+9422,G12,"\texttt{""NOT RECORDED}\\",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+9501,G12,"\texttt{sessionId = ""NOT RECORDED""}\\[3mm]",NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+14559,G18,|   media / ACK / title / transcript   | | |   ACK: NOT RECORDED                  |,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+14560,G18,|   ACK: NOT RECORDED                  | | |   media / ACK / title / transcript   | | |   title sync: NOT RECORDED           |,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+14603,G18,| available tools: NOT RECORDED |,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+15031,settings,\seqsplit{NOT RECORDED} &,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+15063,settings,\texttt{availableTools} & | Model value observed in the dispatch trace. \\ | \texttt{NOT RECORDED} &,NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7; artifacts/controlled/controlled-runs.json,searched exact R1 trace meta/stages/runtimeEvents/agentRuntime and generated controlled summary,NOT_RECORDED,
+,G2,device-token fallback not reached,not reached,SOURCE-DERIVED,upstream OpenClaw source anchors in artifacts/controlled/source-anchor-audit-r1.csv,G2 source: auth succeeds or hasDeviceIdentity false -> device-token verification not reached,SOURCE_DERIVED,
+,G2,isDeviceTokenAuth,False,SOURCE-DERIVED,upstream OpenClaw source anchors in artifacts/controlled/source-anchor-audit-r1.csv,message-handler authenticated client registration; inferred from shared-token path and not-reached device-token fallback,SOURCE_DERIVED,
+,G3,admin shortcut,not taken,SOURCE-DERIVED,upstream OpenClaw source anchors in artifacts/controlled/source-anchor-audit-r1.csv,server-methods.ts admin shortcut branch; R1 scopes=[operator.write],SOURCE_DERIVED,
+,G3,operator.write authorization,allow,RUNTIME + SOURCE-DERIVED,data/cases/latest-live.js@a68e6d7; upstream OpenClaw source anchors in artifacts/controlled/source-anchor-audit-r1.csv,stages.G3.runtimeEvents[0].fields.scopes + source core-descriptors operator.write,MATCH,
+,G7,legacyKey,None,SOURCE-DERIVED,upstream OpenClaw source anchors in artifacts/controlled/source-anchor-audit-r1.csv,session-utils source path; no runtime field records legacyKey,SOURCE_DERIVED,
+367,G0,device_token_candidate exists / hasDeviceTokenCandidate,changed from False/RUNTIME to NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,searched stages.G0-G18.runtimeEvents[*].fields; hasDeviceTokenCandidate absent,MISMATCH_FIXED,Corrected stale claim that R1 runtime records hasDeviceTokenCandidate=False.
+664,G0,device_token_candidate,changed from None/RUNTIME to NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,searched stages.G0-G18.runtimeEvents[*].fields; concrete deviceTokenCandidate absent,MISMATCH_FIXED,Concrete candidate value is not archived in R1 trace.
+728,G0,hasDeviceTokenCandidate,changed from False/RUNTIME to NOT RECORDED,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,searched stages.G0-G18.runtimeEvents[*].fields; hasDeviceTokenCandidate absent,MISMATCH_FIXED,Field name is not interchangeable with hasDeviceIdentity.
+2433,G2,state.deviceTokenCandidate evidence basis,changed from hasDeviceTokenCandidate=False to no concrete candidate archived,NOT_RECORDED,data/cases/latest-live.js@a68e6d7,searched stages.G0-G18.runtimeEvents[*].fields; hasDeviceTokenCandidate and deviceTokenCandidate absent,MISMATCH_FIXED,Fallback not reached remains source-derived from shared-auth success and upstream source.
+claim-check,artifact,claim-check hasDeviceTokenCandidate statement,changed from R1 records hasDeviceTokenCandidate=False to field absent,NOT_RECORDED,artifacts/controlled/claim-check.md; data/cases/latest-live.js@a68e6d7,claim-check Post-restoration Stale-value Cleanup; raw trace runtimeEvents searched,MISMATCH_FIXED,Corrected report/claim-check statement required by task section 3.

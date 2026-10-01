@@ -1,0 +1,20 @@
+stage,source anchor present?,at least one concrete case value present?,coverage contribution,observation status,evidence path
+G0,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G0
+G1,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G1
+G2,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G2
+G3,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G3
+G4,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G4
+G5,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G5
+G6,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G6
+G7,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G7
+G8,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G8
+G9,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G9
+G10,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G10
+G11,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G11
+G12,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G12
+G13,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G13
+G14,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G14
+G15,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G15
+G16,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G16
+G17,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G17
+G18,yes,yes,1,Observed,data/cases/latest-live.js@a68e6d7:stages.G18

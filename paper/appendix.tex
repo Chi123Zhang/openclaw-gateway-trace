@@ -362,9 +362,9 @@ fallback is not reached.
 \src{auth-context.ts:111--124}
 \\[2mm]
 
-\py{R1: device\_token\_candidate exists = False}
+\py{R1: device\_token\_candidate = NOT RECORDED}
 &
-\src{RUNTIME: hasDeviceTokenCandidate=False}
+\src{NOT RECORDED: no R1 runtime field stores the concrete candidate}
 \\
 
 \py{R1: device\_token\_source = None}
@@ -659,9 +659,9 @@ fallback is not reached.
 \src{RUNTIME: hasBootstrapTokenCandidate=False}
 \\
 
-\py{device\_token\_candidate = None}
+\py{device\_token\_candidate = NOT RECORDED}
 &
-\src{RUNTIME: hasDeviceTokenCandidate=False}
+\src{NOT RECORDED: no R1 runtime field stores the concrete candidate}
 \\
 
 \py{device\_token\_source = None}
@@ -725,9 +725,9 @@ fallback is not reached.
 \src{RUNTIME}
 \\
 
-\py{hasDeviceTokenCandidate = False}
+\py{hasDeviceTokenCandidate = NOT RECORDED}
 &
-\src{RUNTIME}
+\src{NOT RECORDED: absent from R1 runtime event fields}
 \\
 
 \py{deviceTokenCandidateSource = NOT RECORDED}
@@ -2430,7 +2430,7 @@ TraceClaw records \texttt{result = "pass"}.
 
 \py{state.deviceTokenCandidate = NOT RECORDED}
 &
-\src{G0: hasDeviceTokenCandidate=False; no concrete candidate recorded}
+\src{NOT RECORDED: no concrete candidate field archived}
 \\
 
 \py{state.deviceTokenCandidateSource = NOT RECORDED}

@@ -114,6 +114,51 @@ Evidence basis:
 The detailed cleanup table is recorded in
 `artifacts/controlled/claim-check.md`.
 
+## Evidence-verification Pass
+
+Saved evidence was checked in this order: raw R1 trace
+`data/cases/latest-live.js@a68e6d7`, generated controlled evidence in
+`artifacts/controlled/controlled-runs.json`, other saved R1 runtime/native
+fields, audit/provenance artifacts, and finally upstream source for
+source-derived claims.
+
+Generated verification artifacts:
+
+- `artifacts/controlled/appendix-value-verification.csv`
+- `artifacts/controlled/r1-coverage-verification.csv`
+- `artifacts/controlled/appendix-value-verification-summary.md`
+
+Verification counts:
+
+- MATCH: 230
+- MISMATCH_FIXED: 5
+- NOT_RECORDED: 58
+- SOURCE_DERIVED: 4
+- AUDIT_DERIVED: 0
+
+Corrections made during this pass:
+
+- Removed claims that R1 runtime records `hasDeviceTokenCandidate=False`; raw R1
+  runtime events do not contain that field.
+- Kept `deviceTokenCandidate` as `NOT RECORDED`.
+- Kept device-token fallback as not reached only where supported by observed
+  shared-auth success plus upstream source.
+- Kept Gateway G7 `entry.sessionId`, `session_load_ms`, and `storePath` as
+  `NOT RECORDED`.
+- Distinguished the AR-layer `sessionId` recorded in Agent Runtime events from
+  the Gateway G7 `entry.sessionId`; it is not used to fill G7.
+- Kept available-tool inventory as `NOT RECORDED`, while retaining the
+  runtime-observed invoked-tool count `0`.
+
+Coverage recomputation from the final per-stage ledger:
+
+- R1 cov: 19/19
+- R1 obs: 19/19
+
+The NOT RECORDED subfields do not reduce R1 coverage because each G0--G18 stage
+still has a source anchor and at least one concrete case value. Coverage is
+stage-level, not a count of every internal predicate or returned field.
+
 ## Main Paper References
 
 `paper/main.tex` refers to the supplementary appendix as the home of the
@@ -127,6 +172,8 @@ Passed:
 
 - `python3 scripts/validate_repeated_weather_runs.py`
 - `python3 -m json.tool artifacts/controlled/controlled-runs.json`
+- generated and parsed `artifacts/controlled/appendix-value-verification.csv`
+- generated and parsed `artifacts/controlled/r1-coverage-verification.csv`
 - CSV parse check for:
   - `artifacts/controlled/controlled-runs.csv`
   - `artifacts/controlled/stage-matrix.csv`
@@ -185,6 +232,7 @@ No invalid hits remain for:
 - `authMethod = "device-token"` as an R1 value
 - `device_token_candidate = present`
 - `hasDeviceTokenCandidate=True`
+- runtime claims that `hasDeviceTokenCandidate=False` is recorded by R1
 - `explicit device token is present`
 
 Remaining `device-token`, `operator.admin`, and `admin shortcut` source hits are
