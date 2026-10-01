@@ -43,13 +43,15 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 
 | Appendix statement | Artifact / source | Status |
 |---|---|---|
-| The appendix contains a detailed R1 G0--G18 source audit. | `paper/appendix.tex`, label `app:detailed-gateway-audit`. | Restored. All stages G0--G18 appear in `tab:app-detailed-gateway-audit`. |
+| The full appendix was restored from the pre-revision long appendix rather than kept as a short summary. | `paper/appendix.tex`; `artifacts/full-appendix-restoration-report.md`; comparison with `24aba06^:paper/appendix.tex`. | Supported; restored appendix is approximately the same line count as the old detailed appendix. |
+| The appendix contains a detailed R1 G0--G18 source audit. | `paper/appendix.tex`, section label `app:gateway-source-trace`. | Restored. All stages G0--G18 appear as detailed subsections. |
 | R1 G0--G3 use shared-token auth, role `operator`, scope `operator.write`, and ordinary `chat.send` authorization. | `artifacts/controlled/controlled-runs.json`, R1 stage rows G0--G3. | Supported. |
 | R1 does not take the device-token fallback path. | R1 G0/G2 values: `hasDeviceIdentity=False`, `authMethod=token`, `sharedAuthOk=True`, `role=operator`, `scopes=["operator.write"]`. | Supported for R1. Historical Cake2 is explicitly separate. |
 | G3 source claim is limited to admin shortcut versus required `operator.write`. | `artifacts/controlled/source-anchor-audit-r1.csv`, G3 rows; upstream `server-methods.ts:262-299`, `core-descriptors.ts:231`, `method-scopes.ts:257-274`. | Supported. No causal claim that auth method alone determines scope. |
 | Corrected G14/G16/G17/G18 anchors use upstream 0790d9f line ranges, not the old conflicting ranges. | `artifacts/controlled/source-anchor-audit-r1.csv`, G14--G18 and post-G18 rows; original priority audit in `artifacts/audit/anchor-content-audit.csv` from the source audit checkout. | Supported. |
 | R1 has at least one `not recorded` or equivalent gap in multiple stages. | `paper/appendix.tex`, detailed audit gap fields. | Supported; gaps include raw tokens, complete config/session objects, full dispatch results, full `replyResult`, and full lock/cache state. |
 | AR6 is not directly observed as a full Gateway resume. | `artifacts/controlled/controlled-runs.json`, `agentRuntime[].arStage.AR6`; `paper/appendix.tex`, AR table. | Supported as `SourceDerived` for R1--R7. |
+| Historical Cake2 and Weather traces are not used for current quantitative claims. | `paper/appendix.tex`, "Historical Trace Notes"; `paper/main.tex`, Experiments and Limitations. | Supported; both are described as artifact-only context. |
 
 ## R3 Side-Effect Evidence
 
