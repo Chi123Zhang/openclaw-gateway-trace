@@ -52,12 +52,12 @@ G3 & \texttt{chat.send} allowed by \texttt{operator.write} & \texttt{auth\_reaso
 G4 & RPC envelope validates & full raw WebSocket frame and all pre-validation fields are not archived \\
 G5 & message/session fields normalize & intermediate sanitizer object is not emitted in full \\
 G6 & requested Agent resolves to \texttt{main} & absence of every alternate override source is partly source-derived \\
-G7 & Session resolves & persistent store path, loaded entry identity, and timing details are incomplete \\
+G7 & Session key resolves & persistent store path, loaded entry object, \texttt{entry.sessionId}, and timing details are not emitted \\
 G8 & Agent/Session validation passes & full validation object and backing Session identity are not emitted \\
 G9 & effective Agent is \texttt{main} & fallback candidate chain is not emitted in full \\
 G10 & send policy allows the turn & exact allow sub-branch and rule rationale are not emitted \\
 G11 & duplicate-run check creates a new dispatch & internal lock/cache state is not emitted \\
-G12 & work is admitted & admission internals and complete Session store state are not emitted \\
+G12 & work is admitted & admission internals, latest Session details, and concrete admitted Session identity are not emitted \\
 G13 & message context is built & full constructed context object is not emitted \\
 G14 & auto-reply dispatch is entered & complete dispatch return payload is not emitted \\
 G15 & runtime context is finalized & full finalized context object is not emitted \\
@@ -66,6 +66,11 @@ G17 & Agent re-check passes & fallback attempt chain is not emitted in full \\
 G18 & default resolver is selected & full resolver payload and later Gateway post-return state are not emitted \\
 \hline
 \end{longtable}
+
+Final \texttt{rationale\_visibility} count for G0--G18:
+\textsc{full} \(=0/19\), \textsc{partial} \(=19/19\), and
+\textsc{source-derived} \(=0/19\). The count is stored in
+\texttt{artifacts/controlled/rationale-visibility-summary.csv}.
 
 Exact page placement may change after recompilation. Therefore, the main
 paper refers to appendix labels and stage names rather than fixed PDF page
@@ -100,8 +105,8 @@ used in the main text.
 
 \texttt{SESSION\_ID} &
 \seqsplit{NOT RECORDED} &
-\textbf{G7}: pre-existing Session identity; obtained from the loaded persistent \texttt{SessionEntry} &
-\texttt{session-utils.ts:1058, 1064} \newline explicitly read at \texttt{chat.ts:3848--3849} \\[6pt]
+\textbf{G7/G8}: Gateway Session ID is not emitted; AR-layer Session ID is separate &
+\texttt{session-utils.ts:1058, 1064} \newline possible source read at \texttt{chat.ts:3848--3849} \\[6pt]
 
 \texttt{MESSAGE} &
 "How to make a cake?" &
@@ -109,7 +114,7 @@ Input exists before G3; \textbf{G4}: validated; \textbf{G5}: sanitized into \tex
 \texttt{chat.ts:3714--3739} \newline \texttt{chat.ts:3770,3784} \\[6pt]
 
 \texttt{RUN\_ID} &
-\seqsplit{8d07c88e-188f-4347-9f9a-7fc90412c604} &
+\seqsplit{ANON-R1-RUN-ID} &
 Generated before G3 by Control UI; \textbf{G4}: observed in runtime; \textbf{G5}: extracted as \texttt{clientRunId} &
 \texttt{chat-send.ts:266--276} \newline G4 runtime trace \newline \texttt{chat.ts:3802} \\
 \hline
@@ -4657,8 +4662,8 @@ Control UI request construction:\\
 \quad\texttt{"How to make a cake?"}\\[1mm]
 
 \quad\texttt{idempotencyKey =}\\
-\quad\texttt{"8d07c88e-188f-4347-}\\
-\quad\texttt{9f9a-7fc90412c604"}\\[1mm]
+\quad\texttt{"ANON-R1-RUN-ID}\\
+\quad\texttt{CONTINUED-ANON-RUN-ID"}\\[1mm]
 
 \quad\texttt{deliver = false}\\
 \quad\texttt{attachments = []}\\
@@ -5134,8 +5139,8 @@ Message sanitizer implementation:\\
 \texttt{p.agentId = undefined}\\[1mm]
 
 \texttt{p.idempotencyKey =}\\
-\texttt{"8d07c88e-188f-4347-}\\
-\texttt{9f9a-7fc90412c604"}\\[2mm]
+\texttt{"ANON-R1-RUN-ID}\\
+\texttt{CONTINUED-ANON-RUN-ID"}\\[2mm]
 
 \texttt{suppress\_command = False}\\
 \textit{from G4}
@@ -5172,7 +5177,7 @@ Message sanitizer implementation:\\
 \texttt{agent\_id\_override = None}\\[1mm]
 
 \texttt{client\_run\_id =}\\
-\texttt{8d07c88e-...}\\[1mm]
+\texttt{ANON-R1-RUN-ID}\\[1mm]
 
 \texttt{pending\_chat\_send\_key =}\\
 \texttt{dedupe key for run ID}\\[1mm]
@@ -5731,12 +5736,13 @@ R1:\\
 \subsection*{G7: Session Resolution and Store Lookup}
 
 \textbf{Purpose:}
-This step resolves the persistent \texttt{SessionEntry} associated with
-the supplied session key. The Gateway measures the session-resolution
-operation, invokes \texttt{loadSessionEntry()}, resolves the appropriate
-session store, searches the candidate store keys for the freshest
-matching entry, and returns the canonical key and persistent session
-record.
+This step resolves the supplied session key. The Gateway measures the
+session-resolution operation, invokes \texttt{loadSessionEntry()},
+resolves the appropriate session store, searches the candidate store keys,
+and returns the canonical key plus any loaded session record. R1 directly
+records the canonical Session key and the G7 \texttt{resolved} outcome.
+It does not directly record the store path, the loaded \texttt{entry}
+object, or \texttt{entry.sessionId}.
 
 \begin{longtable}{
     @{}
@@ -5935,19 +5941,19 @@ record.
 \src{RUNTIME; session-utils.ts:1066}
 \\
 
-\py{R1: entry_exists = True}
+\py{R1: entry_exists = NOT RECORDED}
 &
-\src{RUNTIME; session-utils.ts:1064}
+\src{NOT RECORDED; usable session state is source-derived from continued control flow}
 \\
 
 \py{R1: session_id = entry.sessionId}
 &
-\src{entry returned at session-utils.ts:1064}
+\src{SOURCE-DERIVED read site; concrete value not emitted}
 \\
 
 \py{R1: session_id = "NOT RECORDED"}
 &
-\src{RUNTIME: R1 SessionEntry}
+\src{NOT RECORDED in Gateway trace}
 \\
 
 \py{backing_session_id = entry.sessionId or requested_session_id}
@@ -5974,17 +5980,14 @@ record.
 \subsection*{G7: Session Resolution and Store Lookup Flow Diagram}
 
 \textbf{Purpose:}
-This step resolves the persistent \texttt{SessionEntry} associated with
-the supplied Session key. The Gateway invokes \texttt{loadSessionEntry()}
-inside a diagnostics and timing wrapper. The function obtains the current
-runtime configuration, canonicalizes the supplied key, resolves the
-appropriate Agent-owned Session store, searches the candidate store keys
-for the freshest matching entry, and returns the persistent Session record
-together with the canonical and legacy key information. For R1, the
-Session resolves to the \texttt{main} Agent store, the canonical key is
-unchanged, the matching entry exists with Session ID
-\texttt{NOT RECORDED}, and the measured
-Session-load duration is \texttt{NOT RECORDED}.
+This step resolves the supplied Session key. The Gateway invokes
+\texttt{loadSessionEntry()} inside a diagnostics and timing wrapper. The
+function obtains the current runtime configuration, canonicalizes the
+supplied key, resolves the appropriate Agent-owned Session store, and
+searches candidate store keys. For R1, the trace records that G7 resolves
+and that the canonical key remains unchanged. It does not directly record
+the store path, the loaded \texttt{entry} object, \texttt{entry.sessionId},
+or the measured Session-load duration.
 
 \begin{center}
 
@@ -6225,9 +6228,11 @@ R1:\\
 \textit{Helper: session-utils.ts:1071--1086}\\[1mm]
 
 R1:\\
-\texttt{entryExists = True}\\
+\texttt{entryExists = NOT RECORDED}\\
 \texttt{entry.sessionId =}\\
-\texttt{"NOT RECORDED"}\\[3mm]
+\texttt{"NOT RECORDED"}\\
+\textit{Continuation through G8/G12 is source-derived evidence that
+usable session state existed, not a direct runtime dump of the entry.}\\[3mm]
 
 \textbf{Step 8: Determine legacy Session key}\\
 \texttt{legacy\_key = freshest\_match.key}\\
@@ -6299,13 +6304,13 @@ R1:\\
 \textbf{Purpose:}
 
 This step validates whether an explicitly requested Agent is compatible
-with the current Session routing, captures the persistent backing Session
-identity, and rejects Sessions whose owning Agent has been removed from
-the current configuration. For R1, no explicit Agent override was
-supplied, so Agent-selection validation succeeds immediately. The
-existing \texttt{SessionEntry} supplies the backing Session identity,
-and the request continues without triggering the deleted-Agent rejection
-branch. Therefore, G8 passes and execution proceeds to G9.
+with the current Session routing, computes a backing Session identity
+when one is available, and rejects Sessions whose owning Agent has been
+removed from the current configuration. For R1, no explicit Agent
+override was supplied, so Agent-selection validation succeeds
+immediately. The trace records the G8 \texttt{pass} outcome. It does not
+directly emit the loaded \texttt{SessionEntry} or the concrete backing
+Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 {
 \renewcommand{\arraystretch}{0.95}
@@ -6544,7 +6549,7 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 
 \py{R1: entry.sessionId =}
 &
-\src{NOT RECORDED in R1 trace; persistent entry existence observed}
+\src{NOT RECORDED in R1 Gateway trace}
 \\
 
 \pyI{"NOT RECORDED"}
@@ -6554,12 +6559,12 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 
 \py{R1: backing_session_id =}
 &
-\src{DERIVED: chat.ts:3849 + G7 entry.sessionId}
+\src{SOURCE-DERIVED read site; concrete value not emitted}
 \\
 
 \pyI{"NOT RECORDED"}
 &
-\src{DERIVED: entry exists, so stored-entry side is selected}
+\src{NOT RECORDED; do not substitute AR-layer sessionId}
 \\
 
 \py{R1: deleted_agent_id = None}
@@ -6583,13 +6588,13 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 
 \textbf{Purpose:}
 This step validates whether an explicitly requested Agent is compatible
-with the current Session routing, captures the persistent backing Session
-identity, and rejects Sessions whose owning Agent has been removed from
-the current configuration. For R1, no explicit Agent override was
-supplied, so Agent-selection validation succeeds immediately. The
-existing \texttt{SessionEntry} obtained in G7 supplies the backing
-Session identity, and the request does not trigger the deleted-Agent
-rejection branch. Therefore, G8 passes and execution proceeds to G9.
+with the current Session routing, computes a backing Session identity
+when one is available, and rejects Sessions whose owning Agent has been
+removed from the current configuration. For R1, no explicit Agent
+override was supplied, so Agent-selection validation succeeds
+immediately. The concrete backing Session ID is not emitted in the
+Gateway trace. Therefore, G8 passes and execution proceeds to G9, while
+the backing-identity details remain a rationale-level gap.
 
 \begin{center}
 
@@ -6833,7 +6838,7 @@ R1:\\
 \textit{Source: chat.ts:3849}\\[1mm]
 
 R1:\\
-\texttt{entry exists -> entry.sessionId is selected}\\
+\texttt{selected side = NOT RECORDED}\\
 \texttt{backing\_session\_id =}\\
 \texttt{"NOT RECORDED"}\\[3mm]
 
@@ -6895,13 +6900,12 @@ R1:\\
 \textit{Strict note:}
 The exact historical R1 value of \texttt{p.sessionId} is not
 independently observable because the original raw RPC frame was not
-archived. However, G7 established an existing \texttt{SessionEntry}
-with Session ID
-\texttt{NOT RECORDED}. Since the source at
-\texttt{chat.ts:3849} selects \texttt{entry.sessionId} before the
-optional requested Session ID, the R1
-\texttt{backingSessionId} is deterministically derived as that same
-persistent Session ID.
+archived. G7 also does not emit the loaded \texttt{entry} object or
+\texttt{entry.sessionId}. The source at \texttt{chat.ts:3849} shows where
+a backing identity would be selected, but R1 does not record which
+operand supplied it. The R1 \texttt{backingSessionId} is therefore
+\texttt{NOT RECORDED}; the AR-layer Session ID must not be used to fill
+this Gateway field.
 
 % ==============================================================
 % G9
@@ -7764,9 +7768,9 @@ allow-producing branch generated the final decision.
 \src{RUNTIME: G7 canonical Session key}
 \\
 
-\py{R1: entry = resolved SessionEntry}
+\py{R1: entry = NOT RECORDED}
 &
-\src{RUNTIME: G7 persistent SessionEntry}
+\src{NOT RECORDED; continued control flow is source-derived evidence only}
 \\
 
 \py{R1: send_policy = "allow"}
@@ -8334,7 +8338,7 @@ the request and execution continues toward G12.
 \src{RUNTIME: carried from G5}
 \\
 
-\pyI{"8d07c88e-188f-4347-9f9a-7fc90412c604"}
+\pyI{"ANON-R1-RUN-ID"}
 &
 \src{RUNTIME: R1 run ID}
 \\
@@ -8540,9 +8544,9 @@ Pending-run key created earlier at:\\
 From G5:\\[1mm]
 
 \texttt{client\_run\_id =}\\
-\texttt{"8d07c88e-f27b-}\\
-\texttt{4c2e-9421-}\\
-\texttt{74e043c3badd"}\\[2mm]
+\texttt{"ANON-R1-RUN-ID}\\
+\texttt{CONTINUED-ANON-RUN-ID}\\
+\texttt{CONTINUED-ANON-RUN-ID"}\\[2mm]
 
 \texttt{pending\_chat\_send\_key =}\\
 \texttt{dedupe key for run ID}\\[3mm]
@@ -8724,17 +8728,17 @@ R1 runtime observation:\\
 \subsection*{G12: Session Work Admission and Revalidation}
 
 \textbf{Purpose:}
-This step converts the new-dispatch candidate from G11 into an
-admitted Session-scoped run. The Gateway first captures the current
-Agent lifecycle generation and creates a temporary pending reservation.
-It then invokes \texttt{beginSessionWorkAdmission(...)} using the
-resolved Session store and Session identities. While acquiring the
+This step converts the new-dispatch candidate from G11 into an admitted
+Session-scoped run. The Gateway first captures the current Agent
+lifecycle generation and creates a temporary pending reservation. It then
+invokes \texttt{beginSessionWorkAdmission(...)} using the resolved
+Session key and any available backing identity. While acquiring the
 admission lease, the Gateway revalidates reservation ownership,
-lifecycle generation, reservation expiry, the latest Session state,
-routing consistency, backing Session identity, and archival status.
-If these checks succeed, an active chat AbortController is registered
-and the run is admitted. Post-admission race checks are then performed
-before the Agent run context is claimed. For R1, TraceClaw records
+lifecycle generation, reservation expiry, latest Session state, routing
+consistency, backing Session identity when present, and archival status.
+If these checks succeed, an active chat AbortController is registered and
+the run is admitted. Post-admission race checks are then performed before
+the Agent run context is claimed. For R1, TraceClaw records
 \texttt{admissionDecision = "admitted"},
 \texttt{result = "pass"}, and
 \texttt{reason = "latest\_session\_revalidated"}.
@@ -9160,7 +9164,7 @@ before the Agent run context is claimed. For R1, TraceClaw records
 \src{RUNTIME}
 \\
 
-\pyI{"8d07c88e-188f-4347-9f9a-7fc90412c604"}
+\pyI{"ANON-R1-RUN-ID"}
 &
 \src{RUNTIME}
 \\
@@ -9177,17 +9181,17 @@ before the Agent run context is claimed. For R1, TraceClaw records
 
 \py{R1: backing\_session\_id =}
 &
-\src{PERSISTED SESSION STATE}
+\src{NOT RECORDED in Gateway trace}
 \\
 
 \pyI{"NOT RECORDED"}
 &
-\src{PERSISTED SESSION STATE}
+\src{NOT RECORDED; do not substitute AR-layer sessionId}
 \\
 
-\py{R1: admitted\_session\_id = backing\_session\_id}
+\py{R1: admitted\_session\_id = NOT RECORDED}
 &
-\src{DERIVED: latest Session identity remains unchanged}
+\src{NOT RECORDED; source can fall back to client_run_id}
 \\
 
 \py{R1: reservation\_superseded = False}
@@ -9418,9 +9422,9 @@ From G11:\\
 \texttt{new dispatch candidate}\\[3mm]
 
 \texttt{clientRunId =}\\
-\texttt{"8d07c88e-f27b-}\\
-\texttt{4c2e-9421-}\\
-\texttt{74e043c3badd"}\\[3mm]
+\texttt{"ANON-R1-RUN-ID}\\
+\texttt{CONTINUED-ANON-RUN-ID}\\
+\texttt{CONTINUED-ANON-RUN-ID"}\\[3mm]
 
 From G7 / G8:\\
 \texttt{sessionKey =}\\
@@ -10045,7 +10049,7 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 \src{RUNTIME}
 \\
 
-\pyI{"8d07c88e-188f-4347-9f9a-7fc90412c604"}
+\pyI{"ANON-R1-RUN-ID"}
 &
 \src{RUNTIME}
 \\
@@ -10257,9 +10261,9 @@ Resolved Session / Agent:\\[1mm]
 Run identity:\\[1mm]
 
 \texttt{clientRunId =}\\
-\texttt{"8d07c88e-f27b-}\\
-\texttt{4c2e-9421-}\\
-\texttt{74e043c3badd"}\\[3mm]
+\texttt{"ANON-R1-RUN-ID}\\
+\texttt{CONTINUED-ANON-RUN-ID}\\
+\texttt{CONTINUED-ANON-RUN-ID"}\\[3mm]
 
 Other prepared state:\\[1mm]
 
@@ -10392,7 +10396,7 @@ scopes into the context.\\
 
 R1:\\
 \texttt{MessageSid =}\\
-\texttt{"8d07c88e-188f-4347-9f9a-7fc90412c604"}\\[1mm]
+\texttt{"ANON-R1-RUN-ID"}\\[1mm]
 
 \texttt{GatewayClientScopes =}\\
 \texttt{[operator.write]}\\
@@ -10967,7 +10971,7 @@ diagnostic span records the same run ID and canonical Session key,
 \src{NATIVE RUNTIME}
 \\
 
-\pyI{"8d07c88e-188f-4347-9f9a-7fc90412c604"}
+\pyI{"ANON-R1-RUN-ID"}
 &
 \src{NATIVE RUNTIME}
 \\
@@ -14924,10 +14928,13 @@ the ordinary G3 required-scope check.
 Historical New York and Beijing weather traces are also retained as
 artifact-only context. They suggest that the G0--G18 Gateway skeleton can
 remain stable across successful tool-using requests, but they are not the
-current controlled cohort. Their post-G18 paths vary: some contain only
-\texttt{web\_search}, while others contain \texttt{bash} skill-loading
-activity followed by \texttt{web\_search}. Current quantitative claims in
-the paper should therefore cite R1--R7, not the historical weather runs.
+current controlled cohort. The saved New York evidence contains six
+near-identical Weather requests: four contain only \texttt{web\_search},
+and two contain \texttt{bash} setup / skill-loading activity followed by
+\texttt{web\_search}. The Beijing trace is a separate historical example
+with \texttt{bash} followed by \texttt{web\_search}; it is not counted as
+one of the six New York runs. Current quantitative claims in the paper
+therefore cite R1--R7, not the historical Weather runs.
 
 \subsection*{G. Anonymous Artifact Handles}
 
@@ -15063,10 +15070,10 @@ Links the request to the Dashboard Session and later to Agent
 \addlinespace
 \texttt{SESSION\_ID} &
 \seqsplit{NOT RECORDED} &
-Persistent Session identity loaded in G7. \\
+Gateway Session identity is not emitted; AR-layer Session ID is separate. \\
 \addlinespace
 \texttt{RUN\_ID} &
-\seqsplit{8d07c88e-188f-4347-9f9a-7fc90412c604} &
+\seqsplit{ANON-R1-RUN-ID} &
 Used for idempotency, admission, and run-state tracking. \\
 \addlinespace
 \texttt{AgentId} &

@@ -8,6 +8,7 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 
 | Claim | Artifact field / command | Status |
 |---|---|---|
+| R1--R5 inclusion is based on unchanged TraceClaw collection/instrumentation code, not matching branch outcomes. | `git diff --name-status a68e6d7 7d742df`; `git log --name-only a68e6d7..7d742df`. | Only `data/cases/latest-live.js`, `data/cases/recent-runs.js`, and `index.html` changed across the saved-run commits. |
 | R6/R7 were collected after `7d742df` in the temporary worktree branch `collect-r6-r7`. | `artifacts/audit/r6-r7-collection.md` in the source audit checkout; the temporary worktree is referred to as `<r6-r7-worktree>`. | Supported by audit report. |
 | OpenClaw HEAD for the frozen environment was `0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c`. | `artifacts/audit/r6-r7-collection.md`, before/after fingerprint output. | Supported by audit report. |
 | OpenClaw patch hash was unchanged before and after R6/R7: `6736a6be821ae927ebb112328d9552386684d5cbd8090975f52cc8666d8ef11f`. | `artifacts/audit/r6-r7-collection.md`, before/after fingerprint output. | Supported by audit report. |
@@ -34,6 +35,7 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 | R1 coverage remains `19/19` after NOT RECORDED subfield audit. | `artifacts/controlled/r1-coverage-verification.csv`. | Each G0--G18 row has a source anchor and at least one concrete case value; missing internal subfields do not zero the whole stage. |
 | R1 observation remains `19/19` after NOT RECORDED subfield audit. | `artifacts/controlled/r1-coverage-verification.csv`; raw R1 `data/cases/latest-live.js@a68e6d7`, `stages.G0...G18.runtimeObserved`. | All G0--G18 stage outcomes are directly observed. |
 | R1/R7 and R5/R6 have no G0--G18 branch differences. | `artifacts/controlled/controlled-runs.json`, `repeatability[].stageBranchDiff`. | Empty for both pairs. |
+| Final Gateway rationale visibility count is `full=0/19`, `partial=19/19`, `source-derived=0/19`. | `artifacts/controlled/rationale-visibility-summary.csv`. | All G0--G18 rows are `partial` after re-audit. |
 | Agent, resolver, tool/no-tool class, stop reason, and AR structure match for both repeated prompt pairs. | `artifacts/controlled/controlled-runs.json`, `repeatability[]`. | `true` for all listed checks. |
 | AR6 is source-derived by design. | `artifacts/controlled/controlled-runs.json`, `agentRuntime[].arStage.AR6`. | `SourceDerived` for R1--R7. |
 | No-tool runs are R1, R5, R6, and R7. | `artifacts/controlled/controlled-runs.json`, `runs[].class` and `runs[].tools`. | `no-tool`, `none`. |
@@ -44,6 +46,16 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 | R4 local mutation sequence runs from 17:08:57.709Z to 17:09:07.329Z. | `artifacts/controlled/controlled-runs.json`, R4 `agentRuntime.tools[]`. | `pwd`, `rg --files`, `apply_patch` add of `fibonacci.py`, `python3 fibonacci.py`. |
 | R3 tool execution is observed, but tool-policy permission is source-derived. | R3 `agentRuntime.tools[]`; G16 dispatch/source audit. | Bash execution and exit codes are runtime evidence; effective policy path is not emitted as a separate authorization event. |
 
+## Historical Weather Supplement
+
+| Claim | Artifact field / command | Status |
+|---|---|---|
+| Historical New York Weather evidence contains six saved traces. | `artifacts/repeated-run-validation.csv`; `artifacts/repeated-run-validation.json`. | Six recoverable `genuine_repeated_saved_trace` rows for New York / NewYork Weather prompts. |
+| New York Weather prompts are near-identical, not byte-for-byte exact repeats. | `artifacts/repeated-run-validation.csv`, `prompt` column. | Prompt strings vary in spacing, capitalization, and punctuation. |
+| New York Weather tool patterns are four `web_search` only and two `bash + web_search`. | `artifacts/repeated-run-validation.json`, `recoverableRuns[].toolCalls`. | Counted from saved tool-call lists. |
+| Beijing Weather is a separate historical trace. | `git show 0369051:data/cases/latest-live.js`, `meta.prompt` and `meta.tools`. | Prompt is Beijing Weather; tool path is `bash, web_search`; excluded from New York count. |
+| Weather is supplementary and not mixed into R1--R7 quantitative scores. | `paper/main.tex`, Section `Historical Weather Supplement`. | Main paper reports no Weather cov/obs score in the controlled cohort. |
+
 ## Restored Appendix Checks
 
 | Appendix statement | Artifact / source | Status |
@@ -52,6 +64,7 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 | The appendix contains a detailed R1 G0--G18 source audit. | `paper/appendix.tex`, section label `app:gateway-source-trace`. | Restored. All stages G0--G18 appear as detailed subsections. |
 | R1 G0--G3 use shared-token auth, role `operator`, scope `operator.write`, and ordinary `chat.send` authorization. | `artifacts/controlled/controlled-runs.json`, R1 stage rows G0--G3. | Supported. |
 | R1 does not take the device-token fallback path. | R1 G0/G2 values: `hasDeviceIdentity=False`, `authMethod=token`, `sharedAuthOk=True`, `role=operator`, `scopes=["operator.write"]`. | Supported for R1. Historical Cake2 is explicitly separate. |
+| R1 Gateway SessionEntry existence and fields are not directly observed. | `artifacts/controlled/controlled-runs.json`, R1 G7/G8/G12 rows; raw R1 saved trace. | G7 records canonical Session key and `resolved`; Gateway `sessionId`, loaded `entry`, `entry.sessionId`, `storePath`, and admission Session identity remain `NOT RECORDED`. Continued G8/G12 control flow is source-derived evidence only. |
 | G3 source claim is limited to admin shortcut versus required `operator.write`. | `artifacts/controlled/source-anchor-audit-r1.csv`, G3 rows; upstream `server-methods.ts:262-299`, `core-descriptors.ts:231`, `method-scopes.ts:257-274`. | Supported. No causal claim that auth method alone determines scope. |
 | Corrected G14/G16/G17/G18 anchors use upstream 0790d9f line ranges, not the old conflicting ranges. | `artifacts/controlled/source-anchor-audit-r1.csv`, G14--G18 and post-G18 rows; original priority audit in `artifacts/audit/anchor-content-audit.csv` from the source audit checkout. | Supported. |
 | R1 has at least one `not recorded` or equivalent gap in multiple stages. | `paper/appendix.tex`, detailed audit gap fields. | Supported; gaps include raw tokens, complete config/session objects, full dispatch results, full `replyResult`, and full lock/cache state. |

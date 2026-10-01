@@ -339,3 +339,178 @@ branch name, run-ID prefixes, the old AI-style phrases listed in the critique,
 or the overstated tool-authorization wording. Appendix PDF scans found no hits
 for the stale R1 device-token/admin claims, old Cake2 timings, real email,
 local absolute paths, or personal names.
+
+## Targeted Completion and Style Pass
+
+### Checklist
+
+1. DONE / VERIFIED
+   - File: `paper/main.tex`
+   - Section: `Controlled Experiments / Cohort and Provenance`
+   - Description: R1--R5 inclusion basis now rests on unchanged TraceClaw
+     collection/instrumentation code and saved trace artifacts. Matching
+     G0--G18 branch structure is described only as an experimental result.
+   - Evidence source: `git diff --name-status a68e6d7 7d742df`; `git log
+     --name-only a68e6d7..7d742df`, which showed only
+     `data/cases/latest-live.js`, `data/cases/recent-runs.js`, and `index.html`.
+
+2. DONE / VERIFIED
+   - File: `paper/main.tex`
+   - Section: `Controlled Experiments / Historical Weather Supplement`
+   - Description: Added a small supplementary historical Weather analysis
+     without mixing Weather into R1--R7 quantitative scores.
+   - Evidence source: `artifacts/repeated-run-validation.csv`,
+     `artifacts/repeated-run-validation.json`, and
+     `git show 0369051:data/cases/latest-live.js`.
+   - Verified counts: New York Weather = 6 saved traces; 4 use only
+     `web_search`; 2 use `bash + web_search`. Beijing Weather = 1 separate
+     historical trace with `bash + web_search`; it is excluded from the New
+     York count.
+
+3. CORRECTED
+   - File: `paper/appendix.tex`
+   - Sections: `G7`, `G8`, `G12`
+   - Description: Corrected unsupported SessionEntry wording. The final R1
+     SessionEntry evidence status is: Gateway canonical Session key and G7/G8/G12
+     outcomes are runtime-observed; loaded `entry`, `entry.sessionId`,
+     `storePath`, Gateway `sessionId`, backing Session ID, and admitted Session
+     ID are `NOT RECORDED`; continued G8/G12 control flow is source-derived
+     evidence only. AR-layer Session ID remains separate.
+   - Evidence source: R1 rows in `artifacts/controlled/controlled-runs.json`,
+     raw saved R1 trace, and upstream source anchors in the appendix.
+
+4. DONE / VERIFIED
+   - Files: `paper/main.tex`, `paper/appendix.tex`,
+     `artifacts/controlled/rationale-visibility-summary.csv`,
+     `artifacts/controlled/claim-check.md`
+   - Section: `Gateway Coverage and Observation`; appendix reading guide
+   - Description: Re-evaluated G0--G18 rationale visibility. Final counts:
+     `full=0/19`, `partial=19/19`, `source-derived=0/19`.
+   - Evidence source: `artifacts/controlled/rationale-visibility-summary.csv`
+     and R1 stage rows in `artifacts/controlled/controlled-runs.json`.
+
+5. DONE / VERIFIED
+   - Files: `paper/main.tex`, `paper/appendix.tex`
+   - Sections: title page, execution-class table, limitations, introduction,
+     references
+   - Description: Date remains October 2026; Table 3 uses short labels rather
+     than truncated prompts; the appendix-length meta-commentary remains removed;
+     introduction provenance detail stays in the controlled-cohort subsection;
+     scholarly references remain before informal OpenClaw background articles.
+   - Evidence source: source scan over `paper/main.tex` and generated table inputs.
+
+6. DONE
+   - Files: `paper/main.tex`; prose-only edits in `paper/appendix.tex`
+   - Sections: main prose and appendix prose paragraphs
+   - Description: Performed a constrained style pass after factual edits. The
+     pass removed targeted rhetorical patterns, used active voice where natural,
+     and preserved claims, counts, labels, equations, tables, and section
+     structure.
+   - Evidence source: `rg` scan for the targeted style phrases returned no hits
+     in `paper/main.tex` or `paper/appendix.tex`.
+
+### Style Pass
+
+1.
+BEFORE:
+"An LLM agent request is not just a model call."
+AFTER:
+"An LLM agent request includes more than a model call."
+Reason:
+removed rhetorical "not just" setup.
+
+2.
+BEFORE:
+"This is the motivation for the paper."
+AFTER:
+"We start from a simple concern: a final answer can be acceptable while the path
+that produced it remains hard to justify."
+Reason:
+clearer subject and first-person plural.
+
+3.
+BEFORE:
+"Its core idea is simple: each stage of a concrete request should be a small
+claim that can be checked."
+AFTER:
+"We write each stage of a concrete request as a small checkable claim."
+Reason:
+active voice and fewer formulaic words.
+
+4.
+BEFORE:
+"TraceClaw does not only ask what executed or where an artifact came from; it
+asks which concrete value selected a control-plane branch..."
+AFTER:
+"TraceClaw asks which concrete value selected a control-plane branch..."
+Reason:
+removed "not only" contrast while preserving the distinction.
+
+5.
+BEFORE:
+"This distinction is important because it is exactly the kind of mistake a
+source-anchored ledger is meant to prevent."
+AFTER:
+"The source-anchored ledger prevents a common mistake here."
+Reason:
+clearer subject and less rhetorical framing.
+
+6.
+BEFORE:
+"The relevant runtime evidence is not just the final summary."
+AFTER:
+"The runtime evidence extends beyond the final summary."
+Reason:
+removed "not just" pattern.
+
+7.
+BEFORE:
+"This demonstrates why a Gateway-only ledger is incomplete."
+AFTER:
+"A Gateway-only ledger can say how the request reached the resolver. The AR
+layer shows that the answer used external retrieval events..."
+Reason:
+replaced "This demonstrates" with concrete subjects.
+
+8.
+BEFORE:
+"The important evidence in R4 is the boundary between permission and effect."
+AFTER:
+"R4 separates permission from effect."
+Reason:
+shorter sentence with concrete subject.
+
+9.
+BEFORE:
+"A normal success log might tempt a reader to say the email was sent."
+AFTER:
+"A normal success log might invite a downstream-delivery inference."
+Reason:
+removed over-specific phrasing that could be read as a delivery claim.
+
+10.
+BEFORE:
+"This limitation is not cosmetic."
+AFTER:
+"This provenance limit affects the strength of the claims."
+Reason:
+more precise subject and less rhetorical emphasis.
+
+### Validation Before CI
+
+- `python3 scripts/validate_repeated_weather_runs.py`: passed; recovered 6
+  historical New York Weather traces.
+- JSON parse checks passed for `artifacts/repeated-run-validation.json` and
+  `artifacts/controlled/controlled-runs.json`.
+- CSV parse checks passed for `artifacts/repeated-run-validation.csv`,
+  `artifacts/controlled/rationale-visibility-summary.csv`,
+  `artifacts/controlled/appendix-value-verification.csv`, and
+  `artifacts/controlled/r1-coverage-verification.csv`.
+- `git diff --check`: passed.
+- Privacy/stale-claim scans over main paper, appendix, and generated table
+  inputs found no main-paper commit hashes, branch names, run-ID prefixes,
+  local paths, personal email addresses, stale device-token/admin claims,
+  unsupported SessionEntry claims, or targeted style phrases.
+
+Local LaTeX build remains unavailable because no TeX executable is installed.
+GitHub Actions Paper Build is required for final PDF validation.

@@ -1,0 +1,20 @@
+stage,observed_outcome,missing_rationale,rationale_visibility
+G0,shared-auth state available,concrete token material and device-token candidate source are redacted or not recorded,partial
+G1,shared credential allows the connection,exact credential comparison details and rate-limit internals are not emitted,partial
+G2,final auth passes without device-token fallback,device-signature subpath is source-derived because hasDeviceIdentity=False,partial
+G3,chat.send allowed by operator.write,auth_reason is not emitted and admin shortcut exclusion is source-derived from scopes,partial
+G4,RPC envelope validates,full raw WebSocket frame and all pre-validation fields are not archived,partial
+G5,message/session fields normalize,intermediate sanitizer object is not emitted in full,partial
+G6,requested Agent resolves to main,absence of every alternate override source is partly source-derived,partial
+G7,Session key resolves,persistent store details loaded entry object entry.sessionId and timing details are not emitted,partial
+G8,Agent/Session validation passes,backing Session identity and full validation object are not emitted,partial
+G9,effective Agent is main,fallback candidate chain is not emitted in full,partial
+G10,send policy allows the turn,exact allow sub-branch and policy-rule rationale are not emitted,partial
+G11,duplicate-run check creates a new dispatch,internal lock/cache state is not emitted,partial
+G12,work is admitted,admission internals latest Session details and concrete admitted session identity are not emitted,partial
+G13,message context is built,full constructed context object is not emitted,partial
+G14,auto-reply dispatch is entered,complete dispatch return payload is not emitted,partial
+G15,runtime context is finalized,full finalized context object is not emitted,partial
+G16,dispatch-from-config normal path continues,complete reply-dispatch return object is not emitted,partial
+G17,Agent re-check passes,fallback attempt chain is not emitted in full,partial
+G18,default resolver is selected,full resolver payload and later Gateway post-return state are not emitted,partial
