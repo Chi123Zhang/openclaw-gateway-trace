@@ -1,13 +1,13 @@
-\begin{tabularx}{\linewidth}{@{}l X l X c c@{}}
+\begin{tabularx}{\linewidth}{@{}l X X c c@{}}
 \toprule
-Run & Prompt class & Run ID & Tool summary & Gateway & AR \\
+Run & Request class & Tool summary & Gateway & AR \\
 \midrule
-R1 & no-tool & \texttt{8d07c88e} & none & 19/19, 19/19 & observed \\
-R2 & read-only retrieval & \texttt{fba117de} & \texttt{web\_search} \( \times 6 \) & 19/19, 19/19 & observed \\
-R3 & external side effect via host app & \texttt{5eb26fda} & \texttt{bash} \( \times 5 \) & 19/19, 19/19 & observed \\
-R4 & local file write & \texttt{37bf6523} & \texttt{bash} \( \times 3 \) + \texttt{apply\_patch} & 19/19, 19/19 & observed \\
-R5 & no-tool & \texttt{42b573dc} & none & 19/19, 19/19 & observed \\
-R6 & no-tool & \texttt{3eb51151} & none & 19/19, 19/19 & observed \\
-R7 & no-tool & \texttt{02225265} & none & 19/19, 19/19 & observed \\
+R1 & cake baseline & none & 19/19, 19/19 & observed \\
+R2 & OpenTelemetry retrieval & \texttt{web\_search} \( \times 6 \) & 19/19, 19/19 & observed \\
+R3 & redacted email action & \texttt{bash} \( \times 5 \) & 19/19, 19/19 & observed \\
+R4 & Fibonacci file creation & \texttt{bash} \( \times 3 \) + \texttt{apply\_patch} & 19/19, 19/19 & observed \\
+R5 & tracing/provenance explanation & none & 19/19, 19/19 & observed \\
+R6 & tracing/provenance repeat & none & 19/19, 19/19 & observed \\
+R7 & cake repeat & none & 19/19, 19/19 & observed \\
 \bottomrule
 \end{tabularx}

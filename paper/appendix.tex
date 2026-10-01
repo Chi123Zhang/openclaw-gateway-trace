@@ -32,6 +32,41 @@ evidence status. The status labels mean the following.
     a measured result.
 \end{itemize}
 
+For R1, all Gateway outcomes are observed at the stage-outcome level, but
+rationale visibility remains partial. The table below summarizes the
+field-level gaps that appear later in the per-stage ledger.
+
+\begin{longtable}{
+    @{}
+    >{\raggedright\arraybackslash}p{0.10\linewidth}
+    >{\raggedright\arraybackslash}p{0.30\linewidth}
+    >{\raggedright\arraybackslash}p{0.52\linewidth}
+    @{}
+}
+\textbf{Stage} & \textbf{Observed outcome} & \textbf{Rationale-level gap} \\
+\hline
+G0 & shared-auth state available & concrete token material and device-token candidate source are redacted or not recorded \\
+G1 & shared credential allows the connection & exact credential comparison details and rate-limit internals are not emitted \\
+G2 & final auth passes without device-token fallback & device-signature subpath is source-derived because \texttt{hasDeviceIdentity=False} \\
+G3 & \texttt{chat.send} allowed by \texttt{operator.write} & \texttt{auth\_reason} is not emitted; admin shortcut exclusion is source-derived from scopes \\
+G4 & RPC envelope validates & full raw WebSocket frame and all pre-validation fields are not archived \\
+G5 & message/session fields normalize & intermediate sanitizer object is not emitted in full \\
+G6 & requested Agent resolves to \texttt{main} & absence of every alternate override source is partly source-derived \\
+G7 & Session resolves & persistent store path, loaded entry identity, and timing details are incomplete \\
+G8 & Agent/Session validation passes & full validation object and backing Session identity are not emitted \\
+G9 & effective Agent is \texttt{main} & fallback candidate chain is not emitted in full \\
+G10 & send policy allows the turn & exact allow sub-branch and rule rationale are not emitted \\
+G11 & duplicate-run check creates a new dispatch & internal lock/cache state is not emitted \\
+G12 & work is admitted & admission internals and complete Session store state are not emitted \\
+G13 & message context is built & full constructed context object is not emitted \\
+G14 & auto-reply dispatch is entered & complete dispatch return payload is not emitted \\
+G15 & runtime context is finalized & full finalized context object is not emitted \\
+G16 & dispatch-from-config normal path continues & complete reply-dispatch return object is not emitted \\
+G17 & Agent re-check passes & fallback attempt chain is not emitted in full \\
+G18 & default resolver is selected & full resolver payload and later Gateway post-return state are not emitted \\
+\hline
+\end{longtable}
+
 Exact page placement may change after recompilation. Therefore, the main
 paper refers to appendix labels and stage names rather than fixed PDF page
 numbers. This keeps the paper stable when figures, tables, or references
@@ -2316,9 +2351,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1137--1213}
 \\[2mm]
 
-\py{R1: all device-identity checks pass}
+\py{R1: device-identity checks are not applicable}
 &
-\src{DERIVED: execution reaches resolveConnectAuthDecision}
+\src{SOURCE-DERIVED: hasDeviceIdentity=False; signature path is not used}
 \\[3mm]
 
 % ==============================================================

@@ -303,3 +303,27 @@ appendix:
   therefore tied to `artifacts/controlled/source-anchor-audit-r1.csv`.
 - If any raw audit working directory is packaged for submission, rerun the same
   privacy scan over the package before release.
+
+## Reviewer-Critique Cleanup
+
+Applied after the successful `4eac6c4` CI build:
+
+- Removed paper-facing commit hashes, branch names, and run-ID prefixes from
+  `paper/main.tex` and the main-paper cohort tables. The main text now refers
+  to saved trace artifacts and anonymous artifact metadata instead.
+- Reworded R3/R6 tool-policy claims so observed evidence is limited to
+  `bash` execution and command completion; the effective tool-policy permission
+  is marked source-derived.
+- Added the R1 `hasDeviceIdentity=False` device-identity clarification in the
+  main R1 case and corrected the appendix G2 device-identity line to
+  `not applicable`.
+- Replaced the low-information main-paper stage matrix with a compact
+  rationale-gap table. The full matrix remains appendix material.
+- Added an appendix rationale-visibility summary for G0--G18.
+- Expanded R2/R4 runtime analysis with concrete tool sequences and timestamps,
+  and recorded those statements in `artifacts/controlled/claim-check.md`.
+- Reordered references so tracing, provenance, slicing, and invariant-mining
+  literature appears before OpenClaw background articles.
+
+Local LaTeX build is still unavailable because no TeX executable is installed.
+The next validation step is GitHub Actions Paper Build on the updated branch.

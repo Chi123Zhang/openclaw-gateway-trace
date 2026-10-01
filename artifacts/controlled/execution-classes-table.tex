@@ -1,13 +1,13 @@
 \begin{tabularx}{\linewidth}{@{}l X l X@{}}
 \toprule
-Run & Prompt & Class & Observed tools \\
+Run & Request label & Class & Observed tools \\
 \midrule
-R1 & How to make a cake? & no-tool & none \\
-R2 & Search the web for the latest OpenTelemetry trac... & read-only retrieval & \texttt{web\_search} \( \times 6 \) \\
-R3 & Draft an email to <redacted-email> saying that t... & external side effect via host app & \texttt{bash} \( \times 5 \) \\
-R4 & Create a short Python script that prints the fir... & local file write & \texttt{bash} \( \times 3 \) + \texttt{apply\_patch} \\
-R5 & Explain the difference between tracing and prove... & no-tool & none \\
-R6 & Explain the difference between tracing and prove... & no-tool & none \\
-R7 & How to make a cake? & no-tool & none \\
+R1 & cake baseline & no-tool & none \\
+R2 & OpenTelemetry retrieval & read-only retrieval & \texttt{web\_search} \( \times 6 \) \\
+R3 & redacted email action & external side effect via host app & \texttt{bash} \( \times 5 \) \\
+R4 & Fibonacci file creation & local file write & \texttt{bash} \( \times 3 \) + \texttt{apply\_patch} \\
+R5 & tracing/provenance explanation & no-tool & none \\
+R6 & tracing/provenance repeat & no-tool & none \\
+R7 & cake repeat & no-tool & none \\
 \bottomrule
 \end{tabularx}

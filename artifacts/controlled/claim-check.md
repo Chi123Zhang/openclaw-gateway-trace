@@ -40,6 +40,9 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 | R2 is read-only retrieval. | `artifacts/controlled/controlled-runs.json`, R2 `class`, `tools`. | `read-only retrieval`, six `web_search` calls. |
 | R4 is local file write. | `artifacts/controlled/controlled-runs.json`, R4 `class`, `tools`. | `local file write`, `bash + bash + apply_patch + bash`. |
 | R3 is external side effect via host app. | `artifacts/controlled/controlled-runs.json`, R3 `class`, `tools`. | `external side effect via host app`, five `bash` calls. |
+| R2 search calls are serial and run from 17:06:44.737Z to 17:07:21.532Z. | `artifacts/controlled/controlled-runs.json`, R2 `agentRuntime.tools[].startedAt/endedAt`. | Six completed `web_search` start/result pairs in order. |
+| R4 local mutation sequence runs from 17:08:57.709Z to 17:09:07.329Z. | `artifacts/controlled/controlled-runs.json`, R4 `agentRuntime.tools[]`. | `pwd`, `rg --files`, `apply_patch` add of `fibonacci.py`, `python3 fibonacci.py`. |
+| R3 tool execution is observed, but tool-policy permission is source-derived. | R3 `agentRuntime.tools[]`; G16 dispatch/source audit. | Bash execution and exit codes are runtime evidence; effective policy path is not emitted as a separate authorization event. |
 
 ## Restored Appendix Checks
 
