@@ -2,11 +2,11 @@
 
 Branch: `revision-r1-r7-controlled`
 
-Current paper commit checked by CI: `ab0d37b020b02e11fa683513a4f6a84d71a72e61`
+Current paper commit checked by CI: `3ab768319af3acd67a140b45f6735fb7e3552618`
 
-Paper Build CI: `36825765005`
+Paper Build CI: `36828873407`
 
-CI URL: https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36825765005
+CI URL: https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36828873407
 
 CI result: `success`
 
@@ -201,7 +201,7 @@ path was used.
 
 ## CI Validation
 
-GitHub Actions Paper Build run `36825765005` passed on commit `ab0d37b`.
+GitHub Actions Paper Build run `36828873407` passed on commit `3ab7683`.
 
 The workflow completed:
 
@@ -219,7 +219,10 @@ Downloaded CI artifact page counts:
 - `appendix_main.pdf`: 92 pages
 
 PDF text extraction found no unresolved `??`, old Cake2 run/session IDs, real
-recipient email, local absolute paths, or personal names in the generated PDFs.
+recipient email, local absolute paths, personal names, or stale R1 branch
+claims such as `G1 = deny`, `authResult.ok = False`,
+`admin_scope_present = True`, and `admin_shortcut_taken = True` in the
+generated PDFs.
 
 ## Grep Classification
 
