@@ -5,9 +5,11 @@
 \section{Gateway Source-Level Trace}
 \label{app:gateway-source-trace}
 
-\providecommand{\pyIIII}[1]{%
-    \hspace*{5.6em}\lstinline{#1}%
-}
+\renewcommand{\py}[1]{\lstinline|#1|}
+\renewcommand{\pyI}[1]{\hspace*{1.4em}\lstinline|#1|}
+\renewcommand{\pyII}[1]{\hspace*{2.8em}\lstinline|#1|}
+\renewcommand{\pyIII}[1]{\hspace*{4.2em}\lstinline|#1|}
+\renewcommand{\pyIIII}[1]{\hspace*{5.6em}\lstinline|#1|}
 
 This appendix keeps the detailed source-code and runtime evidence for the
 Gateway G0--G18 path. The main text gives the argument and the compact
@@ -20,16 +22,31 @@ checked against source and observed values.
 
 The appendix follows one rule: source detail belongs here, not in the main
 paper. Each stage entry records its purpose, source path, R1 value, and
-evidence status. The status labels mean the following.
+evidence status. The labels used below map to the main-paper observation
+categories as follows.
 
 \begin{itemize}
-    \item \textsc{Observed}: a runtime trace or concrete recorded value
-    directly supports the step.
-    \item \textsc{SourceDerived}: the source code determines the branch,
-    but the current trace does not emit a separate event for that branch.
-    \item \textsc{NotObserved}: the item is important for reproduction,
-    but it was not archived in the current trace and should not be used as
-    a measured result.
+    \item \textsc{Runtime} / \textsc{Native Runtime}: runtime evidence
+    directly supports the step; these map to \textsc{Observed}.
+    \item \textsc{Observed} / \textsc{Observed(no-tool)}: compact summary
+    labels used in AR tables for directly observed runtime outcomes; these
+    map to \textsc{Observed}.
+    \item \textsc{Derived} / \textsc{Source-Derived}: source code and
+    recorded upstream values determine the branch, but the trace does not
+    emit a separate event for that internal decision; these map to
+    \textsc{SourceDerived}.
+    \item \textsc{SourceDerived}: compact summary label equivalent to
+    \textsc{Source-Derived}; this maps to \textsc{SourceDerived}.
+    \item \textsc{Not Recorded}: the item is relevant but is absent from
+    the saved trace; this maps to \textsc{NotObserved}.
+    \item \textsc{Not Reached}: the source branch exists, but R1 did not
+    execute it; this is negative evidence and maps to
+    \textsc{SourceDerived} when justified by observed earlier values.
+    \item \textsc{Not Applicable}: the source branch does not apply to
+    R1's observed inputs; this maps to \textsc{SourceDerived}.
+    \item \textsc{Observability Gap}: the stage outcome is known, but a
+    lower-level predicate, field, or return payload is not emitted; the
+    missing field maps to \textsc{NotObserved}.
 \end{itemize}
 
 For R1, all Gateway outcomes are observed at the stage-outcome level, but
@@ -70,7 +87,7 @@ G18 & default resolver is selected & full resolver payload and later Gateway pos
 Final \texttt{rationale\_visibility} count for G0--G18:
 \textsc{full} \(=0/19\), \textsc{partial} \(=19/19\), and
 \textsc{source-derived} \(=0/19\). The count is stored in
-\texttt{artifacts/controlled/rationale-visibility-summary.csv}.
+\seqsplit{artifacts/controlled/rationale-visibility-summary.csv}.
 
 Exact page placement may change after recompilation. Therefore, the main
 paper refers to appendix labels and stage names rather than fixed PDF page
@@ -407,9 +424,9 @@ fallback is not reached.
 \src{NOT RECORDED: no R1 runtime field stores the concrete candidate}
 \\
 
-\py{R1: device\_token\_source = None}
+\py{R1: explicit device-token source = NOT REACHED}
 &
-\src{RUNTIME: G0 resolved event}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\
 
 \py{R1: shared-token fallback inside this helper is not reached}
@@ -704,9 +721,9 @@ fallback is not reached.
 \src{NOT RECORDED: no R1 runtime field stores the concrete candidate}
 \\
 
-\py{device\_token\_source = None}
+\py{explicit device-token source = NOT REACHED}
 &
-\src{RUNTIME: G0 resolved event}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\[3mm]
 
 % ==============================================================
@@ -770,9 +787,9 @@ fallback is not reached.
 \src{NOT RECORDED: absent from R1 runtime event fields}
 \\
 
-\py{deviceTokenCandidateSource = NOT RECORDED}
+\py{explicit-device-token source = NOT REACHED}
 &
-\src{RUNTIME}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\[3mm]
 
 % ==============================================================
@@ -1053,14 +1070,14 @@ Inside the helper:\\
 \quad\texttt{normalizeOptionalString(connectAuth?.deviceToken)}\\
 \texttt{if explicitDeviceToken:}\\
 \quad\texttt{return explicit token with}\\
-\quad\texttt{source = None}\\
+\quad\texttt{source = "explicit-device-token"}\\
 \texttt{else:}\\
 \quad\texttt{try connectAuth?.token as fallback}\\[1mm]
 
 R1:\\
 \texttt{explicit device token is not present}\\
 \texttt{deviceTokenCandidate = NOT RECORDED}\\
-\texttt{deviceTokenCandidateSource = NOT RECORDED}\\
+\texttt{explicit-device-token source = NOT REACHED}\\
 \texttt{no concrete device-token candidate is archived}\\[3mm]
 
 \textbf{Step 4: Invoke initial shared-credential authorization}\\
@@ -1126,7 +1143,7 @@ R1:\\
 \texttt{sharedAuthProvided = True}\\
 \texttt{sharedAuthOk = True}\\
 \texttt{deviceTokenCandidate = NOT RECORDED}\\
-\texttt{deviceTokenCandidateSource = NOT RECORDED}\\[3mm]
+\texttt{explicit-device-token source = NOT REACHED}\\[3mm]
 
 \textbf{Step 8: Preserve the alternative authentication path}\\
 Source code can preserve an alternative device-token path when shared
@@ -1204,8 +1221,8 @@ G1 returns a \texttt{GatewayAuthResult}; it does not validate the
 device-token candidate and does not establish the final role or scopes.
 For the connection immediately preceding R1, TraceClaw records
 \texttt{authMode = "token"} and \texttt{result = "allow"}.
-The exact failure reason is not present in the G1 runtime event.
-Because R1's shared token is accepted, no device-token fallback is needed.
+Because R1's shared token is accepted, no denial reason is expected in
+the successful G1 event and no device-token fallback is needed.
 G2 carries the shared-token authorization forward and finalizes role and scope.
 
 {
@@ -1799,9 +1816,9 @@ G2 carries the shared-token authorization forward and finalizes role and scope.
 \src{RUNTIME}
 \\
 
-\py{\# Exact native failure reason is not recorded.}
+\py{\# No denial reason is emitted because R1 is allowed.}
 &
-\src{OBSERVABILITY GAP}
+\src{RUNTIME: auth\_result.method = "token"; result="allow"}
 \\[3mm]
 
 % ==============================================================
@@ -2243,7 +2260,7 @@ R1, the shared-auth path from G1 succeeds and the explicit
 shared-token authorization is carried into G2.
 The resulting connection uses
 \texttt{authMethod = "token"}, role
-\texttt{"operator"}, and the [operator.write].
+\texttt{"operator"}, and scope \texttt{operator.write}.
 TraceClaw records \texttt{result = "pass"}.
 
 {
@@ -2382,7 +2399,7 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1215 onward}
 \\
 
-\pyI{hasDeviceIdentity=False,}
+\pyI{hasDeviceIdentity=has\_device\_identity,}
 &
 \src{message-handler.ts:1215 onward}
 \\
@@ -2468,19 +2485,29 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0: hasBootstrapTokenCandidate=False}
 \\
 
-\py{state.deviceTokenCandidate = NOT RECORDED}
+\py{state.deviceTokenCandidate = NOT APPLICABLE}
 &
-\src{NOT RECORDED: no concrete candidate field archived}
+\src{SOURCE-DERIVED: hasDeviceIdentity=False; device-token path not used}
 \\
 
-\py{state.deviceTokenCandidateSource = NOT RECORDED}
+\py{state.deviceTokenCandidateSource = NOT REACHED}
 &
-\src{G0 runtime}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\
 
 \py{hasDeviceIdentity = False}
 &
 \src{G0/G2 runtime}
+\\
+
+\py{deviceId = NOT APPLICABLE}
+&
+\src{SOURCE-DERIVED: hasDeviceIdentity=False}
+\\
+
+\py{publicKey = NOT APPLICABLE}
+&
+\src{SOURCE-DERIVED: hasDeviceIdentity=False}
 \\
 
 \py{role = "operator"}
@@ -2694,9 +2721,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0 runtime}
 \\
 
-\py{R1: device token candidate = NOT RECORDED}
+\py{R1: device token candidate = NOT APPLICABLE}
 &
-\src{NOT RECORDED: no concrete candidate field archived}
+\src{SOURCE-DERIVED: hasDeviceIdentity=False; device-token path not used}
 \\
 
 \py{R1: device-token verification is not reached}
@@ -2794,7 +2821,7 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:208 onward}
 \\
 
-\pyI{auth\_method = "token"}
+\pyI{auth\_method = "device-token"}
 &
 \src{auth-context.ts:208 onward}
 \\[2mm]
@@ -3321,15 +3348,15 @@ R1 state:\\
 \quad\texttt{= None}\\[2mm]
 
 \texttt{deviceTokenCandidate}\\
-\quad\texttt{= present}\\[1mm]
+\quad\texttt{= NOT APPLICABLE / not used}\\[1mm]
 
 \texttt{deviceTokenCandidateSource}\\
-\quad\texttt{= None}\\[3mm]
+\quad\texttt{= NOT REACHED}\\[3mm]
 
 \texttt{hasDeviceIdentity = False}\\[2mm]
 
-\texttt{deviceId = present}\\
-\texttt{publicKey = present}\\[2mm]
+\texttt{deviceId = NOT APPLICABLE}\\
+\texttt{publicKey = NOT APPLICABLE}\\[2mm]
 
 \texttt{role = "operator"}\\[2mm]
 
@@ -3372,8 +3399,7 @@ Finalized connection state:\\[2mm]
 \texttt{role = "operator"}\\[1mm]
 
 \texttt{scopes =}\\
-\texttt{[admin, approvals,}\\
-\texttt{ pairing, read, write]}\\[1mm]
+\texttt{[operator.write]}\\[1mm]
 
 \texttt{clientMode = "webchat"}\\[2mm]
 
@@ -3408,7 +3434,8 @@ The Gateway derives the device ID from the public key and checks:\\
 \textit{Source: message-handler.ts:1137--1213}\\[1mm]
 
 R1:\\
-\texttt{all checks pass -> final auth decision is reached}\\[3mm]
+\texttt{hasDeviceIdentity = False}\\
+\texttt{device-identity checks are NOT APPLICABLE}\\[3mm]
 
 \textbf{Step 3: Enter the final authentication decision}\\
 \texttt{resolveConnectAuthDecision(...)} receives the G0 authentication
@@ -3420,7 +3447,7 @@ rate-limiter state, and token-verification callbacks.\\
 R1 input:\\
 \texttt{authOk = True}\\
 \texttt{bootstrapTokenCandidate = None}\\
-\texttt{deviceTokenCandidate = NOT RECORDED}\\[3mm]
+\texttt{deviceTokenCandidate = NOT APPLICABLE}\\[3mm]
 
 \textbf{Step 4: Skip bootstrap-token authentication}\\
 The bootstrap-token path is evaluated only when a bootstrap token,
@@ -3439,7 +3466,7 @@ R1:\\
 \texttt{authOk = True}\\
 \texttt{hasDeviceIdentity = False}\\
 \texttt{deviceId = NOT RECORDED / not needed}\\
-\texttt{deviceTokenCandidate = NOT RECORDED}\\
+\texttt{deviceTokenCandidate = NOT APPLICABLE}\\
 \texttt{-> device-token verification is not reached}\\[3mm]
 
 \textbf{Step 6: Apply the device-token rate-limit guard}\\
@@ -3458,7 +3485,7 @@ R1:\\
 
 On success:\\
 \texttt{authOk = True}\\
-\texttt{authMethod = "token"}\\[1mm]
+\texttt{authMethod = "device-token"}\\[1mm]
 
 R1:\\
 \texttt{branch status = NOT REACHED}\\
@@ -3506,7 +3533,6 @@ upgraded access can trigger the pairing / approval path.\\
 R1 finalized access:\\
 \texttt{role = "operator"}\\
 \texttt{scopes = [operator.write]}\\
-\texttt{operator.pairing, operator.read, operator.write]}\\[1mm]
 
 \textit{The exact internal pairing sub-branch is not directly}\\
 \textit{identified by the G2 runtime event.}\\[3mm]
@@ -3593,9 +3619,10 @@ has been authenticated. It determines whether the authenticated client may
 invoke \texttt{chat.send} from its connection role and scopes. It does not
 validate the \texttt{chat.send} request body or inspect the semantic content
 of the user message. In R1, the authenticated client has role
-\texttt{operator} and includes the \texttt{operator.write} scope, so the
-administrator shortcut returns success before the normal
-\texttt{operator.write} required-scope check is reached.
+\texttt{operator} and includes the \texttt{operator.write} scope. The
+administrator shortcut is not taken because \texttt{operator.admin} is
+absent, so the ordinary \texttt{operator.write} required-scope check is
+reached.
 
 \vspace{2mm}
 
@@ -4662,8 +4689,7 @@ Control UI request construction:\\
 \quad\texttt{"How to make a cake?"}\\[1mm]
 
 \quad\texttt{idempotencyKey =}\\
-\quad\texttt{"ANON-R1-RUN-ID}\\
-\quad\texttt{CONTINUED-ANON-RUN-ID"}\\[1mm]
+\quad\texttt{"ANON-R1-RUN-ID"}\\[1mm]
 
 \quad\texttt{deliver = false}\\
 \quad\texttt{attachments = []}\\
@@ -5139,8 +5165,7 @@ Message sanitizer implementation:\\
 \texttt{p.agentId = undefined}\\[1mm]
 
 \texttt{p.idempotencyKey =}\\
-\texttt{"ANON-R1-RUN-ID}\\
-\texttt{CONTINUED-ANON-RUN-ID"}\\[2mm]
+\texttt{"ANON-R1-RUN-ID"}\\[2mm]
 
 \texttt{suppress\_command = False}\\
 \textit{from G4}
@@ -8544,9 +8569,7 @@ Pending-run key created earlier at:\\
 From G5:\\[1mm]
 
 \texttt{client\_run\_id =}\\
-\texttt{"ANON-R1-RUN-ID}\\
-\texttt{CONTINUED-ANON-RUN-ID}\\
-\texttt{CONTINUED-ANON-RUN-ID"}\\[2mm]
+\texttt{"ANON-R1-RUN-ID"}\\[2mm]
 
 \texttt{pending\_chat\_send\_key =}\\
 \texttt{dedupe key for run ID}\\[3mm]
@@ -9422,9 +9445,7 @@ From G11:\\
 \texttt{new dispatch candidate}\\[3mm]
 
 \texttt{clientRunId =}\\
-\texttt{"ANON-R1-RUN-ID}\\
-\texttt{CONTINUED-ANON-RUN-ID}\\
-\texttt{CONTINUED-ANON-RUN-ID"}\\[3mm]
+\texttt{"ANON-R1-RUN-ID"}\\[3mm]
 
 From G7 / G8:\\
 \texttt{sessionKey =}\\
@@ -9611,7 +9632,7 @@ offloads exist, and managed-media fields are merged immediately before
 dispatch. G13 does not perform a new Session lookup, Agent selection,
 send-policy decision, or model invocation. For R1, TraceClaw records
 \texttt{event = "runtime\_context\_constructed"},
-\texttt{AgentId = "main"}, five operator scopes, and
+\texttt{AgentId = "main"}, scope \texttt{operator.write}, and
 \texttt{result = "constructed"}.
 
 {
@@ -10069,7 +10090,7 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 \src{SOURCE-DERIVED}
 \\
 
-\py{R1: GatewayClientScopes = five operator scopes}
+\py{R1: GatewayClientScopes = [operator.write]}
 &
 \src{RUNTIME: G13 TraceClaw event}
 \\
@@ -10261,9 +10282,7 @@ Resolved Session / Agent:\\[1mm]
 Run identity:\\[1mm]
 
 \texttt{clientRunId =}\\
-\texttt{"ANON-R1-RUN-ID}\\
-\texttt{CONTINUED-ANON-RUN-ID}\\
-\texttt{CONTINUED-ANON-RUN-ID"}\\[3mm]
+\texttt{"ANON-R1-RUN-ID"}\\[3mm]
 
 Other prepared state:\\[1mm]
 
@@ -10399,11 +10418,7 @@ R1:\\
 \texttt{"ANON-R1-RUN-ID"}\\[1mm]
 
 \texttt{GatewayClientScopes =}\\
-\texttt{[operator.write]}\\
-\texttt{\ operator.approvals,}\\
-\texttt{\ operator.pairing,}\\
-\texttt{\ operator.read,}\\
-\texttt{\ operator.write]}\\[3mm]
+\texttt{[operator.write]}\\[3mm]
 
 \textbf{Step 7: Attach staged media when present}\\
 If staged media paths exist, extend the same \texttt{MsgContext} with
@@ -14892,7 +14907,15 @@ the user's prompt.
 
 \paragraph{Compact AR summary for R1--R7.}
 
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \input{../artifacts/controlled/ar-metrics-table.tex}
+\end{adjustbox}
+\end{center}
+\endgroup
 
 \subsection*{E. Controlled Cohort Tables}
 
@@ -14900,17 +14923,39 @@ The following tables are generated from saved R1--R7 trace artifacts.
 They are included here to keep the main paper compact while preserving
 machine-checkable evidence for the controlled cohort.
 
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+
 \paragraph{Run summary.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \input{../artifacts/controlled/controlled-cohort-table.tex}
+\end{adjustbox}
+\end{center}
 
 \paragraph{Stage-by-run branch matrix.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \input{../artifacts/controlled/stage-run-matrix-r1-r7.tex}
+\end{adjustbox}
+\end{center}
 
 \paragraph{Execution classes.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \input{../artifacts/controlled/execution-classes-table.tex}
+\end{adjustbox}
+\end{center}
 
 \paragraph{Repeatability pairs.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \input{../artifacts/controlled/repeatability-table.tex}
+\end{adjustbox}
+\end{center}
+
+\endgroup
 
 \subsection*{F. Historical Trace Notes}
 
@@ -15013,8 +15058,9 @@ Model observed in dispatch &
 Model value recorded in the Gateway / dispatch trace. \\
 \addlinespace
 Available tools &
-\texttt{33} &
-Tool count visible at the deeper runtime boundary. \\
+\texttt{NOT RECORDED} &
+R1 invokes zero tools; the complete available-tool inventory is not
+archived in the saved trace. \\
 \addlinespace
 Python version &
 Not archived in the current trace &
@@ -15170,8 +15216,8 @@ document their role. \\
 \subsection*{D. Trace and Measurement Scope}
 
 \begin{itemize}
-    \item The experiment validates the Gateway control path for one
-    request. It does not benchmark answer quality.
+    \item The controlled cohort covers R1--R7, with R1 used as the
+    detailed Gateway case. It does not benchmark answer quality.
     \item Runtime timing values should be treated as case-specific
     observations, not as performance claims.
     \item Branches with no direct runtime event are marked as
