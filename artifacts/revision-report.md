@@ -2,156 +2,169 @@
 
 Branch: `revision-r1-r7-controlled`
 
-Revision base: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
+Current paper commit checked by CI: `aa9d91e9044a8a334e02b233d724ba697b18c351`
 
-Push status: branch pushed to `origin/revision-r1-r7-controlled`.
+Paper Build CI: `36821485163`
 
-Previous paper CI: GitHub Actions run `36814141719` succeeded on commit
-`7a3c52e`. The workflow compiled both `paper/main.tex` and
-`paper/appendix_main.tex` and uploaded the `traceclaw-paper-pdfs` artifact.
+CI URL: https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36821485163
 
-Current restoration status: complete on branch
-`revision-r1-r7-controlled` at commit
-`6f5af13c48266f65c6ffdef59fec61a4c3b0608d`.
+CI result: `success`
 
-## Modified Files
+Uploaded artifact: `traceclaw-paper-pdfs`
 
-- `paper/main.tex`
+Artifact status: uploaded and not expired at check time.
+
+## What Was Rebuilt
+
+The appendix was restored from the pre-revision long appendix at
+`24aba06^:paper/appendix.tex` and then updated to the controlled R1--R7
+evidence model.
+
+The previous long appendix had 15,263 lines. The restored appendix now has
+15,198 lines and compiles to 92 PDF pages. This confirms that the detailed
+G0--G18 source-level audit was restored rather than replaced by a short
+summary.
+
+## Files Modified In The Final Restoration
+
 - `paper/appendix.tex`
-- `paper/appendix_main.tex`
-- `artifacts/controlled/controlled-runs.json`
-- `artifacts/controlled/controlled-runs.csv`
-- `artifacts/controlled/stage-matrix.csv`
-- `artifacts/controlled/controlled-cohort-table.tex`
-- `artifacts/controlled/execution-classes-table.tex`
-- `artifacts/controlled/stage-run-matrix-r1-r7.tex`
-- `artifacts/controlled/ar-metrics-table.tex`
-- `artifacts/controlled/repeatability-table.tex`
-- `artifacts/controlled/r1-stage-ledger-table.tex`
-- `artifacts/controlled/source-anchor-audit-r1.csv`
 - `artifacts/controlled/claim-check.md`
-- `artifacts/restore-diff-report.md`
+- `artifacts/full-appendix-restoration-report.md`
+- `artifacts/revision-report.md`
 
-Follow-up layout fix:
+Earlier commits on the same branch contain the controlled R1--R7 paper
+revision, generated controlled tables, source-anchor audit, and main-paper
+updates.
 
-- `artifacts/controlled/controlled-cohort-table.tex`
-- `artifacts/controlled/execution-classes-table.tex`
-- `paper/main.tex`
+## Appendix Content Restored
 
-## Sections Changed
+- Reading guide and evidence-label definitions.
+- Concrete R1 value table.
+- Detailed G0--G18 stage audit with longtables, pseudocode, source anchors,
+  runtime values, branch decisions, not-taken branches, and evidence labels.
+- Full G0--G18 framework diagrams.
+- Post-G18 AR vocabulary and evidence.
+- R1 no-tool AR ledger.
+- R3 external-side-effect AR ledger with five `bash` calls.
+- Compact AR summaries for R2/R4/R5/R6/R7.
+- R1--R7 controlled cohort tables.
+- Historical notes for old Cake2 and Weather traces.
+- Experimental settings, reproducibility checklist, anonymous artifact notes,
+  and figure-improvement notes.
 
-- Main paper rewritten around the controlled R1--R7 cohort.
-- R1 replaces the old Cake2 trace as the primary controlled case.
-- Experiments now use the requested structure: cohort/provenance, Gateway coverage and observation, execution classes, R2 retrieval, R4 local mutation, R3 external side effect, exact-prompt repeatability, stage matrix, audit findings, and coverage limits.
-- Appendix rewritten as controlled cohort evidence rather than a long old-Cake2 source note.
-- Appendix title changed to `Controlled Cohort Evidence`.
+See `artifacts/full-appendix-restoration-report.md` for the itemized
+RESTORED / RESTORED+UPDATED / RESTORED+SOURCE ANCHOR CORRECTED inventory.
 
-Follow-up completeness restoration:
+## Evidence Corrections Applied
 
-- Restored method detail in `main.tex`: step-by-step source-anchored audit
-  method, claim-level tracing explanation, trace-model figure, positioning
-  table, and richer framework prose.
-- Rebuilt `paper/appendix.tex` as an R1 evidence appendix rather than a compact
-  six-page summary.
-- Added detailed R1 G0--G18 source audit with purpose, upstream anchors, R1
-  values, taken/not-taken branches, observation status, rationale visibility,
-  and gaps.
-- Added detailed AR0--AR6 ledger for R1 and R3; compact AR handling remains for
-  R2/R4/R5/R6/R7.
-- Added `artifacts/controlled/source-anchor-audit-r1.csv` for the restored
-  source anchors.
+- R1 is the detailed case, replacing the old Cake2 case for current
+  quantitative claims.
+- R1 G0--G3 now use shared-token authentication, `G1 allow`, no device-token
+  fallback, role `operator`, scope `operator.write`, and the ordinary G3
+  required-scope check.
+- Old Cake2 is historical only. Its device-token / `operator.admin` path is
+  retained only as provenance context.
+- Historical Weather is artifact-only context. Current quantitative claims cite
+  the controlled R1--R7 cohort.
+- G14/G16/G17/G18 anchors use the upstream 0790d9f source ranges recorded in
+  `artifacts/controlled/source-anchor-audit-r1.csv`; broad ranges are no longer
+  presented as primary source anchors.
+- AR6 is marked source-derived for the G16/G14 resume after
+  `reply_resolver_returned`.
+- R3 is limited to host-side command completion. The paper does not claim
+  downstream email delivery.
 
-## Claims Removed or Weakened
+## Main Paper References
 
-- Removed old Weather quantitative tables from the main paper.
-- Removed old Cake2 from quantitative scoring.
-- Old Cake2 is now historical only: earlier instrumentation, device-token/operator-admin path, excluded from R1--R7 quantitative results.
-- Weather is historical only: useful note about tool-path variation, no scores.
-- Removed any claim that R3 proves email delivery. It now says only that the host-side Apple Mail command completed with exit code 0; downstream delivery was not verified.
-- Weakened G3 scope wording: source establishes an administrator-scope shortcut and an `operator.write` requirement, but the traces do not prove authentication method alone determines scope.
-- Clarified that `obs=19/19` means stage-outcome observation, not full predicate/rationale visibility.
+`paper/main.tex` refers to the supplementary appendix as the home of the
+detailed R1 per-stage source audit and upstream 0790d9f source anchors. Those
+references are true after this restoration: `paper/appendix.tex` contains full
+G0--G18 stage subsections and corrected source anchors.
 
-## Evidence and Metrics
-
-- Generated controlled cohort data from saved trace commits R1--R7.
-- R1--R7 all have `cov=19/19` and `obs=19/19` at Gateway stage-outcome level.
-- Rationale visibility is treated as partial for controlled Gateway stages.
-- R1/R7 and R5/R6 exact-prompt repeatability checks show no G0--G18 branch differences, with matching Agent, resolver, tool/no-tool choice, stop reason, and AR structure.
-- AR-layer metrics are reported over AR0--AR6 separately from the Gateway 19-stage denominator.
-- AR2 treats no-tool as an observed no-tool outcome and reports tool-call-level result ratios separately.
-- AR6 is marked source-derived.
-- Full quantitative mapping is in `artifacts/controlled/claim-check.md`.
-
-## Redactions
-
-- Paper and `artifacts/controlled/` redacted the real recipient email, sender name, usernames, hostnames, and absolute local paths.
-- `artifacts/audit/` is described as a working audit directory, not a submission bundle.
-- If audit-derived files are copied into a submitted artifact, they must be redacted before packaging.
-
-## Validation Results
+## Local Validation
 
 Passed:
 
 - `python3 scripts/validate_repeated_weather_runs.py`
-- `python3 -m json.tool artifacts/repeated-run-validation.json`
-- `test -s artifacts/repeated-run-validation.csv`
-- `test -s artifacts/weather-run-comparison-table.tex`
-- `test -s artifacts/coverage-observation-table.tex`
-- `test -s artifacts/stage-run-matrix.tex`
-- `python3 -m py_compile scripts/*.py collector/*.py instrumentation/openclaw-v2026.7.1-2/*.py`
-- `node --check` for `config.js`, `data/*.js`, `data/cases/*.js`, and `assets/*.js`
-- `git diff --check`
-- Privacy grep for real recipient email, absolute local path prefix, sender name, old Cake2 run ID, old Cake2 session ID, and the old administrator-shortcut wording in `paper/` and `artifacts/controlled/`
-
-Not completed locally:
-
-- Local PDF build could not run because this machine does not have `latexmk` or `xelatex` on PATH.
-- Docker is installed, but the current process cannot connect to the Docker API
-  socket, so a LaTeX container could not be used locally.
-- No `latexmk -f` or error-suppression path was used.
-
-Current restoration validation:
-
-- `python3 scripts/validate_repeated_weather_runs.py`
 - `python3 -m json.tool artifacts/controlled/controlled-runs.json`
-- CSV parse check for `artifacts/controlled/source-anchor-audit-r1.csv`,
-  `artifacts/controlled/controlled-runs.csv`, and
-  `artifacts/controlled/stage-matrix.csv`
+- CSV parse check for:
+  - `artifacts/controlled/controlled-runs.csv`
+  - `artifacts/controlled/stage-matrix.csv`
+  - `artifacts/repeated-run-validation.csv`
 - `git diff --check`
-- Label check for `app:detailed-gateway-audit`, `app:ar-ledger`, and
-  `app:stage-matrix`
-- Privacy grep over `paper/` and `artifacts/controlled/`: no hits for real
-  recipient email, old Cake2 run/session IDs, or absolute `/Users/mac` paths.
-  One expected historical-note hit remains for the phrase
-  `device-token/operator-admin path`; it is not an R1 claim.
-- Paper Build run `36819135472` succeeded on commit `6f5af13`:
-  `https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36819135472`.
-- The workflow compiled both `paper/main.tex` and `paper/appendix_main.tex` and
-  uploaded the `traceclaw-paper-pdfs` artifact.
-- Downloaded artifact: `/tmp/traceclaw-paper-pdfs-36819135472/`.
-- Downloaded files: `main.pdf` (10 pages, A4) and `appendix_main.pdf`
-  (12 pages, A4).
-- Text extraction confirmed no remaining `Appendix ??` or unresolved `??`
-  markers in `main.pdf`.
+- Source grep over `paper/`, `artifacts/controlled/`, and
+  `artifacts/full-appendix-restoration-report.md` for old run/session IDs,
+  real recipient email, local absolute path prefix, personal names, and invalid
+  R1 device-token leftovers.
 
-Completed through CI:
+Local PDF build was not run because `xelatex`, `latexmk`, and `tectonic` are
+not installed on this machine. Docker is installed but the current process
+cannot connect to the Docker API socket. No `latexmk -f` or error-suppression
+path was used.
 
-- Paper Build run `36813656470` first compiled both PDFs and uploaded
-  `traceclaw-paper-pdfs`.
-- Visual PDF smoke check found that the controlled-cohort tables on main page 5
-  and appendix page 1 extended too far horizontally.
-- Commit `7a3c52e` shortened the tool columns to count summaries and clarified
-  the main-table caption.
-- Paper Build run `36814141719` then compiled both PDFs and uploaded
-  `traceclaw-paper-pdfs`.
-- Downloaded artifact: `/tmp/traceclaw-paper-pdfs-36814141719/`.
-- Downloaded files: `main.pdf` (8 pages, A4) and `appendix_main.pdf` (6 pages, A4).
-- Rendered and visually checked representative pages: main page 5, main page 6,
-  appendix page 1, appendix page 3, and appendix page 6. The checked tables no
-  longer overflow the page.
+## CI Validation
+
+GitHub Actions Paper Build run `36821485163` passed on commit `aa9d91e`.
+
+The workflow completed:
+
+- checkout
+- Python setup
+- repeated-run validation regeneration
+- generated artifact checks
+- XeLaTeX build of `paper/main.tex`
+- XeLaTeX build of `paper/appendix_main.tex`
+- upload of `traceclaw-paper-pdfs`
+
+Downloaded CI artifact page counts:
+
+- `main.pdf`: 10 pages
+- `appendix_main.pdf`: 92 pages
+
+PDF text extraction found no unresolved `??`, old Cake2 run/session IDs, real
+recipient email, local absolute paths, or personal names in the generated PDFs.
+
+## Grep Classification
+
+No invalid hits remain for:
+
+- `808b4380`
+- `af48dd1c`
+- `f73617ed`
+- real recipient email
+- local absolute path prefix
+- author-identifying personal names
+- `not_authorized`
+- `G1 result deny`
+- `authMethod = "device-token"` as an R1 value
+- `device_token_candidate = present`
+- `hasDeviceTokenCandidate=True`
+- `explicit device token is present`
+
+Remaining `device-token`, `operator.admin`, and `admin shortcut` source hits are
+legitimate because they are either source-code branch conditions, R1 not-taken
+branch evidence, or the explicitly marked historical Cake2 note.
+
+Stages with at least one `NOT RECORDED` / not-recorded field in the restored
+appendix:
+
+- G0
+- G1
+- G2
+- G4
+- G7
+- G8
+- G12
 
 ## Open Issues
 
-- Add trace-embedded `openclawCommit`, `traceclawCommit`, and `configFingerprint` in future collection code.
-- Run rejected, failed, retried, cancelled, and cross-version cases before making broader coverage claims.
-- If the submitted artifact includes any raw audit material, run the same privacy redaction scan over that package.
+- Future traces should embed `openclawCommit`, `traceclawCommit`,
+  `traceSchemaVersion`, and `configFingerprint` directly in the trace metadata.
+- The current controlled cohort contains successful requests only. Rejected,
+  failed, retried, cancelled, and cross-version paths are still needed before
+  broader claims.
+- The missing `artifacts/audit/anchor-content-audit.csv` was not present in this
+  branch or reachable git history inspected here. Current anchor claims are
+  therefore tied to `artifacts/controlled/source-anchor-audit-r1.csv`.
+- If any raw audit working directory is packaged for submission, rerun the same
+  privacy scan over the package before release.
