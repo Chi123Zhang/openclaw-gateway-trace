@@ -10,6 +10,10 @@
 \renewcommand{\pyII}[1]{\hspace*{2.8em}\lstinline|#1|}
 \renewcommand{\pyIII}[1]{\hspace*{4.2em}\lstinline|#1|}
 \renewcommand{\pyIIII}[1]{\hspace*{5.6em}\lstinline|#1|}
+\newcommand{\pyt}[1]{{\ttfamily #1}}
+\newcommand{\pytI}[1]{\hspace*{1.4em}{\ttfamily #1}}
+\newcommand{\pytII}[1]{\hspace*{2.8em}{\ttfamily #1}}
+\newcommand{\pytIII}[1]{\hspace*{4.2em}{\ttfamily #1}}
 
 This appendix keeps the detailed source-code and runtime evidence for the
 Gateway G0--G18 path. The main text gives the argument and the compact
@@ -190,7 +194,7 @@ fallback is not reached.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\py{connect\_auth\_state = await resolveConnectAuthState(}
+\pyt{connect\_auth\_state = await resolveConnectAuthState(}
 &
 \src{src/gateway/server/ws-connection/message-handler.ts:941--957}
 \\
@@ -5788,12 +5792,12 @@ object, or \texttt{entry.sessionId}.
 \\
 \hline
 
-\py{session_load_started_at_ms = performance.now()}
+\pyt{session\_load\_started\_at\_ms = performance.now()}
 &
 \src{src/gateway/server-methods/chat.ts:3810}
 \\
 
-\py{session_load_result = measureDiagnosticsTimelineSpanSync(}
+\pyt{session\_load\_result = measureDiagnosticsTimelineSpanSync(}
 &
 \src{src/gateway/server-methods/chat.ts:3811--3822}
 \\
@@ -5828,27 +5832,27 @@ object, or \texttt{entry.sessionId}.
 \src{src/gateway/server-methods/chat.ts:3823}
 \\
 
-\py{cfg = session_load_result.cfg}
+\pyt{cfg = session\_load\_result.cfg}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{store_path = session_load_result.storePath}
+\pyt{store\_path = session\_load\_result.storePath}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{entry = session_load_result.entry}
+\pyt{entry = session\_load\_result.entry}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{session_key = session_load_result.canonicalKey}
+\pyt{session\_key = session\_load\_result.canonicalKey}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{legacy_key = session_load_result.legacyKey}
+\pyt{legacy\_key = session\_load\_result.legacyKey}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
@@ -12088,13 +12092,13 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\py{async def dispatchReplyFromConfig(params):}
+\pyt{async def dispatchReplyFromConfig(params):}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:1215--1228}
 \\
 
-\pyI{ctx, cfg, dispatcher = params.ctx, params.cfg, params.dispatcher}
+\pytI{ctx, cfg, dispatcher = params.ctx, params.cfg, params.dispatcher}
 &
 \src{dispatch-from-config.ts:1215--1220}
 \\
@@ -12937,7 +12941,7 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{reply\_resolver = params.replyResolver or}
+\pytI{reply\_resolver = params.replyResolver or}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:3381--3384}
@@ -12948,7 +12952,7 @@ boundary.
 \src{dispatch-from-config.ts:3381--3384}
 \\
 
-\pyIII{loadGetReplyFromConfigRuntime)}
+\pytIII{loadGetReplyFromConfigRuntime)}
 &
 \src{dispatch-from-config.ts:3381--3384}
 \\
