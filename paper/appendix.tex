@@ -1844,12 +1844,12 @@ G2 carries the shared-token authorization forward and finalizes role and scope.
 
 \py{R1: auth\_result.method = "token"}
 &
-\src{DERIVED: failed GatewayAuthResult has no successful method}
+\src{RUNTIME: successful G1 token result}
 \\
 
-\py{R1: auth\_result.reason = NOT RECORDED / no denial reason}
+\py{R1: auth\_result.reason = NOT APPLICABLE}
 &
-\src{OBSERVABILITY GAP}
+\src{NOT APPLICABLE: R1 is allowed; no denial reason exists}
 \\[2mm]
 
 \py{TraceClaw stage = "G1"}
@@ -2485,9 +2485,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0: hasBootstrapTokenCandidate=False}
 \\
 
-\py{state.deviceTokenCandidate = NOT APPLICABLE}
+\py{state.deviceTokenCandidate = NOT RECORDED}
 &
-\src{SOURCE-DERIVED: hasDeviceIdentity=False; device-token path not used}
+\src{NOT RECORDED: no concrete candidate value is archived}
 \\
 
 \py{state.deviceTokenCandidateSource = NOT REACHED}
@@ -2721,9 +2721,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0 runtime}
 \\
 
-\py{R1: device token candidate = NOT APPLICABLE}
+\py{R1: device token candidate = NOT RECORDED}
 &
-\src{SOURCE-DERIVED: hasDeviceIdentity=False; device-token path not used}
+\src{NOT RECORDED: no concrete candidate value is archived}
 \\
 
 \py{R1: device-token verification is not reached}
@@ -3447,7 +3447,7 @@ rate-limiter state, and token-verification callbacks.\\
 R1 input:\\
 \texttt{authOk = True}\\
 \texttt{bootstrapTokenCandidate = None}\\
-\texttt{deviceTokenCandidate = NOT APPLICABLE}\\[3mm]
+\texttt{deviceTokenCandidate = NOT RECORDED}\\[3mm]
 
 \textbf{Step 4: Skip bootstrap-token authentication}\\
 The bootstrap-token path is evaluated only when a bootstrap token,
@@ -3466,7 +3466,7 @@ R1:\\
 \texttt{authOk = True}\\
 \texttt{hasDeviceIdentity = False}\\
 \texttt{deviceId = NOT RECORDED / not needed}\\
-\texttt{deviceTokenCandidate = NOT APPLICABLE}\\
+\texttt{deviceTokenCandidate = NOT RECORDED}\\
 \texttt{-> device-token verification is not reached}\\[3mm]
 
 \textbf{Step 6: Apply the device-token rate-limit guard}\\
@@ -4817,11 +4817,10 @@ Control UI request construction:\\
 
 \textit{Strict note:}
 \texttt{sessionId} is optional in \texttt{ChatSendParamsSchema} and is
-conditionally included by the Control UI. The R1 persistent Session
-identity is known from the later \texttt{SessionEntry}, but the original
-historical WebSocket frame was not archived. Therefore, G4 does not
-claim that \texttt{sessionId} was definitely present in the concrete
-R1 request payload.
+conditionally included by the Control UI. The R1 G4 payload does not
+record a Gateway \texttt{sessionId}, and the later AR-layer Session ID
+must not be used to fill that Gateway-stage field. Therefore, G4 marks
+\texttt{sessionId} as \texttt{NOT RECORDED}.
 
 % ==============================================================
 % G5
@@ -10657,22 +10656,22 @@ diagnostic span records the same run ID and canonical Session key,
 \py{def applyRuntimeToolsAllow(reply\_options, tools\_allow):}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:66--77}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 \pyI{if tools\_allow is None:}
 &
-\src{dispatch.ts:70--72}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 \pyII{return reply\_options}
 &
-\src{dispatch.ts:70--72}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 \pyI{return reply\_options with toolsAllow=tools\_allow}
 &
-\src{dispatch.ts:73--76}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 % ==============================================================
@@ -10715,17 +10714,17 @@ diagnostic span records the same run ID and canonical Session key,
 \py{def bindReplyPayloadRunState(reply\_options, run\_state):}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:410--422}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 \pyI{wrap onAgentRunStart(runId)}
 &
-\src{dispatch.ts:410--422}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 \pyI{run\_state.runId = runId}
 &
-\src{dispatch.ts:410--422}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 % ==============================================================
@@ -10826,23 +10825,23 @@ diagnostic span records the same run ID and canonical Session key,
 \pyI{installReplyPayloadSendingBeforeDeliver(}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:552--561}
+\src{dispatch.ts:528--583}
 \\
 
 \pyII{params.dispatcher, finalized, reply\_payload\_run\_state}
 &
-\src{dispatch.ts:552--561}
+\src{dispatch.ts:528--583}
 \\
 
 \pyI{)}
 &
-\src{dispatch.ts:552--561}
+\src{dispatch.ts:528--583}
 \\
 
 \py{def installReplyPayloadSendingBeforeDeliver(...):}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:410--422}
+\src{dispatch.ts:528--583; helper line not asserted}
 \\
 
 % ==============================================================
@@ -10936,32 +10935,32 @@ diagnostic span records the same run ID and canonical Session key,
 \py{def finalizeDispatchResult(result, dispatcher):}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:528--583; reconciliation line not asserted}
 \\
 
 \pyI{cancelled\_counts = dispatcher.getCancelledCounts()}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:528--583; reconciliation line not asserted}
 \\
 
 \pyI{failed\_counts = dispatcher.getFailedCounts()}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:528--583; reconciliation line not asserted}
 \\
 
 \pyI{if no cancelled or failed counts: return result}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:528--583; reconciliation line not asserted}
 \\
 
 \pyI{reconcile tool / block / final counts}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:528--583; reconciliation line not asserted}
 \\
 
 \pyI{return reconciled result}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:528--583; reconciliation line not asserted}
 \\
 
 \py{return finalizeDispatchResult(result, params.dispatcher)}
@@ -11140,10 +11139,10 @@ Main G14 implementation:\\
 \texttt{src/auto-reply/dispatch.ts:528--583}\\[1mm]
 
 Runtime tool restriction:\\
-\texttt{src/auto-reply/dispatch.ts:69 onward}\\[1mm]
+\texttt{src/auto-reply/dispatch.ts:528--583}\\[1mm]
 
 Reply-run state binding:\\
-\texttt{src/auto-reply/dispatch.ts:410--422}\\[1mm]
+\texttt{src/auto-reply/dispatch.ts:528--583}\\[1mm]
 
 G15 call:\\
 \texttt{src/auto-reply/dispatch.ts:544--551}\\[1mm]
@@ -11155,7 +11154,7 @@ G16 call:\\
 \texttt{src/auto-reply/dispatch.ts:562--582}\\[1mm]
 
 Final result reconciliation:\\
-\texttt{src/auto-reply/dispatch.ts:488 onward;}\\
+\texttt{src/auto-reply/dispatch.ts:528--583;}\\
 \texttt{return at 583}
 };
 
@@ -11243,7 +11242,7 @@ R1:\\
 Apply an optional runtime \texttt{toolsAllow} restriction, initialize
 the reply-payload run state when needed, and bind it to the downstream
 reply options.\\
-\textit{Source: dispatch.ts:69 onward; 410--422}\\[3mm]
+\textit{Source: dispatch.ts:528--583; helper sublines not asserted}\\[3mm]
 
 \textbf{Step 3: Finalize the inbound context through G15}\\
 Call \texttt{finalizeInboundContext(params.ctx)} to convert the incoming
@@ -11280,7 +11279,7 @@ After G16 returns, G14 removes cancelled or failed queued payloads from
 the public counts, updates \texttt{queuedFinal}, and includes
 \texttt{failedCounts} only when failures are present. The normalized
 result is then returned as \texttt{DispatchInboundResult}.\\
-\textit{Source: dispatch.ts:488 onward; return at 583}\\[3mm]
+\textit{Source: dispatch.ts:528--583; return at 583}\\[3mm]
 
 \texttt{G16 result}\\
 \quad$\downarrow$\\
@@ -12122,58 +12121,58 @@ boundary.
 \pyI{diagnostics\_enabled = isDiagnosticsEnabled(cfg)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1178}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{channel = normalize(ctx.Surface or ctx.Provider)}
 &
-\src{dispatch-from-config.ts:1179}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{chat\_id = ctx.To or ctx.From}
 &
-\src{dispatch-from-config.ts:1180}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{message\_id = ctx.MessageSid or fallback message IDs}
 &
-\src{dispatch-from-config.ts:1181}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{session\_key = ctx.SessionKey or ctx.CommandTargetSessionKey}
 &
-\src{dispatch-from-config.ts:1182--1183}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{initial\_session = resolveSessionStoreLookup(ctx, cfg)}
 &
-\src{dispatch-from-config.ts:1186}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \py{def resolveSessionStoreLookup(ctx, cfg):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:426--456}
+\src{dispatch-from-config.ts:1215--1228; helper line not asserted}
 \\
 
 \pyI{target = resolveCommandTurnTargetSessionKey(ctx)}
 &
-\src{dispatch-from-config.ts:435--436}
+\src{dispatch-from-config.ts:1215--1228; helper line not asserted}
 \\
 
 \pyI{agent\_id = resolveSessionAgentId(...)}
 &
-\src{dispatch-from-config.ts:440}
+\src{dispatch-from-config.ts:1215--1228; helper line not asserted}
 \\
 
 \pyI{store\_path = resolveStorePath(...)}
 &
-\src{dispatch-from-config.ts:441}
+\src{dispatch-from-config.ts:1215--1228; helper line not asserted}
 \\
 
 \pyI{store = loadSessionStore(store\_path)}
 &
-\src{dispatch-from-config.ts:442--449}
+\src{dispatch-from-config.ts:1215--1228; helper line not asserted}
 \\
 
 % ==============================================================
@@ -12190,37 +12189,37 @@ boundary.
 \pyI{lifecycle\_session\_id =}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1195--1198}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyII{initial\_session.entry.sessionId}
 &
-\src{dispatch-from-config.ts:1195--1198}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyII{if initial\_session.sessionKey == session\_key else None}
 &
-\src{dispatch-from-config.ts:1195--1198}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{message\_lifecycle = createDiagnosticMessageLifecycle(...)}
 &
-\src{dispatch-from-config.ts:1199--1210}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{trace\_attributes = \{surface, hasSessionKey, hasRunId\}}
 &
-\src{dispatch-from-config.ts:1211--1215}
+\src{dispatch-from-config.ts:1215--1228; setup detail}
 \\
 
 \pyI{traceReplyPhase(name, run) =}
 &
-\src{dispatch-from-config.ts:1216--1226}
+\src{dispatch-from-config.ts:1215--1228}
 \\
 
 \pyII{measureDiagnosticsTimelineSpan(name, run, phase="agent-turn")}
 &
-\src{dispatch-from-config.ts:1219--1226}
+\src{dispatch-from-config.ts:1215--1228}
 \\
 
 % ==============================================================
@@ -12237,44 +12236,44 @@ boundary.
 \pyI{bound\_acp\_session = resolveBoundAcpDispatchSessionKey(}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1289}
+\src{dispatch-from-config.ts:1215--1228; dispatch-session detail}
 \\
 
 \pyII{ctx=ctx, cfg=cfg}
 &
-\src{dispatch-from-config.ts:1289}
+\src{dispatch-from-config.ts:1215--1228; dispatch-session detail}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:1289}
+\src{dispatch-from-config.ts:1215--1228; dispatch-session detail}
 \\
 
 \py{def resolveBoundAcpDispatchSessionKey(params):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:457--485}
+\src{dispatch-from-config.ts:1215--1228; helper line not asserted}
 \\
 
 \pyI{acp\_dispatch\_session\_key =}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1290--1291}
+\src{dispatch-from-config.ts:1215--1228; dispatch-session detail}
 \\
 
 \pyII{bound\_acp\_session or initial\_session.sessionKey or session\_key}
 &
-\src{dispatch-from-config.ts:1290--1291}
+\src{dispatch-from-config.ts:1215--1228; dispatch-session detail}
 \\
 
 \pyI{dispatch\_operation\_session\_key =}
 &
-\src{dispatch-from-config.ts:1295--1296}
+\src{dispatch-from-config.ts:1215--1228; dispatch-session detail}
 \\
 
 \pyII{initial\_session.sessionKey or session\_key or acp\_dispatch\_session\_key}
 &
-\src{dispatch-from-config.ts:1295--1296}
+\src{dispatch-from-config.ts:1215--1228; dispatch-session detail}
 \\
 
 % ==============================================================
@@ -12316,7 +12315,7 @@ boundary.
 
 \pyI{session\_agent\_cfg = resolveAgentConfig(cfg, session\_agent\_id)}
 &
-\src{dispatch-from-config.ts:1375}
+\src{dispatch-from-config.ts:1422--1427}
 \\
 
 \py{R1: session\_agent\_id = "main"}
@@ -12949,37 +12948,37 @@ boundary.
 
 \pyI{reply\_config = withFullRuntimeReplyConfig(...)}
 &
-\src{dispatch-from-config.ts:3310--3312}
+\src{dispatch-from-config.ts:3381--3384; resolver setup continues}
 \\
 
 \pyI{recordAgentDispatchStarted()}
 &
-\src{dispatch-from-config.ts:3313}
+\src{dispatch-from-config.ts:3381--3384; resolver setup continues}
 \\
 
 \pyI{reply\_result = await runWithDispatchLifecycleAdmission(}
 &
-\src{dispatch-from-config.ts:3314--3736}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyII{traceReplyPhase("reply.run\_reply\_resolver",}
 &
-\src{dispatch-from-config.ts:3319 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyIII{reply\_resolver(ctx, options, reply\_config)}
 &
-\src{dispatch-from-config.ts:3320--3732}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyII{)}
 &
-\src{dispatch-from-config.ts:3319--3732}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:3314--3736}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \py{R1: resolver\_source = "default\_getReplyFromConfig"}
@@ -13001,22 +13000,22 @@ boundary.
 \pyI{session\_metadata\_changes = takeCommandSessionMetadataChanges(ctx)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:3737}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyI{notifySessionMetadataChanges(session\_metadata\_changes)}
 &
-\src{dispatch-from-config.ts:3738}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyI{final\_dispatch = await ensureDispatchReplyOperation("dispatch")}
 &
-\src{dispatch-from-config.ts:3739--3750}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyI{if ACP tail dispatch is required: process special tail path}
 &
-\src{dispatch-from-config.ts:3751--3808}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 % ==============================================================
@@ -13038,32 +13037,32 @@ boundary.
 
 \pyI{flushPendingCommentaryProgress()}
 &
-\src{dispatch-from-config.ts:3812}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyI{for reply in replies:}
 &
-\src{dispatch-from-config.ts:3832 onward}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyII{apply reasoning / commentary / suppression checks}
 &
-\src{dispatch-from-config.ts:3832--3858}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyII{dedupe final payload}
 &
-\src{dispatch-from-config.ts:3859--3863}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyII{final\_reply = await sendFinalPayload(reply, ...)}
 &
-\src{dispatch-from-config.ts:3864--3870}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 \pyI{optionally perform TTS-only final delivery}
 &
-\src{dispatch-from-config.ts:3883--3958}
+\src{dispatch-from-config.ts:3809 onward}
 \\
 
 % ==============================================================
@@ -13377,10 +13376,10 @@ Dedupe / interception paths:\\
 \texttt{dispatch-from-config.ts:2342--3031}\\[1mm]
 
 Delivery contract / G18 boundary:\\
-\texttt{dispatch-from-config.ts:3033--3811}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Post-resolver delivery / completion:\\
-\texttt{dispatch-from-config.ts:3812--4078}
+\texttt{dispatch-from-config.ts:3809 onward}
 };
 
 % ==============================================================
@@ -13529,7 +13528,7 @@ After the resolver returns, G16 processes the reply payloads, applies
 the relevant visibility / suppression logic, removes duplicate final
 payloads where required, and sends the remaining replies through the
 dispatcher.\\
-\textit{Source: dispatch-from-config.ts:3812--4038}\\[3mm]
+\textit{Source: dispatch-from-config.ts:3809 onward}\\[3mm]
 
 \textbf{Step 8: Complete the lifecycle and return the result}\\
 Finish the dispatch lifecycle, update dedupe / reply-operation state,
@@ -13955,59 +13954,59 @@ boundary remains \texttt{"main"}.
 
 \py{reply_config = withFullRuntimeReplyConfig(...)}
 &
-\src{dispatch-from-config.ts:3385--3387}
+\src{dispatch-from-config.ts:3381--3384; resolver setup continues}
 \\
 
 \pyI{# optional configOverride is merged before use}
 &
-\src{dispatch-from-config.ts:3385--3387}
+\src{dispatch-from-config.ts:3381--3384; resolver setup continues}
 \\
 
 \py{recordAgentDispatchStarted()}
 &
-\src{dispatch-from-config.ts:3388}
+\src{dispatch-from-config.ts:3381--3384; resolver setup continues}
 \\
 
 \hline
 
 \py{reply_result = await runWithDispatchLifecycleAdmission(...)}
 &
-\src{dispatch-from-config.ts:3389 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyI{runWithDispatchAbortSignal(...)}
 &
-\src{dispatch-from-config.ts:3389 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyII{traceReplyPhase("reply.run_reply_resolver", ...)}
 &
-\src{dispatch-from-config.ts:3389 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyIII{reply_resolver(}
 &
-\src{dispatch-from-config.ts:3395 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyIII{ctx,}
 &
-\src{dispatch-from-config.ts:3395 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyIII{reply_options,}
 &
-\src{dispatch-from-config.ts:3395 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyIII{reply_config}
 &
-\src{dispatch-from-config.ts:3395 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \pyIII{)}
 &
-\src{dispatch-from-config.ts:3395 onward}
+\src{dispatch-from-config.ts:3381--3384; resolver path entered}
 \\
 
 \hline
@@ -14154,13 +14153,13 @@ Resolver selection / loading:\\
 \texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Reply configuration:\\
-\texttt{dispatch-from-config.ts:3385--3387}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Agent-dispatch start:\\
-\texttt{dispatch-from-config.ts:3388}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Resolver lifecycle / invocation:\\
-\texttt{dispatch-from-config.ts:3389 onward}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 G16 resumes:\\
 \texttt{dispatch-from-config.ts:3809 onward}
@@ -14245,19 +14244,19 @@ $\rightarrow$
 Build the runtime reply configuration from the current G16
 configuration. If a configuration override exists, merge it before
 constructing the full runtime configuration.\\
-\textit{Source: dispatch-from-config.ts:3385--3387}\\[3mm]
+\textit{Source: dispatch-from-config.ts:3381--3384}\\[3mm]
 
 \textbf{Step 3: Mark the Agent dispatch start}\\
 Call \texttt{recordAgentDispatchStarted()} immediately before entering
 the resolver execution path.\\
-\textit{Source: dispatch-from-config.ts:3388}\\[3mm]
+\textit{Source: dispatch-from-config.ts:3381--3384}\\[3mm]
 
 \textbf{Step 4: Invoke the resolver}\\
 Run the selected resolver under the existing dispatch lifecycle,
 abort signal, and native \texttt{reply.run\_reply\_resolver} diagnostic
 span. The resolver receives the finalized context, downstream reply
 options, callbacks, and the prepared reply configuration.\\
-\textit{Source: dispatch-from-config.ts:3389 onward}\\[2mm]
+\textit{Source: dispatch-from-config.ts:3381--3384}\\[2mm]
 
 \texttt{FinalizedMsgContext}\\
 \quad$\downarrow$\\
@@ -14271,8 +14270,7 @@ options, callbacks, and the prepared reply configuration.\\
 When the resolver completes, its result is returned to the surrounding
 G16 flow. G16 then continues with metadata handling, reply filtering,
 delivery, and lifecycle completion.\\
-\textit{Source: G18 ends at dispatch-from-config.ts:3811;}\\
-\textit{G16 resumes at 3812 onward}\\[2mm]
+\textit{Source: post-resolver handling at dispatch-from-config.ts:3809 onward}\\[2mm]
 
 R1 TraceClaw:\\
 \texttt{event = "reply\_resolver\_selected"}\\
