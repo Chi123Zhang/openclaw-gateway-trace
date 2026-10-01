@@ -4,7 +4,11 @@ Branch: `revision-r1-r7-controlled`
 
 Revision base: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 
-Push status: branch prepared for CI push; final CI result should be checked after push.
+Push status: branch pushed to `origin/revision-r1-r7-controlled`.
+
+Latest paper CI: GitHub Actions run `36814141719` succeeded on commit
+`7a3c52e`. The workflow compiled both `paper/main.tex` and
+`paper/appendix_main.tex` and uploaded the `traceclaw-paper-pdfs` artifact.
 
 ## Modified Files
 
@@ -21,6 +25,12 @@ Push status: branch prepared for CI push; final CI result should be checked afte
 - `artifacts/controlled/repeatability-table.tex`
 - `artifacts/controlled/r1-stage-ledger-table.tex`
 - `artifacts/controlled/claim-check.md`
+
+Follow-up layout fix:
+
+- `artifacts/controlled/controlled-cohort-table.tex`
+- `artifacts/controlled/execution-classes-table.tex`
+- `paper/main.tex`
 
 ## Sections Changed
 
@@ -78,7 +88,21 @@ Not completed locally:
 - Docker was present but the Docker daemon was not running, so a LaTeX container could not be used locally.
 - No `latexmk -f` or error-suppression path was used.
 
-The GitHub Paper Build workflow should still compile `paper/main.tex` and `paper/appendix_main.tex` using the configured LaTeX action after this branch is pushed.
+Completed through CI:
+
+- Paper Build run `36813656470` first compiled both PDFs and uploaded
+  `traceclaw-paper-pdfs`.
+- Visual PDF smoke check found that the controlled-cohort tables on main page 5
+  and appendix page 1 extended too far horizontally.
+- Commit `7a3c52e` shortened the tool columns to count summaries and clarified
+  the main-table caption.
+- Paper Build run `36814141719` then compiled both PDFs and uploaded
+  `traceclaw-paper-pdfs`.
+- Downloaded artifact: `/tmp/traceclaw-paper-pdfs-36814141719/`.
+- Downloaded files: `main.pdf` (8 pages, A4) and `appendix_main.pdf` (6 pages, A4).
+- Rendered and visually checked representative pages: main page 5, main page 6,
+  appendix page 1, appendix page 3, and appendix page 6. The checked tables no
+  longer overflow the page.
 
 ## Open Issues
 
