@@ -89,6 +89,17 @@ new, whether work is admitted, and which reply resolver receives control.
 These decisions are security- and reliability-relevant, yet they are easy
 to hide behind a final natural-language answer.
 
+This is the motivation for the paper. A final answer can be acceptable
+while the path that produced it is still hard to justify. For example, an
+auditor may need to know whether an accepted request used a shared token
+or a device-token fallback, whether an administrator shortcut was taken,
+whether duplicate-run protection admitted or suppressed the work, or
+whether a tool-side effect was approved by an explicit event or merely
+executed inside a shell command. These questions are about the agent
+control plane, not about answer quality. They are also the questions most
+likely to be missed by a screenshot of the answer or by a high-level
+architecture diagram.
+
 TraceClaw treats this control plane as the audit object. Its core idea is
 simple: each stage of a concrete request should be a small claim that can
 be checked. A claim says which source range defines the decision, which
@@ -98,6 +109,15 @@ tracing. Tracing records what executed. Provenance records where data or
 artifacts came from. TraceClaw records why a branch was selected for one
 agent request, and whether that reason is directly observed or
 source-derived.
+
+The point is not to replace tracing, provenance, or code review. The
+point is to connect them at the decision boundary. A trace event without
+source context may show that a stage returned \texttt{allow}, but not
+which predicate made the allow branch valid. Source code without a saved
+run may show possible paths, but not the one selected by the request.
+TraceClaw asks for the join: a source decision site, a concrete run value,
+a branch outcome, and a statement about whether the rationale is directly
+visible.
 
 The study uses OpenClaw v2026.7.1-2 at commit
 \seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c}. The saved traces do
@@ -173,12 +193,30 @@ ask what executed or where an artifact came from; it asks which concrete
 value selected a control-plane branch and which unselected branch is
 therefore excluded for this run.
 
+This distinction matters for agent systems because many important
+decisions are not naturally span-shaped. A span can record that
+\texttt{chat.send} authorization completed, but the audit question is
+which scope made the call legal and whether a more privileged shortcut was
+skipped. A provenance relation can record that a reply depends on a tool
+result, but the audit question may be whether the tool was reached after
+a policy gate, a duplicate-run check, and a resolver decision. TraceClaw
+therefore treats traces and provenance records as evidence sources rather
+than as the complete explanation.
+
 \textbf{Dynamic program analysis.}
 Program slicing and dynamic slicing connect execution behavior to source
 statements \cite{weiser1984,agrawalHorgan1990}. Dynamic invariant
 detection infers likely properties from executions \cite{daikon2007}.
 TraceClaw borrows the execution-specific mindset, but its output is an
 audit ledger rather than a slice or an inferred invariant set.
+
+The ledger is deliberately less automatic than slicing. It does not try
+to compute all statements that influenced a value. Instead, it records the
+decision sites that an auditor would cite in a paper: the source range,
+the run value, the observed outcome, and the nearby branch that did not
+fire. This makes the result easier to inspect, but it also means the
+method depends on careful source-anchor checking and conservative
+``not recorded'' labels when the trace lacks a field.
 
 \textbf{Agent debugging and runtime observability.}
 Agent debugging and visualization systems such as XAgen, FlowForge, and
@@ -188,6 +226,15 @@ observability systems such as Fangcun Observer focus on commands, file
 activity, and behavior chains \cite{fangcunObserver}. TraceClaw works at
 the Gateway boundary: it connects control-plane decisions to later
 runtime evidence.
+
+The closest connection to these systems is the post-G18 runtime layer.
+TraceClaw does not stop when the Gateway chooses a resolver. It records
+whether the deeper run is no-tool, retrieval-only, local-mutation, or an
+external side-effect execution, then links the resolver-return event back
+to the Gateway source path. This is where the method moves beyond an
+OpenClaw source note: it gives a repeatable structure for saying which
+part of an agent execution is control-plane evidence, which part is
+runtime evidence, and which part remains source-derived.
 
 \section{Method: Source-Anchored Runtime Trace}
 \label{sec:method}
@@ -236,7 +283,10 @@ Each stage \(s_i\) has an evidence item
 \]
 where \(C_i\) is a set of source anchors, \(V_i\) contains concrete case
 values, \(O_i\) is the observation status, and \(B_i\) is the branch or
-outcome. We report:
+outcome. A stage is covered when it has at least one verified upstream
+source anchor and at least one concrete run value. It is not required
+that every internal predicate, object field, or return payload field be
+recorded. We report:
 \[
     \mathrm{cov}(\tau_G)=
     \frac{1}{19}\sum_{i=0}^{18}
@@ -254,7 +304,10 @@ record a rationale-visibility label: \textsc{full},
 \textsc{partial}, or \textsc{source-derived}. In the controlled cohort,
 the Gateway outcome visibility is 19/19 for every run, while rationale
 visibility is partial across stages because internal predicates and some
-return fields are not fully exposed.
+return fields are not fully exposed. For R1, the generated stage matrix
+marks 19 of 19 Gateway stages as \textsc{partial}: every stage outcome is
+observed, but none exposes all predicate-level rationale and returned
+state needed for a complete semantic explanation.
 
 The post-G18 Agent Runtime is modeled separately as AR0--AR6. AR scores
 are not divided by 19. In this paper AR2 is counted as one logical stage
@@ -265,6 +318,12 @@ as \(\#\texttt{tool\_result}/\#\texttt{tool\_started}\). AR6 is marked
 \textsc{source-derived}: the resolver-return event proves return to the
 dispatch source point, while later Gateway post-processing is not a
 separate runtime event unless instrumented.
+
+This three-way distinction keeps the reported numbers honest. A run can
+have \(\mathrm{cov}=19/19\) and \(\mathrm{obs}=19/19\) while still
+containing many field-level gaps. The appendix therefore lists
+\texttt{NOT RECORDED} values without lowering coverage when the stage has
+enough source/value evidence to audit its outcome.
 
 \begin{figure}[H]
 \centering
@@ -399,6 +458,14 @@ R1 is the controlled replacement for the old Cake2 case. Its prompt is
 context because it was collected under earlier instrumentation and used a
 different authentication path.
 
+R1 is a baseline, not the main novelty by itself. The prompt is ordinary
+on purpose: the value of the case is that an apparently simple accepted
+request still crosses authentication, method authorization, Session
+resolution, Agent selection, send policy, duplicate-run checking,
+admission, context construction, resolver selection, and resolver return.
+If this baseline path cannot be audited carefully, then stronger claims
+about tool use or side effects would rest on a weak foundation.
+
 R1 takes the shared-token path. G0 records token authentication material,
 G1 allows the shared credential, G2 finishes with role \texttt{operator}
 and scope \texttt{operator.write}, and G3 authorizes
@@ -409,6 +476,13 @@ otherwise \texttt{chat.send} requires \texttt{operator.write}. The old
 Cake2 trace and R1 differ on scope, but this paper does not claim that
 authentication method alone causes that scope.
 
+This distinction is important because it is exactly the kind of mistake a
+source-anchored ledger is meant to prevent. The trace directly shows the
+R1 branch outcome and the observed scopes. The source explains which
+branches those scopes make possible. The causal path from authentication
+method to resulting scope is not established by this small cohort, so it
+is not stated as a finding.
+
 From G4 onward, R1 follows the same successful Gateway branch structure
 as the later controlled runs: request validation passes, the message is
 unchanged, no explicit Agent override is supplied, the Session resolves,
@@ -418,6 +492,12 @@ new, work is admitted, the message context is built, and the default
 appendix gives the detailed per-stage source audit for R1, including source
 anchors, concrete values, taken and not-taken branches, observation status,
 rationale visibility, and not-recorded fields.
+
+The baseline also fixes what the later controlled runs are compared
+against. R2, R3, and R4 do not need a new Gateway theory; they reuse the
+same G0--G18 ledger shape while exercising different AR classes. R5/R6
+and R1/R7 then test whether exact-prompt repeats preserve the same
+Gateway branch structure while changing run-specific identifiers.
 
 \section{Deeper Agent Runtime and Return Path}
 \label{sec:ar-path}
@@ -430,6 +510,13 @@ starts, finalizes a reply, ends with stop reason \texttt{stop}, and emits
 then source-derived: the dispatch source resumes after the resolver
 return, but the later G16/G14 post-processing is not emitted as its own
 runtime event.
+
+The AR layer uses the same audit discipline as the Gateway layer, but it
+answers a different question. G0--G18 explains how the request reaches a
+resolver. AR0--AR6 explains what kind of runtime execution the resolver
+produces: no tool, read-only retrieval, local workspace mutation, or
+external side effect. This separation prevents the paper from treating a
+successful answer as the only result of interest.
 
 \begin{table}[H]
 \centering
@@ -451,15 +538,27 @@ Mail through \texttt{osascript} and exits 0. The evidence supports only
 the host-side command completion; downstream email delivery is not
 verified.
 
+Two details make this runtime layer useful. First, a no-tool run is still
+evidence: it shows that the Agent lifecycle completed without tool
+events, so the absence of tools is recorded rather than assumed. Second,
+tool runs are not collapsed into a single ``used tools'' flag. The paper
+keeps command count, result count, stop reason, final reply, and resolver
+return separate, because each supports a different claim.
+
 \section{Controlled Experiments}
 \label{sec:experiments}
 
 \subsection{Cohort and Provenance}
 
 The controlled cohort contains seven saved runs, R1--R7. R1--R5 come
-from the public trace commits a68e6d7 through 7d742df. R6 and R7 were
-collected later in a temporary worktree on branch
-\texttt{collect-r6-r7}. The before and after fingerprints match:
+from the public trace commits a68e6d7 through 7d742df. For these five
+runs, the TraceClaw-side provenance is verified from repository history
+and saved trace artifacts. Their OpenClaw-side source identity is
+reconstructed from the saved local instrumentation patch and audit notes,
+because the trace payloads themselves do not embed an OpenClaw commit or
+configuration fingerprint. R6 and R7 were collected later in a temporary
+worktree on branch \texttt{collect-r6-r7}. For R6/R7 only, the before and
+after fingerprints directly verify the frozen environment:
 OpenClaw HEAD
 \seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c} and patch hash
 \seqsplit{6736a6be821ae927ebb112328d9552386684d5cbd8090975f52cc8666d8ef11f}.
@@ -467,6 +566,14 @@ Between 7d742df and the R7 commit, the only committed changes are
 \texttt{data/cases/latest-live.js}, \texttt{data/cases/recent-runs.js},
 and \texttt{index.html}. The saved traces still do not embed the
 OpenClaw commit, TraceClaw commit, or configuration fingerprint.
+
+The table therefore should be read as a controlled cohort with two
+provenance strengths. All seven runs are saved trace artifacts in the
+TraceClaw repository. R6/R7 additionally have direct before/after
+fingerprint evidence for the local OpenClaw checkout and patch hash.
+R1--R5 are included because their saved artifacts match the same generated
+schema and branch structure, but their OpenClaw environment is supported
+by post-hoc audit rather than by trace-embedded metadata.
 
 \begin{table}[H]
 \centering
@@ -520,6 +627,15 @@ by \texttt{agent\_reply\_finalized}, \texttt{agent\_run\_ended}, and
 distinguish retrieval-heavy reasoning from a no-tool answer even when the
 Gateway path is unchanged.
 
+R2 is useful because it keeps the control plane constant while changing
+the runtime class. G0--G18 still authenticate, authorize, admit, and
+route the request through the same successful structure. The difference
+appears after G18: AR2 contains retrieval tool activity and matching tool
+results. This demonstrates why a Gateway-only ledger is incomplete. It
+can say how the request reached the resolver, but only the AR layer shows
+that the answer was grounded in external retrieval events rather than in
+model-only generation.
+
 \subsection{Local Mutation (R4)}
 
 R4 asks for a short Python script that prints Fibonacci numbers. The AR
@@ -528,6 +644,13 @@ follow-up shell check. The mutation is local to the workspace. The claim
 is therefore narrower than ``the agent can edit arbitrary files'': in
 this run, the saved trace shows a local workspace write and subsequent
 runtime completion.
+
+The important evidence in R4 is the boundary between permission and
+effect. The Gateway permits a normal \texttt{chat.send} request; it does
+not by itself describe the later workspace mutation. The AR ledger
+records the mutation as a concrete tool sequence, including the
+post-mutation check. This makes the result auditable without overstating
+it: the evidence is local, saved, and tied to this workspace trace.
 
 \subsection{External Side Effect (R3)}
 
@@ -538,6 +661,14 @@ trace does not verify downstream delivery. The final assistant reply says
 more than the trace can prove. This is useful evidence precisely because
 it separates the control-plane/tool-policy decision that permits a
 \texttt{bash} tool call from the side effect performed inside the command.
+
+R3 is the strongest example of why rationale visibility matters. The
+runtime tells us that the command completed, but it does not record stdout
+from the short \texttt{command -v ... || true} probes and it does not emit
+a separate approval or delivery-confirmation event. A normal success log
+might tempt a reader to say the email was sent. The ledger forces the
+weaker and more defensible claim: the host-side command path completed,
+and the missing approval/delivery evidence is an observability gap.
 
 \subsection{Exact-Prompt Repeatability}
 
@@ -552,8 +683,16 @@ it separates the control-plane/tool-policy decision that permits a
 
 R1/R7 and R5/R6 repeat exact prompts. In both pairs, G0--G18 branches,
 Agent, resolver, tool/no-tool choice, stop reason, and AR structure match.
-The expected differences are run ID, Session key/ID, timestamps, and
-reply wording.
+The expected differences are run ID, Gateway Session key, AR session
+identifier where emitted, timestamps, and reply wording.
+
+The repeat pairs are not a general stability theorem. They are a sanity
+check on the ledger. If the same prompt under the same controlled
+environment changed Gateway branches without a recorded reason, the stage
+model would be suspect. Instead, the branch structure is stable and the
+run-specific identifiers change as expected. This supports using R1 as
+the detailed source-audit baseline while using R7 as an exact-prompt
+repeat.
 
 \subsection{Stage Matrix}
 
@@ -578,6 +717,17 @@ but no separate confirmation event. Third, the traces demonstrate a
 rationale-level observability gap even with 19/19 stage outcome
 observation.
 
+These findings are modest but specific. TraceClaw does not show that
+OpenClaw is safe in general, nor that a successful run proves policy
+compliance in every layer. It shows that an accepted request can be
+turned into a falsifiable ledger: G3 can prove that the ordinary
+\texttt{operator.write} branch, not the administrator shortcut, is the R1
+authorization path; G10 can show the outcome \texttt{allow} while still
+leaving the exact internal allow sub-branch only partially visible; AR6
+can show resolver return while marking later Gateway resume as
+source-derived. These are the kinds of results that answer-only
+evaluation would not expose.
+
 \subsection{Coverage Limits}
 
 The cohort is small, successful, same-machine, and same-configuration. It
@@ -585,6 +735,15 @@ does not cover rejected, failed, retried, cancelled, cross-version, or
 multi-framework paths. Weather runs and the old Cake2 trace are historical
 notes only. They are useful for artifact continuity, but they are not
 mixed into the R1--R7 quantitative tables.
+
+The controlled runs also share the same broad authorization shape:
+shared-token authentication, role \texttt{operator}, and ordinary
+\texttt{operator.write} authorization for \texttt{chat.send}. This is
+good for controlled comparison, but it leaves other policy branches
+untested. The historical Cake2 artifact remains useful because it shows a
+different authentication/scope combination, yet it is not used as a
+current quantitative baseline because it predates later collector
+changes.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -594,6 +753,15 @@ not a broad claim about all OpenClaw behavior. The runs share one local
 configuration and one instrumented OpenClaw source tree. Because the
 traces do not embed commit or configuration fingerprints, provenance has
 to be reconstructed from repository history and audit notes.
+
+This limitation is not cosmetic. A stronger artifact would store
+\texttt{openclawCommit}, \texttt{traceclawCommit}, trace schema version,
+configuration fingerprint, and instrumentation patch hash inside every
+trace. Without that embedded metadata, the paper can still audit saved
+behavior, but it must describe provenance strength carefully. R6/R7 have
+direct before/after fingerprint checks; R1--R5 are supported by saved
+trace artifacts and repository history plus post-hoc OpenClaw patch
+audit.
 
 The method is also partly manual. Stage labels are introduced by
 TraceClaw, not by OpenClaw itself, and source anchors require content
@@ -607,6 +775,13 @@ trace proves that a host-side command exited successfully; it does not
 prove email delivery. The paper therefore treats R3 as an audit finding
 about command-level evidence and missing approval/confirmation events,
 not as proof of downstream delivery.
+
+The appendix is long because the evidence is long. That is a tradeoff:
+printing every source anchor, value, and not-taken branch is not as
+readable as a narrative case study, but it makes the main claims
+auditable. The main paper keeps R1 as the baseline and summarizes R2--R7;
+the appendix preserves the full ledger for readers who want to inspect
+individual stages.
 
 \section{Artifact, Privacy, and Future Work}
 \label{sec:artifact}
@@ -622,6 +797,11 @@ submitted artifact, it must be redacted under the same rules.
 Future work should add commit/config fingerprints directly to every trace,
 rerun failure and rejection paths, and build an interactive evidence graph
 that links each stage to source anchors, runtime events, and case values.
+The most useful next step is not simply more successful prompts. It is a
+balanced cohort that includes rejected authentication, failed
+authorization, duplicate-run suppression, cancelled execution, tool
+policy denial, and cross-version replay. Those cases would test whether
+the ledger remains useful when the path stops early or changes shape.
 
 \begin{thebibliography}{99}
 

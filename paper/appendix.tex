@@ -2654,9 +2654,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0 runtime}
 \\
 
-\py{R1: device token candidate exists}
+\py{R1: device token candidate = NOT RECORDED}
 &
-\src{G0 runtime}
+\src{NOT RECORDED: no concrete candidate field archived}
 \\
 
 \py{R1: device-token verification is not reached}
@@ -2759,9 +2759,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:208 onward}
 \\[2mm]
 
-\py{R1: token\_check.ok = True}
+\py{R1: token\_check.ok = NOT APPLICABLE}
 &
-\src{DERIVED FROM authMethod="token" + result="pass"}
+\src{DERIVED: device-token verification branch is not reached}
 \\
 
 \py{R1: auth\_ok = True}
@@ -4015,7 +4015,7 @@ R1 G3 runtime event has result only
 % G3
 % ==============================================================
 
-\subsection*{G3: Method Authorization}
+\subsection*{G3: Method Authorization Flow Diagram}
 
 \textbf{Purpose:}
 This step performs method-level authorization for the authenticated
@@ -4479,7 +4479,7 @@ unconditionally present in the original G4 RPC payload.
 % G4
 % ==============================================================
 
-\subsection*{G4: \texttt{chat.send} Request Validation}
+\subsection*{G4: \texttt{chat.send} Request Validation Flow Diagram}
 
 \textbf{Purpose:}
 This step validates the incoming \texttt{chat.send} RPC envelope before
@@ -4931,7 +4931,7 @@ routing stages.
 % G5
 % ==============================================================
 
-\subsection*{G5: Message Sanitization and Classification}
+\subsection*{G5: Message Sanitization and Classification Flow Diagram}
 
 \textbf{Purpose:}
 This step converts the validated \texttt{chat.send} request into the
@@ -5399,7 +5399,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 % G6
 % ==============================================================
 
-\subsection*{G6: Requested Agent Resolution}
+\subsection*{G6: Requested Agent Resolution Flow Diagram}
 
 \textbf{Purpose:}
 This step determines whether the current request explicitly selects an
@@ -5936,7 +5936,7 @@ record.
 % G7
 % ==============================================================
 
-\subsection*{G7: Session Resolution and Store Lookup}
+\subsection*{G7: Session Resolution and Store Lookup Flow Diagram}
 
 \textbf{Purpose:}
 This step resolves the persistent \texttt{SessionEntry} associated with
@@ -6544,7 +6544,7 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 % G8
 % ==============================================================
 
-\subsection*{G8: Agent / Session Consistency Validation}
+\subsection*{G8: Agent / Session Consistency Validation Flow Diagram}
 
 \textbf{Purpose:}
 This step validates whether an explicitly requested Agent is compatible
@@ -7118,7 +7118,7 @@ the Session-key Agent branch determines the effective Agent as
 % G9
 % ==============================================================
 
-\subsection*{G9: Effective Agent Resolution}
+\subsection*{G9: Effective Agent Resolution Flow Diagram}
 
 \textbf{Purpose:}
 This step resolves the effective Gateway-side Agent after the
@@ -7761,7 +7761,7 @@ allow-producing branch generated the final decision.
 % G10
 % ==============================================================
 
-\subsection*{G10: Session Send-Policy Evaluation}
+\subsection*{G10: Session Send-Policy Evaluation Flow Diagram}
 
 \textbf{Purpose:}
 This step determines whether the resolved Session is permitted to
@@ -8351,7 +8351,7 @@ the request and execution continues toward G12.
 % G11
 % ==============================================================
 
-\subsection*{G11: Idempotency and Existing-Run Guard}
+\subsection*{G11: Idempotency and Existing-Run Guard Flow Diagram}
 
 \textbf{Purpose:}
 This step determines whether the incoming \texttt{chat.send} request
@@ -9187,7 +9187,7 @@ before the Agent run context is claimed. For R1, TraceClaw records
 % G12
 % ==============================================================
 
-\subsection*{G12: Session Work Admission and Revalidation}
+\subsection*{G12: Session Work Admission and Revalidation Flow Diagram}
 
 \textbf{Purpose:}
 This step converts the new-dispatch candidate into an admitted
@@ -10055,7 +10055,7 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 % G13
 % ==============================================================
 
-\subsection*{G13: Runtime Message Context Construction}
+\subsection*{G13: Runtime Message Context Construction Flow Diagram}
 
 \textbf{Purpose:}
 This step packages the prepared message, canonical Session identity,
@@ -10979,7 +10979,7 @@ diagnostic span records the same run ID and canonical Session key,
 % G14
 % ==============================================================
 
-\subsection*{G14: Inbound Message Dispatch}
+\subsection*{G14: Inbound Message Dispatch Flow Diagram}
 
 \textbf{Purpose:}
 This step receives the \texttt{MsgContext} prepared by G13 and sends it
@@ -11642,7 +11642,7 @@ deterministic normalization path.
 % G15
 % ==============================================================
 
-\subsection*{G15: Inbound Context Finalization}
+\subsection*{G15: Inbound Context Finalization Flow Diagram}
 
 \textbf{Purpose:}
 This step finalizes the inbound \texttt{MsgContext} before reply
@@ -13194,7 +13194,7 @@ boundary.
 % G16
 % ==============================================================
 
-\subsection*{G16: Reply Dispatch Orchestration}
+\subsection*{G16: Reply Dispatch Orchestration Flow Diagram}
 
 \textbf{Purpose:}
 This step receives the finalized context from G15 and carries out the
@@ -13574,7 +13574,7 @@ For R1, the downstream Session still identifies Agent
 % G17
 % ==============================================================
 
-\subsection*{G17: Downstream Effective Agent Re-resolution}
+\subsection*{G17: Downstream Effective Agent Re-resolution Flow Diagram}
 
 \textbf{Purpose:}
 This step re-resolves the effective Agent from the downstream Session
@@ -13992,7 +13992,7 @@ boundary remains \texttt{"main"}.
 % G18
 % ==============================================================
 
-\subsection*{G18: Reply Resolver Boundary}
+\subsection*{G18: Reply Resolver Boundary Flow Diagram}
 
 \textbf{Purpose:}
 This step selects and invokes the reply resolver used by G16. The

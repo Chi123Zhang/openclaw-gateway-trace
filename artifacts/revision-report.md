@@ -131,7 +131,7 @@ Generated verification artifacts:
 Verification counts:
 
 - MATCH: 230
-- MISMATCH_FIXED: 28
+- MISMATCH_FIXED: 30
 - NOT_RECORDED: 58
 - SOURCE_DERIVED: 4
 - AUDIT_DERIVED: 0
@@ -144,6 +144,10 @@ Corrections made during this pass:
   R1 is now consistently written as shared-token `G1 allow`, G2 shared-token
   pass, and G3 `operator.write` authorization with no `operator.admin`
   shortcut.
+- Removed remaining G2 device-token residues: the R1 trace does not record a
+  concrete `deviceTokenCandidate` or `hasDeviceTokenCandidate`, and
+  `token_check.ok` is not applicable because the device-token verification
+  branch is not reached.
 - Kept `deviceTokenCandidate` as `NOT RECORDED`.
 - Kept device-token fallback as not reached only where supported by observed
   shared-auth success plus upstream source.
@@ -162,6 +166,36 @@ Coverage recomputation from the final per-stage ledger:
 The NOT RECORDED subfields do not reduce R1 coverage because each G0--G18 stage
 still has a source anchor and at least one concrete case value. Coverage is
 stage-level, not a count of every internal predicate or returned field.
+
+## Main-only Completeness Restoration
+
+The main paper was expanded without reintroducing old Cake2 or historical
+Weather quantitative claims. The old baseline at `b375dd68:paper/main.tex`
+has 56,393 characters; the compressed controlled revision had 29,728
+characters; the restored controlled main now has 40,459 characters before
+final CI. The added prose restores motivation, related-work positioning,
+method semantics, R1-as-baseline explanation, AR-layer interpretation,
+R2/R3/R4 experiment analysis, repeatability interpretation, provenance
+strength, and limitations.
+
+Specific consistency decisions:
+
+- `cov=19/19` means each Gateway stage has at least one verified source
+  anchor and at least one concrete run value. It does not mean every field is
+  recorded.
+- `obs=19/19` means each Gateway stage outcome is directly observed. R1 still
+  has rationale-level gaps; the stage matrix marks 19/19 Gateway stages as
+  `partial` rationale visibility.
+- R1 `hasDeviceTokenCandidate` is not recorded in the saved trace. The trace
+  records `hasDeviceIdentity=False`; those fields are not interchangeable.
+- R1 Gateway `sessionKey` is recorded. Gateway `sessionId` is empty/not
+  recorded; AR-layer `sessionId` exists but is not used to fill Gateway G7.
+- R6/R7 have direct before/after OpenClaw fingerprint checks. R1--R5 are
+  verified from TraceClaw repository history and saved traces, with
+  OpenClaw-side provenance reconstructed from audit notes and the saved patch.
+- The long appendix keeps both per-stage ledgers and flow diagrams. Duplicate
+  outline titles for G3--G18 were renamed so the second occurrence is labeled
+  `Flow Diagram`.
 
 ## Main Paper References
 
