@@ -514,3 +514,27 @@ more precise subject and less rhetorical emphasis.
 
 Local LaTeX build remains unavailable because no TeX executable is installed.
 GitHub Actions Paper Build is required for final PDF validation.
+
+### Final CI Validation
+
+Content commits:
+
+- `99b6b4e`: completed evidence cleanup and style pass.
+- `61d2a01`: fixed the standalone appendix draft date to October 2026.
+
+GitHub Actions Paper Build run `36839715469` passed on commit `61d2a01`.
+
+CI URL:
+
+- https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36839715469
+
+Downloaded CI artifact page counts:
+
+- `main.pdf`: 13 pages
+- `appendix_main.pdf`: 93 pages
+
+Final PDF text scans found no unresolved `??`, author-identifying commit hashes,
+temporary branch names, controlled run-ID prefixes, local `/Users/` paths,
+personal email addresses, personal names, stale R1/Cake2 device-token/admin
+claims, unsupported SessionEntry claims, the old August 2026 date, or the
+targeted style-pass phrases.
