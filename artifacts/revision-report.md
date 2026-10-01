@@ -326,4 +326,16 @@ Applied after the successful `4eac6c4` CI build:
   literature appears before OpenClaw background articles.
 
 Local LaTeX build is still unavailable because no TeX executable is installed.
-The next validation step is GitHub Actions Paper Build on the updated branch.
+GitHub Actions Paper Build run `36836680584` passed on commit `9bf75dd` and
+uploaded `traceclaw-paper-pdfs`.
+
+Downloaded CI artifact page counts:
+
+- `main.pdf`: 12 pages
+- `appendix_main.pdf`: 93 pages
+
+PDF text scans found no hits in the main PDF for commit hashes, the temporary
+branch name, run-ID prefixes, the old AI-style phrases listed in the critique,
+or the overstated tool-authorization wording. Appendix PDF scans found no hits
+for the stale R1 device-token/admin claims, old Cake2 timings, real email,
+local absolute paths, or personal names.
