@@ -49,6 +49,13 @@ categories as follows.
     missing field maps to \textsc{NotObserved}.
 \end{itemize}
 
+All source anchors used for G0--G18 and the post-G18 source mapping
+were mechanically checked against the unmodified upstream OpenClaw
+source at commit \texttt{0790d9f} using \texttt{scripts/check\_anchors.py}.
+This check validates source-anchor fidelity only. It does not
+independently validate runtime evidence or the semantic correctness of
+the experimental claims.
+
 For R1, all Gateway outcomes are observed at the stage-outcome level, but
 rationale visibility remains partial. The table below summarizes the
 field-level gaps that appear later in the per-stage ledger.
@@ -3694,7 +3701,7 @@ if auth\_error is not None:
 
 \hspace*{1.4em}return
 &
-\path{src/gateway/server-methods.ts:737}
+\path{src/gateway/server-methods.ts:735--738}
 \\[2mm]
 
 % ==============================================================
@@ -5372,7 +5379,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \py{        return None}
 &
-\src{src/gateway/server-methods/chat.ts:735}
+\src{src/gateway/server-methods/chat.ts:734--736}
 \\
 
 \py{    parsed = parseAgentSessionKey(params.requestedSessionKey.strip())}
@@ -5387,7 +5394,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \py{        return None}
 &
-\src{src/gateway/server-methods/chat.ts:742}
+\src{src/gateway/server-methods/chat.ts:738--742}
 \\
 
 \py{    store_key = resolveSessionStoreKey(cfg=params.cfg,}
@@ -5407,7 +5414,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \py{        return None}
 &
-\src{src/gateway/server-methods/chat.ts:742}
+\src{src/gateway/server-methods/chat.ts:738--742}
 \\
 
 \py{    return normalizeAgentId(parsed.agentId)}
@@ -5449,7 +5456,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \py{R1: requested_agent_id = None}
 &
-\src{chat.ts:742}
+\src{chat.ts:738--742}
 \\
 
 \py{R1: session_load_options = None}
@@ -5808,7 +5815,7 @@ object, or \texttt{entry.sessionId}.
 
 \py{)}
 &
-\src{src/gateway/server-methods/chat.ts:3822}
+\src{src/gateway/server-methods/chat.ts:3811--3822}
 \\
 
 \py{session_load_ms = roundedChatSendTimingMs(}
@@ -5910,7 +5917,7 @@ object, or \texttt{entry.sessionId}.
 
 \py{        cfg=cfg,}
 &
-\src{src/gateway/session-utils.ts:1061}
+\src{src/gateway/session-utils.ts:1060--1068}
 \\
 
 \py{        storePath=store_path,}
@@ -6363,7 +6370,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 \pyI{cfg=cfg,}
 &
-\src{src/gateway/server-methods/chat.ts:3840}
+\src{src/gateway/server-methods/chat.ts:3839--3843}
 \\
 
 \pyI{requestedSessionKey=raw_session_key,}
@@ -6450,7 +6457,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 \hspace*{2.8em}\lstinline|return {"ok": True, "agentId": agent_id}|
 &
-\src{src/gateway/server-methods/chat.ts:712}
+\src{src/gateway/server-methods/chat.ts:710--712}
 \\
 
 \pyI{if resolveSessionStoreKey(cfg=params.cfg, sessionKey=requested_session_key) == "global":}
@@ -6460,7 +6467,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 \hspace*{2.8em}\lstinline|return {"ok": True, "agentId": agent_id}|
 &
-\src{src/gateway/server-methods/chat.ts:715}
+\src{src/gateway/server-methods/chat.ts:713--715}
 \\
 
 \pyI{if parsed is None or normalizeAgentId(parsed.agentId) != agent_id:}
@@ -7536,12 +7543,12 @@ allow-producing branch generated the final decision.
 
 \pyI{cfg=cfg,}
 &
-\src{src/gateway/server-methods/chat.ts:3892}
+\src{src/gateway/server-methods/chat.ts:3891--3896}
 \\
 
 \pyI{entry=entry,}
 &
-\src{src/gateway/server-methods/chat.ts:3893}
+\src{src/gateway/server-methods/chat.ts:3891--3896}
 \\
 
 \pyI{sessionKey=session_key,}
@@ -8162,7 +8169,7 @@ the request and execution continues toward G12.
 
 \pyI{return}
 &
-\src{src/gateway/server-methods/chat.ts:3942}
+\src{src/gateway/server-methods/chat.ts:3938--3942}
 \\
 
 % ==============================================================
@@ -9054,12 +9061,12 @@ the Agent run context is claimed. For R1, TraceClaw records
 
 \pyI{admitted\_session\_id =}
 &
-\src{src/gateway/server-methods/chat.ts:4137}
+\src{src/gateway/server-methods/chat.ts:4134--4138}
 \\
 
 \pyII{latest\_entry.sessionId or backing\_session\_id or client\_run\_id}
 &
-\src{src/gateway/server-methods/chat.ts:4137}
+\src{src/gateway/server-methods/chat.ts:4134--4138}
 \\
 
 % ==============================================================
@@ -9662,42 +9669,42 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 \py{trimmed\_message = parsed\_message.trim()}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4321}
+\src{chat.ts:4475}
 \\
 
 \py{command\_body = parsed\_message}
 &
-\src{chat.ts:4322}
+\src{chat.ts:4476}
 \\
 
 \py{command\_source =}
 &
-\src{chat.ts:4323--4324}
+\src{chat.ts:4477--4478}
 \\
 
 \pyI{"text" if not suppress\_command\_interpretation}
 &
-\src{chat.ts:4323--4324}
+\src{chat.ts:4477--4478}
 \\
 
 \pyII{and trimmed\_message.startswith("/") else None}
 &
-\src{chat.ts:4323--4324}
+\src{chat.ts:4477--4478}
 \\
 
 \py{message\_for\_agent =}
 &
-\src{chat.ts:4325--4327}
+\src{chat.ts:4479--4481}
 \\
 
 \pyI{system\_provenance\_receipt + parsed\_message}
 &
-\src{chat.ts:4325--4327}
+\src{chat.ts:4479--4481}
 \\
 
 \pyI{if system\_provenance\_receipt else parsed\_message}
 &
-\src{chat.ts:4325--4327}
+\src{chat.ts:4479--4481}
 \\
 
 % ==============================================================
@@ -9713,27 +9720,27 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 
 \py{queued\_followup\_owner\_device\_id = normalizeOptionalText(...)}
 &
-\src{chat.ts:4328}
+\src{chat.ts:4482}
 \\
 
 \py{queued\_followup\_owner\_conn\_id = normalizeOptionalText(...)}
 &
-\src{chat.ts:4329}
+\src{chat.ts:4483}
 \\
 
 \py{queued\_followup\_owner\_key = device or connection owner}
 &
-\src{chat.ts:4330--4334}
+\src{chat.ts:4484--4488}
 \\
 
 \py{originating\_channel, originating\_to, account\_id,}
 &
-\src{chat.ts:4335--4341}
+\src{chat.ts:4489--4495}
 \\
 
 \pyI{message\_thread\_id, explicit\_deliver\_route = originating\_route}
 &
-\src{chat.ts:4335--4341}
+\src{chat.ts:4489--4495}
 \\
 
 % ==============================================================
@@ -9750,87 +9757,87 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 \py{ctx = MsgContext(}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4349--4391}
+\src{chat.ts:4503--4545}
 \\
 
 \pyI{Body=message\_for\_agent,}
 &
-\src{chat.ts:4350}
+\src{chat.ts:4504}
 \\
 
 \pyI{BodyForAgent=message\_for\_agent,}
 &
-\src{chat.ts:4351}
+\src{chat.ts:4505}
 \\
 
 \pyI{BodyForCommands=command\_body,}
 &
-\src{chat.ts:4352}
+\src{chat.ts:4506}
 \\
 
 \pyI{RawBody=parsed\_message,}
 &
-\src{chat.ts:4353}
+\src{chat.ts:4507}
 \\
 
 \pyI{CommandBody=command\_body,}
 &
-\src{chat.ts:4354}
+\src{chat.ts:4508}
 \\
 
 \pyI{InputProvenance=system\_input\_provenance,}
 &
-\src{chat.ts:4355}
+\src{chat.ts:4509}
 \\
 
 \pyI{SessionKey=session\_key,}
 &
-\src{chat.ts:4356}
+\src{chat.ts:4510}
 \\
 
 \pyI{AgentId=agent\_id,}
 &
-\src{chat.ts:4357}
+\src{chat.ts:4511}
 \\
 
 \pyI{Provider=INTERNAL\_MESSAGE\_CHANNEL,}
 &
-\src{chat.ts:4358}
+\src{chat.ts:4512}
 \\
 
 \pyI{Surface=INTERNAL\_MESSAGE\_CHANNEL,}
 &
-\src{chat.ts:4359}
+\src{chat.ts:4513}
 \\
 
 \pyI{OriginatingChannel=originating\_channel,}
 &
-\src{chat.ts:4360}
+\src{chat.ts:4514}
 \\
 
 \pyI{OriginatingTo=originating\_to,}
 &
-\src{chat.ts:4361}
+\src{chat.ts:4515}
 \\
 
 \pyI{ExplicitDeliverRoute=explicit\_deliver\_route,}
 &
-\src{chat.ts:4362}
+\src{chat.ts:4516}
 \\
 
 \pyI{AccountId=account\_id,}
 &
-\src{chat.ts:4363}
+\src{chat.ts:4517}
 \\
 
 \pyI{MessageThreadId=message\_thread\_id,}
 &
-\src{chat.ts:4364}
+\src{chat.ts:4518}
 \\
 
 \pyI{ChatType="direct",}
 &
-\src{chat.ts:4365}
+\src{chat.ts:4519}
 \\
 
 % ==============================================================
@@ -9846,37 +9853,37 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 
 \pyI{CommandSource=command\_source if command\_source exists,}
 &
-\src{chat.ts:4366}
+\src{chat.ts:4520}
 \\
 
 \pyI{CommandAuthorized=not suppress\_command\_interpretation,}
 &
-\src{chat.ts:4367}
+\src{chat.ts:4521}
 \\
 
 \pyI{CommandTurn=(}
 &
-\src{chat.ts:4368--4380}
+\src{chat.ts:4522--4534}
 \\
 
 \pyII{TextSlashTurn(source=command\_source, authorized=True)}
 &
-\src{chat.ts:4368--4374}
+\src{chat.ts:4522--4528}
 \\
 
 \pyII{if command\_source else}
 &
-\src{chat.ts:4368--4380}
+\src{chat.ts:4522--4534}
 \\
 
 \pyII{NormalTurn(source="message", authorized=False)}
 &
-\src{chat.ts:4375--4380}
+\src{chat.ts:4529--4534}
 \\
 
 \pyI{),}
 &
-\src{chat.ts:4368--4380}
+\src{chat.ts:4522--4534}
 \\
 
 % ==============================================================
@@ -9892,32 +9899,32 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 
 \pyI{MessageSid=client\_run\_id,}
 &
-\src{chat.ts:4381}
+\src{chat.ts:4535}
 \\
 
 \pyI{ApprovalReviewerDeviceId=queued\_followup\_owner\_device\_id,}
 &
-\src{chat.ts:4382}
+\src{chat.ts:4536}
 \\
 
 \pyI{if not isOperatorUiClient(client\_info):}
 &
-\src{chat.ts:4383--4389}
+\src{chat.ts:4537--4543}
 \\
 
 \pyII{attach SenderId / SenderName / SenderUsername}
 &
-\src{chat.ts:4383--4389}
+\src{chat.ts:4537--4543}
 \\
 
 \pyI{GatewayClientScopes=client.connect.scopes or [],}
 &
-\src{chat.ts:4390}
+\src{chat.ts:4544}
 \\
 
 \py{)}
 &
-\src{chat.ts:4391}
+\src{chat.ts:4503--4545}
 \\
 
 % ==============================================================
@@ -9934,37 +9941,37 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 \py{if len(media\_path\_offload\_paths) > 0:}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4394--4405}
+\src{chat.ts:4548--4559}
 \\
 
 \pyI{ctx.MediaPath = media\_path\_offload\_paths[0]}
 &
-\src{chat.ts:4400}
+\src{chat.ts:4554}
 \\
 
 \pyI{ctx.MediaPaths = media\_path\_offload\_paths}
 &
-\src{chat.ts:4401}
+\src{chat.ts:4555}
 \\
 
 \pyI{ctx.MediaType = media\_path\_offload\_types[0]}
 &
-\src{chat.ts:4402}
+\src{chat.ts:4556}
 \\
 
 \pyI{ctx.MediaTypes = media\_path\_offload\_types}
 &
-\src{chat.ts:4403}
+\src{chat.ts:4557}
 \\
 
 \pyI{ctx.MediaWorkspaceDir = media\_path\_offload\_workspace\_dir}
 &
-\src{chat.ts:4404}
+\src{chat.ts:4558}
 \\
 
 \pyI{ctx.MediaStaged = True}
 &
-\src{chat.ts:4405}
+\src{chat.ts:4559}
 \\
 
 % ==============================================================
@@ -9993,17 +10000,17 @@ send-policy decision, or model invocation. For R1, TraceClaw records
 \py{applyChatSendManagedMediaFields(}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4637}
+\src{chat.ts:4793}
 \\
 
 \pyI{ctx, await plugin\_bound\_media\_fields\_promise}
 &
-\src{chat.ts:4637}
+\src{chat.ts:4793}
 \\
 
 \py{)}
 &
-\src{chat.ts:4637}
+\src{chat.ts:4793}
 \\
 
 % ==============================================================
@@ -10225,19 +10232,19 @@ $\downarrow$\\[3mm]
 
 Message / command preparation:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4321--4328}\\[1mm]
+\texttt{chat.ts:4475--4482}\\[1mm]
 
 Originating-route extraction:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4335--4341}\\[1mm]
+\texttt{chat.ts:4489--4495}\\[1mm]
 
 Core \texttt{MsgContext} construction:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4349--4391}\\[1mm]
+\texttt{chat.ts:4503--4545}\\[1mm]
 
 Conditional staged-media fields:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4394--4405}\\[1mm]
+\texttt{chat.ts:4548--4559}\\[1mm]
 
 Managed-media helper:\\
 \texttt{src/gateway/server-methods/}\\
@@ -10245,7 +10252,7 @@ Managed-media helper:\\
 
 Final managed-media merge:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4637}\\[1mm]
+\texttt{chat.ts:4793}\\[1mm]
 
 G14 dispatch boundary:\\
 \texttt{src/gateway/server-methods/}\\
@@ -10347,7 +10354,7 @@ Trim the parsed message and preserve the original message as the
 command-facing body. A \texttt{commandSource} is assigned only when
 command interpretation is enabled and the trimmed message begins with
 \texttt{/}.\\
-\textit{Source: chat.ts:4321--4324}\\[2mm]
+\textit{Source: chat.ts:4475--4478}\\[2mm]
 
 R1:\\
 \texttt{parsedMessage = "How to make a cake?"}\\
@@ -10360,7 +10367,7 @@ $\rightarrow$
 Construct \texttt{messageForAgent}. If a system-provenance receipt is
 present, prepend it to the parsed message; otherwise preserve the
 original message text.\\
-\textit{Source: chat.ts:4325--4328}\\[2mm]
+\textit{Source: chat.ts:4479--4481}\\[2mm]
 
 R1:\\
 \texttt{messageForAgent = "How to make a cake?"}\\[3mm]
@@ -10370,13 +10377,13 @@ Project the already-resolved routing state into the fields required by
 the runtime context, including \texttt{originatingChannel},
 \texttt{originatingTo}, \texttt{accountId},
 \texttt{messageThreadId}, and \texttt{explicitDeliverRoute}.\\
-\textit{Source: chat.ts:4335--4341}\\[3mm]
+\textit{Source: chat.ts:4489--4495}\\[3mm]
 
 \textbf{Step 4: Construct the core \texttt{MsgContext}}\\
 Create \texttt{ctx: MsgContext} and populate the prepared message,
 input provenance, canonical Session identity, effective Agent identity,
 internal Provider / Surface, routing metadata, and direct-chat state.\\
-\textit{Source: chat.ts:4349--4365}\\[2mm]
+\textit{Source: chat.ts:4503--4519}\\[2mm]
 
 R1:\\
 \texttt{Body = "How to make a cake?"}\\
@@ -10393,7 +10400,7 @@ R1:\\
 Set the context-level command-interpretation state and classify the
 current message as either a text slash-command turn or an ordinary
 message turn.\\
-\textit{Source: chat.ts:4366--4380}\\[2mm]
+\textit{Source: chat.ts:4520--4534}\\[2mm]
 
 R1:\\
 \texttt{CommandAuthorized = true}\\
@@ -10410,7 +10417,7 @@ Bind the current client run to the message through
 \texttt{MessageSid}. For non-Operator-UI callers, sender identity may
 also be attached. Finally propagate the authenticated Gateway client
 scopes into the context.\\
-\textit{Source: chat.ts:4381--4391}\\[2mm]
+\textit{Source: chat.ts:4535--4545}\\[2mm]
 
 R1:\\
 \texttt{MessageSid =}\\
@@ -10423,7 +10430,7 @@ R1:\\
 If staged media paths exist, extend the same \texttt{MsgContext} with
 \texttt{MediaPath}, \texttt{MediaPaths}, media types,
 \texttt{MediaWorkspaceDir}, and the \texttt{MediaStaged} marker.\\
-\textit{Source: chat.ts:4394--4405}\\[2mm]
+\textit{Source: chat.ts:4548--4559}\\[2mm]
 
 R1:\\
 \texttt{hasAttachments = false}\\
@@ -12620,7 +12627,7 @@ boundary.
 
 \pyII{cfg=cfg,}
 &
-\src{dispatch-from-config.ts:2185}
+\src{dispatch-from-config.ts:2184--2196}
 \\
 
 \pyII{entry=session\_store\_entry.entry,}
@@ -13141,37 +13148,37 @@ boundary.
 
 \pyII{if operation aborted: return aborted result}
 &
-\src{dispatch-from-config.ts:3983--3985}
+\src{dispatch-from-config.ts:4064--4066}
 \\
 
 \pyII{commit or release inbound dedupe according to replay safety}
 &
-\src{dispatch-from-config.ts:3986--3992}
+\src{dispatch-from-config.ts:4067--4073}
 \\
 
 \pyII{recordAgentDispatchCompleted("error", ...)}
 &
-\src{dispatch-from-config.ts:3993}
+\src{dispatch-from-config.ts:4074}
 \\
 
 \pyII{recordProcessed("error", ...)}
 &
-\src{dispatch-from-config.ts:3994}
+\src{dispatch-from-config.ts:4075}
 \\
 
 \pyII{markIdle("message\_error")}
 &
-\src{dispatch-from-config.ts:3995}
+\src{dispatch-from-config.ts:4076}
 \\
 
 \pyII{failDispatchReplyOperation(error)}
 &
-\src{dispatch-from-config.ts:3996}
+\src{dispatch-from-config.ts:4077}
 \\
 
 \pyII{raise error}
 &
-\src{dispatch-from-config.ts:3997}
+\src{dispatch-from-config.ts:4078}
 \\
 
 % ==============================================================

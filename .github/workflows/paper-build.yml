@@ -5,12 +5,16 @@ on:
     paths:
       - "paper/**"
       - "scripts/validate_repeated_weather_runs.py"
+      - "scripts/check_anchors.py"
+      - "artifacts/controlled/source-anchor-check-all.csv"
       - "data/cases/**"
       - ".github/workflows/paper-build.yml"
   pull_request:
     paths:
       - "paper/**"
       - "scripts/validate_repeated_weather_runs.py"
+      - "scripts/check_anchors.py"
+      - "artifacts/controlled/source-anchor-check-all.csv"
       - "data/cases/**"
       - ".github/workflows/paper-build.yml"
   workflow_dispatch:
@@ -40,6 +44,9 @@ jobs:
           test -s artifacts/weather-run-comparison-table.tex
           test -s artifacts/coverage-observation-table.tex
           test -s artifacts/stage-run-matrix.tex
+
+      - name: Check appendix source anchors
+        run: python scripts/check_anchors.py
 
       - name: Build main paper and appendix
         uses: xu-cheng/latex-action@v3
