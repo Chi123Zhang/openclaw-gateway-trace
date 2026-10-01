@@ -74,6 +74,46 @@ RESTORED / RESTORED+UPDATED / RESTORED+SOURCE ANCHOR CORRECTED inventory.
 - R3 is limited to host-side command completion. The paper does not claim
   downstream email delivery.
 
+## Post-restoration Stale-value Cleanup
+
+After restoring the long appendix, a surgical cleanup pass removed inherited
+Cake2 concrete values that had survived inside R1-specific text. This was a
+value-correction pass only; the long G0--G18 audit structure, tables, figures,
+source anchors, and AR material were preserved.
+
+Cleaned values:
+
+- `deviceTokenCandidate = present` in G0/G2 R1 value blocks was replaced with
+  `deviceTokenCandidate = NOT RECORDED`.
+- `state.deviceTokenCandidate = present` was replaced with
+  `state.deviceTokenCandidate = NOT RECORDED`.
+- `R1: isDeviceTokenAuth = True` was replaced with
+  `R1: isDeviceTokenAuth = False`, source-derived from the shared-token path and
+  not-reached device-token fallback.
+- The explicit device-token verification subpath now marks R1 as
+  `NOT REACHED`; `tokenCheck.ok` is `NOT RECORDED / NOT APPLICABLE`.
+- `session_load_ms = 4.572` and `Session-load duration is 4.572 ms` were
+  replaced with `session_load_ms = NOT RECORDED`.
+- Hybrid session IDs such as `NOT RECORDED-...` were replaced with plain
+  `NOT RECORDED`.
+- Redacted local Session store paths were replaced with `store_path = NOT RECORDED`
+  / `storePath = NOT RECORDED`.
+- Diagram timings `ACK: 0.219 ms` and `title sync: 6655.825 ms` were replaced
+  with `NOT RECORDED`.
+- `available tools: 33` / `availableTools = 33` was replaced with
+  `available tools: NOT RECORDED`; the runtime-observed value is only
+  `tools invoked in R1: 0`.
+
+Evidence basis:
+
+- `artifacts/controlled/controlled-runs.json`, R1 G0--G3 stage rows.
+- R1 run summary fields: `tools=none`, `toolCount=0`, empty `sessionId`.
+- `paper/appendix.tex` source branch context for not-reached device-token and
+  admin-shortcut branches.
+
+The detailed cleanup table is recorded in
+`artifacts/controlled/claim-check.md`.
+
 ## Main Paper References
 
 `paper/main.tex` refers to the supplementary appendix as the home of the
@@ -96,6 +136,12 @@ Passed:
   `artifacts/full-appendix-restoration-report.md` for old run/session IDs,
   real recipient email, local absolute path prefix, personal names, and invalid
   R1 device-token leftovers.
+- Post-cleanup stale-value grep for `deviceTokenCandidate = present`,
+  `isDeviceTokenAuth = True`, `tokenCheck.ok = True`,
+  `session_load_ms = 4.572`, `4.572`, `0.219`, `6655.825`,
+  `available tools: 33`, `NOT RECORDED-`, `2e18`, and `432df4352674`.
+  No invalid hits remained. The only remaining primary grep hits were source
+  branch definitions for `explicit-device-token` and `admin_scope_required`.
 
 Local PDF build was not run because `xelatex`, `latexmk`, and `tectonic` are
 not installed on this machine. Docker is installed but the current process

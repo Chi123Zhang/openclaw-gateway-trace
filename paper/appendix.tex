@@ -1085,13 +1085,14 @@ R1:\\
 \texttt{authMethod = "token"}\\
 \texttt{sharedAuthProvided = True}\\
 \texttt{sharedAuthOk = True}\\
-\texttt{deviceTokenCandidate = present}\\
+\texttt{deviceTokenCandidate = NOT RECORDED}\\
 \texttt{deviceTokenCandidateSource = NOT RECORDED}\\[3mm]
 
 \textbf{Step 8: Preserve the alternative authentication path}\\
-The failed shared-auth result does not by itself terminate the
-connection because the returned \texttt{ConnectAuthState} still contains
-a device-token candidate.\\[1mm]
+Source code can preserve an alternative device-token path when shared
+authentication fails. R1 does not use that path: shared authentication
+succeeds, \texttt{hasDeviceIdentity=False}, and no concrete
+\texttt{deviceTokenCandidate} value is recorded in the R1 trace.\\[1mm]
 
 R1 runtime sequence:\\
 \texttt{G0 result = "authorized"}\\
@@ -2427,9 +2428,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0: hasBootstrapTokenCandidate=False}
 \\
 
-\py{state.deviceTokenCandidate = present}
+\py{state.deviceTokenCandidate = NOT RECORDED}
 &
-\src{G0: hasDeviceTokenCandidate=False}
+\src{G0: hasDeviceTokenCandidate=False; no concrete candidate recorded}
 \\
 
 \py{state.deviceTokenCandidateSource = NOT RECORDED}
@@ -3039,9 +3040,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:2056--2065}
 \\[2mm]
 
-\py{R1: isDeviceTokenAuth = True}
+\py{R1: isDeviceTokenAuth = False}
 &
-\src{DERIVED FROM authMethod}
+\src{SOURCE-DERIVED: shared-token path; device-token fallback not reached}
 \\[3mm]
 
 % ==============================================================
@@ -3379,7 +3380,7 @@ rate-limiter state, and token-verification callbacks.\\
 R1 input:\\
 \texttt{authOk = True}\\
 \texttt{bootstrapTokenCandidate = None}\\
-\texttt{deviceTokenCandidate = present}\\[3mm]
+\texttt{deviceTokenCandidate = NOT RECORDED}\\[3mm]
 
 \textbf{Step 4: Skip bootstrap-token authentication}\\
 The bootstrap-token path is evaluated only when a bootstrap token,
@@ -3420,12 +3421,13 @@ On success:\\
 \texttt{authMethod = "token"}\\[1mm]
 
 R1:\\
-\texttt{tokenCheck.ok = True}\\
-\texttt{authOk = True}\\
-\texttt{authMethod = "token"}\\[1mm]
+\texttt{branch status = NOT REACHED}\\
+\texttt{tokenCheck.ok = NOT RECORDED / NOT APPLICABLE}\\
+\texttt{device-token success is not attributed to R1}\\[1mm]
 
-\textit{This path is source-determined by the observed}\\
-\textit{G2 shared-token success result.}\\[3mm]
+\textit{R1 records sharedAuthProvided=True, sharedAuthOk=True,}\\
+\textit{and hasDeviceIdentity=False; authMethod="token" therefore}\\
+\textit{must not be read as proof of device-token authentication.}\\[3mm]
 
 \textbf{Step 8: Return the final ConnectAuthDecision}\\
 The function returns:\\
@@ -3483,7 +3485,9 @@ as connected.\\
 \textit{Source: message-handler.ts:2056--2065}\\[1mm]
 
 R1:\\
-\texttt{isDeviceTokenAuth = True}\\[3mm]
+\texttt{isDeviceTokenAuth = False}\\
+\texttt{SOURCE-DERIVED from shared-token path /}\\
+\texttt{not-reached device-token fallback}\\[3mm]
 
 \textbf{Step 14: Build and send the authenticated hello response}\\
 The \texttt{hello-ok} payload includes the finalized role,
@@ -5887,9 +5891,9 @@ record.
 \src{DERIVED: session-utils.ts:1542--1592}
 \\
 
-\py{R1: store_path = "<redacted-home>/.openclaw/agents/main/sessions/sessions.json"}
+\py{R1: store_path = NOT RECORDED}
 &
-\src{RUNTIME; session-utils.ts:1056,1062}
+\src{NOT RECORDED in R1 trace; source computes target.storePath}
 \\
 
 \py{R1: store_keys = [SESSION_KEY]}
@@ -5922,9 +5926,9 @@ record.
 \src{session-utils.ts:1059,1067}
 \\
 
-\py{R1: session_load_ms = 4.572}
+\py{R1: session_load_ms = NOT RECORDED}
 &
-\src{RUNTIME; timing source: chat.ts:3823}
+\src{NOT RECORDED in R1 trace; timing source exists in code}
 \\
 
 \end{longtable}
@@ -5946,7 +5950,7 @@ together with the canonical and legacy key information. For R1, the
 Session resolves to the \texttt{main} Agent store, the canonical key is
 unchanged, the matching entry exists with Session ID
 \texttt{NOT RECORDED}, and the measured
-Session-load duration is \texttt{4.572 ms}.
+Session-load duration is \texttt{NOT RECORDED}.
 
 \begin{center}
 
@@ -6115,19 +6119,15 @@ Passed to\\
 \texttt{"}\\[2mm]
 
 \texttt{store\_path =}\\
-\texttt{<redacted-home>/.openclaw/}\\
-\texttt{agents/main/sessions/}\\
-\texttt{sessions.json}\\[2mm]
+\texttt{NOT RECORDED}\\[2mm]
 
 \texttt{entry.sessionId =}\\
-\texttt{"NOT RECORDED-2e18-}\\
-\texttt{4d4d-9b08-}\\
-\texttt{432df4352674"}\\[2mm]
+\texttt{"NOT RECORDED"}\\[2mm]
 
 \texttt{legacy\_key = None}\\[2mm]
 
 \texttt{session\_load\_ms}\\
-\quad\texttt{= 4.572}
+\quad\texttt{= NOT RECORDED}
 };
 
 % ==============================================================
@@ -6181,8 +6181,7 @@ R1:\\
 
 R1:\\
 \texttt{store\_path =}\\
-\texttt{"<redacted-home>/.openclaw/agents/main/sessions/}\\
-\texttt{sessions.json"}\\[3mm]
+\texttt{"NOT RECORDED"}\\[3mm]
 
 \textbf{Step 7: Find freshest matching SessionEntry}\\
 \texttt{freshest\_match =}\\
@@ -6216,7 +6215,7 @@ R1:\\
 \textit{Source: chat.ts:3823}\\[1mm]
 
 R1:\\
-\texttt{session\_load\_ms = 4.572}\\[3mm]
+\texttt{session\_load\_ms = NOT RECORDED}\\[3mm]
 
 \textbf{Step 11: Unpack values for subsequent Gateway stages}\\
 \texttt{cfg = session\_load\_result.cfg}\\
@@ -6511,12 +6510,12 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 
 \py{R1: entry.sessionId =}
 &
-\src{RUNTIME: persistent SessionEntry obtained at G7}
+\src{NOT RECORDED in R1 trace; persistent entry existence observed}
 \\
 
 \pyI{"NOT RECORDED"}
 &
-\src{RUNTIME: G7 SessionEntry identity}
+\src{NOT RECORDED in R1 trace}
 \\
 
 \py{R1: backing_session_id =}
@@ -6736,9 +6735,7 @@ From validated request:\\[1mm]
 \quad\texttt{= undefined}\\[3mm]
 
 \texttt{backing\_session\_id =}\\
-\texttt{"NOT RECORDED-2e18-}\\
-\texttt{4d4d-9b08-}\\
-\texttt{432df4352674"}\\[3mm]
+\texttt{"NOT RECORDED"}\\[3mm]
 
 \texttt{consistency\_check}\\
 \quad\texttt{= pass}
@@ -9402,9 +9399,7 @@ From G7 / G8:\\
 \texttt{"}\\[2mm]
 
 \texttt{storePath =}\\
-\texttt{<redacted-home>/.openclaw/}\\
-\texttt{agents/main/sessions/}\\
-\texttt{sessions.json}\\[3mm]
+\texttt{NOT RECORDED}\\[3mm]
 
 Additional state:\\
 \texttt{entry}\\
@@ -14561,8 +14556,8 @@ spec.
                  |                                      |
                  | Auxiliary Pre-dispatch               |
                  |   media / ACK / title / transcript   |
-                 |   ACK: 0.219 ms                      |
-                 |   title sync: 6655.825 ms            |
+                 |   ACK: NOT RECORDED                  |
+                 |   title sync: NOT RECORDED           |
                  |                |                     |
                  |                v                     |
                  | G13  Build MsgContext                |
@@ -14605,7 +14600,8 @@ spec.
                        |                          |
                        | model: gpt-5.5           |
                        | provider: openai         |
-                       | available tools: 33      |
+                       | available tools: NOT RECORDED |
+                       | tools invoked in R1: 0   |
                        +------------+-------------+
                                     |
                                     | replyResult
@@ -15064,8 +15060,9 @@ Provider value observed near the deeper reply-runtime boundary. \\
 Model value observed in the dispatch trace. \\
 \addlinespace
 \texttt{availableTools} &
-\texttt{33} &
-Tool count visible at the boundary to the deeper runtime. \\
+\texttt{NOT RECORDED} &
+Available-tool inventory is not archived as an R1 trace value. R1
+runtime evidence records tools invoked as \texttt{0}. \\
 \bottomrule
 \end{tabularx}
 

@@ -73,6 +73,22 @@ Base commit used for revision: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 | Causal claim that authentication method determines authorization scope. | Weakened: source only establishes `operator.admin` shortcut vs `operator.write` requirement; old Cake2 vs R1 is observed difference, not causality. |
 | Email delivery. | Weakened to host-side command completion with no downstream delivery verification. |
 
+## Post-restoration Stale-value Cleanup
+
+| Location / old value | Replacement | Evidence basis | Classification |
+|---|---|---|---|
+| G0 concrete state: `deviceTokenCandidate = present` | `deviceTokenCandidate = NOT RECORDED` | R1 records `sharedAuthProvided=True`, `sharedAuthOk=True`, `hasDeviceIdentity=False`, and `hasDeviceTokenCandidate=False`; no concrete candidate field is archived. | NOT RECORDED |
+| G0 preserved state: `state.deviceTokenCandidate = present` | `state.deviceTokenCandidate = NOT RECORDED` | Same R1 G0 evidence; source may preserve a branch input, but R1 does not record a concrete candidate. | NOT RECORDED |
+| G2 input: `deviceTokenCandidate = present` | `deviceTokenCandidate = NOT RECORDED` | R1 G2 records role `operator`, scope `operator.write`, and `result=pass`, but not a concrete device-token candidate. | NOT RECORDED |
+| G2 registration: `R1: isDeviceTokenAuth = True` | `R1: isDeviceTokenAuth = False` | Source-derived from shared-token path and not-reached device-token fallback; no direct R1 event records this boolean. | SOURCE-DERIVED |
+| G2 explicit device-token step: `tokenCheck.ok = True`, `authOk=True`, `authMethod="token"` as device-token success | `branch status = NOT REACHED`; `tokenCheck.ok = NOT RECORDED / NOT APPLICABLE` | R1 `authMethod="token"` coexists with `sharedAuthProvided=True`, `sharedAuthOk=True`, and `hasDeviceIdentity=False`; it does not prove device-token authentication. | NOT RECORDED / NOT APPLICABLE |
+| G7 timing: `session_load_ms = 4.572` and `Session-load duration is 4.572 ms` | `session_load_ms = NOT RECORDED` | R1 saved trace does not archive this timing value. | NOT RECORDED |
+| G7 hybrid ID: `NOT RECORDED-2e18-4d4d-9b08-432df4352674` | `NOT RECORDED` | R1 session ID is absent in `controlled-runs.json`; no historical suffix is valid. | NOT RECORDED |
+| G7 store path: redacted local sessions path | `store_path = NOT RECORDED` / `storePath = NOT RECORDED` | R1 trace records canonical session key and resolved stage outcome, not the filesystem store path. | NOT RECORDED |
+| Framework diagram: `ACK: 0.219 ms` | `ACK: NOT RECORDED` | R1 metadata does not archive the numeric ACK timing. | NOT RECORDED |
+| Framework diagram: `title sync: 6655.825 ms` | `title sync: NOT RECORDED` | R1 metadata does not archive the numeric title-sync timing. | NOT RECORDED |
+| Runtime diagram and settings: `available tools: 33` / `availableTools = 33` | `available tools: NOT RECORDED`; tools invoked in R1 = `0` | R1 records no tool invocations (`tools=none`, `toolCount=0`), but not an available-tool inventory count. | NOT RECORDED for inventory; RUNTIME for invoked-tool count |
+
 ## Privacy
 
 Paper and `artifacts/controlled/` were scanned for the raw recipient email, absolute local paths, and sender name. No hits remained after redaction.
