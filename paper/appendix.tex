@@ -6367,7 +6367,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 % G8.1 -- Explicit Agent / Session Compatibility Validation
 % ==============================================================
 
-\py{selected_agent = validateChatSelectedAgent(}
+\pyt{selected\_agent = validateChatSelectedAgent(}
 &
 \src{src/gateway/server-methods/chat.ts:3839--3847}
 \\
@@ -6392,29 +6392,29 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:3839--3843}
 \\
 
-\py{if not selected_agent.ok:}
+\pyt{if not selected\_agent.ok:}
 &
 \src{src/gateway/server-methods/chat.ts:3844--3847}
 \\
 
-\pyI{return invalid_request(selected_agent.error)}
+\pytI{return invalid\_request(selected\_agent.error)}
 &
 \src{src/gateway/server-methods/chat.ts:3845--3846}
 \\
 
 \hline
 
-\py{def validateChatSelectedAgent(params):}
+\pyt{def validateChatSelectedAgent(params):}
 &
 \src{src/gateway/server-methods/chat.ts:690--723}
 \\
 
-\pyI{agent_id = normalizeAgentId(params.agentId) if params.agentId else None}
+\pytI{agent\_id = normalizeAgentId(params.agentId) if params.agentId else None}
 &
 \src{src/gateway/server-methods/chat.ts:695}
 \\
 
-\pyI{if agent_id is None:}
+\pytI{if agent\_id is None:}
 &
 \src{src/gateway/server-methods/chat.ts:696--698}
 \\
@@ -6424,7 +6424,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:697}
 \\
 
-\pyI{if agent_id not in listAgentIds(params.cfg):}
+\pytI{if agent\_id not in listAgentIds(params.cfg):}
 &
 \src{src/gateway/server-methods/chat.ts:699--701}
 \\
@@ -6434,17 +6434,17 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:700}
 \\
 
-\pyI{requested_session_key = params.requestedSessionKey.strip()}
+\pytI{requested\_session\_key = params.requestedSessionKey.strip()}
 &
 \src{src/gateway/server-methods/chat.ts:702}
 \\
 
-\pyI{parsed = parseAgentSessionKey(requested_session_key)}
+\pytI{parsed = parseAgentSessionKey(requested\_session\_key)}
 &
 \src{src/gateway/server-methods/chat.ts:703}
 \\
 
-\pyI{if parsed and normalizeAgentId(parsed.agentId) != agent_id:}
+\pytI{if parsed and normalizeAgentId(parsed.agentId) != agent\_id:}
 &
 \src{src/gateway/server-methods/chat.ts:704--710}
 \\
@@ -6454,7 +6454,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:705--709}
 \\
 
-\pyI{if requested_session_key.lower() == "global":}
+\pytI{if requested\_session\_key.lower() == "global":}
 &
 \src{src/gateway/server-methods/chat.ts:711--713}
 \\
@@ -6464,7 +6464,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:710--712}
 \\
 
-\pyI{if resolveSessionStoreKey(cfg=params.cfg, sessionKey=requested_session_key) == "global":}
+\pytI{if resolveSessionStoreKey(cfg=params.cfg, sessionKey=requested\_session\_key) == "global":}
 &
 \src{src/gateway/server-methods/chat.ts:714--716}
 \\
@@ -6474,7 +6474,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:713--715}
 \\
 
-\pyI{if parsed is None or normalizeAgentId(parsed.agentId) != agent_id:}
+\pytI{if parsed is None or normalizeAgentId(parsed.agentId) != agent\_id:}
 &
 \src{src/gateway/server-methods/chat.ts:717--721}
 \\
@@ -6495,12 +6495,12 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 \hline
 
-\py{requested_session_id = normalizeOptionalText(p.sessionId)}
+\pyt{requested\_session\_id = normalizeOptionalText(p.sessionId)}
 &
 \src{src/gateway/server-methods/chat.ts:3848}
 \\
 
-\py{backing_session_id = entry.sessionId if entry is not None else requested_session_id}
+\pyt{backing\_session\_id = entry.sessionId if entry is not None else requested\_session\_id}
 &
 \src{src/gateway/server-methods/chat.ts:3849}
 \\
@@ -6511,7 +6511,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 \hline
 
-\py{deleted_agent_id = resolveDeletedAgentIdFromSessionKey(}
+\pyt{deleted\_agent\_id = resolveDeletedAgentIdFromSessionKey(}
 &
 \src{src/gateway/server-methods/chat.ts:3850--3852}
 \\
@@ -6521,7 +6521,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:3850}
 \\
 
-\pyI{session_key,}
+\pytI{session\_key,}
 &
 \src{src/gateway/server-methods/chat.ts:3850}
 \\
@@ -6531,7 +6531,7 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:3850}
 \\
 
-\pyI{acpMetadataSessionKey=(legacy_key or session_key),}
+\pytI{acpMetadataSessionKey=(legacy\_key or session\_key),}
 &
 \src{src/gateway/server-methods/chat.ts:3851}
 \\
@@ -6541,12 +6541,12 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{src/gateway/server-methods/chat.ts:3850--3852}
 \\
 
-\py{if deleted_agent_id is not None:}
+\pyt{if deleted\_agent\_id is not None:}
 &
 \src{src/gateway/server-methods/chat.ts:3853--3863}
 \\
 
-\pyI{return invalid_request("Agent no longer exists in configuration")}
+\pytI{return invalid\_request("Agent no longer exists in configuration")}
 &
 \src{src/gateway/server-methods/chat.ts:3854--3861}
 \\
@@ -6557,12 +6557,12 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 \hline
 
-\py{R1: requested_agent_id = None}
+\pyt{R1: requested\_agent\_id = None}
 &
 \src{RUNTIME: output carried from G6}
 \\
 
-\py{R1: agent_id = None}
+\pyt{R1: agent\_id = None}
 &
 \src{DERIVED: src/gateway/server-methods/chat.ts:695}
 \\
@@ -6572,42 +6572,42 @@ Session ID, so those fields remain \texttt{NOT RECORDED}.
 \src{DERIVED: src/gateway/server-methods/chat.ts:696--698}
 \\
 
-\py{R1: later mismatch checks are not reached}
+\pyt{R1: later mismatch checks are not reached}
 &
 \src{DERIVED: early return at chat.ts:697}
 \\
 
-\py{R1: requested_session_id = unknown}
+\pyt{R1: requested\_session\_id = unknown}
 &
 \src{OBSERVABILITY GAP: original raw RPC frame not archived}
 \\
 
-\py{R1: entry.sessionId =}
+\pyt{R1: entry.sessionId =}
 &
 \src{NOT RECORDED in R1 Gateway trace}
 \\
 
-\pyI{"NOT RECORDED"}
+\pytI{"NOT RECORDED"}
 &
 \src{NOT RECORDED in R1 trace}
 \\
 
-\py{R1: backing_session_id =}
+\pyt{R1: backing\_session\_id =}
 &
 \src{SOURCE-DERIVED read site; concrete value not emitted}
 \\
 
-\pyI{"NOT RECORDED"}
+\pytI{"NOT RECORDED"}
 &
 \src{NOT RECORDED; do not substitute AR-layer sessionId}
 \\
 
-\py{R1: deleted_agent_id = None}
+\pyt{R1: deleted\_agent\_id = None}
 &
 \src{DERIVED FROM SUCCESSFUL CONTROL FLOW: chat.ts:3853--3863}
 \\
 
-\py{R1: result = "pass"}
+\pyt{R1: result = "pass"}
 &
 \src{RUNTIME: G8 TraceClaw event}
 \\
