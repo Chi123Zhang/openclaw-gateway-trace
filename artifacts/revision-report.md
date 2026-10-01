@@ -2,11 +2,11 @@
 
 Branch: `revision-r1-r7-controlled`
 
-Current paper commit checked by CI: `aa9d91e9044a8a334e02b233d724ba697b18c351`
+Current paper commit checked by CI: `ab0d37b020b02e11fa683513a4f6a84d71a72e61`
 
-Paper Build CI: `36821485163`
+Paper Build CI: `36825765005`
 
-CI URL: https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36821485163
+CI URL: https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36825765005
 
 CI result: `success`
 
@@ -150,7 +150,7 @@ path was used.
 
 ## CI Validation
 
-GitHub Actions Paper Build run `36821485163` passed on commit `aa9d91e`.
+GitHub Actions Paper Build run `36825765005` passed on commit `ab0d37b`.
 
 The workflow completed:
 
