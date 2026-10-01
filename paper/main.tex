@@ -192,6 +192,40 @@ runtime evidence.
 \section{Method: Source-Anchored Runtime Trace}
 \label{sec:method}
 
+TraceClaw is a source-anchored auditing method for agent control planes.
+It is meant for systems that are too large to print line by line, but
+where a claim about execution still needs concrete evidence. The method
+has four steps.
+
+\begin{enumerate}
+    \item \textbf{Choose an audited request family.} Keep one primary
+    request for the full source audit, then add repeated comparison runs
+    when saved traces are available. Preserve the request values that
+    determine control flow, such as Session key, run ID, message, Agent
+    ID, and authorization scope.
+
+    \item \textbf{Trace the source path in execution order.} Follow the
+    path from connection authentication to reply-resolver selection and
+    record the handoff to the Agent Runtime.
+
+    \item \textbf{Attach runtime evidence.} Add observed events, values,
+    and timing information where the trace exposes them. When a branch is
+    source-derived rather than directly logged, mark it as such.
+
+    \item \textbf{Separate explanation from evidence.} Keep the main text
+    readable, and move exact source locations, branch checks, and
+    not-recorded fields to the appendix.
+\end{enumerate}
+
+The main design choice is claim-level tracing. The trace is not a prose
+story written after the run; it is a set of small claims. Each stage
+answers four questions: which code can execute this step, which concrete
+value selects the branch, which runtime evidence supports the outcome,
+and what nearby branch is ruled out for this run. Negative evidence,
+such as the absence of a duplicate run or the absence of an Agent
+override, is part of the audit because it often explains why the accepted
+path was taken.
+
 For one request \(r\), the Gateway path is represented as
 \[
     \tau_G(r)=\langle s_0,\ldots,s_{18}\rangle .
@@ -232,8 +266,100 @@ as \(\#\texttt{tool\_result}/\#\texttt{tool\_started}\). AR6 is marked
 dispatch source point, while later Gateway post-processing is not a
 separate runtime event unless instrumented.
 
+\begin{figure}[H]
+\centering
+\begin{adjustbox}{max width=0.94\linewidth}
+\begin{tikzpicture}[
+    >=Latex,
+    node distance=8mm,
+    every node/.style={font=\small, align=center},
+    box/.style={draw, thick, rounded corners, inner sep=6pt, minimum height=11mm},
+    smallbox/.style={draw, rounded corners, inner sep=5pt, minimum height=9mm},
+    note/.style={draw, dashed, rounded corners, inner sep=5pt}
+]
+
+\node[box, fill=blue!8, text width=3.0cm] (r) {Request\\\(r=(m,k,u,a,c)\)};
+\node[box, fill=green!8, right=12mm of r, text width=5.0cm] (s) {Gateway sequence\\\(S=\langle s_0,\ldots,s_{18}\rangle\)};
+\node[box, fill=purple!10, right=12mm of s, text width=4.2cm] (a) {Agent Runtime\\\(A=\langle a_0,\ldots,a_6\rangle\)};
+
+\node[smallbox, fill=orange!12, below=10mm of s, text width=5.4cm] (e) {Evidence ledger\\\(E_i=(C_i,V_i,O_i,B_i)\)};
+\node[note, below=9mm of e, text width=7.6cm] (scores) {Coverage: \(\mathrm{cov}(\tau_G)\) checks source anchors + values.\\
+Observation: \(\mathrm{obs}(\tau_G)\) counts direct stage-outcome evidence.};
+
+\draw[->, thick] (r) -- (s);
+\draw[->, thick] (s) -- node[above]{G18} (a);
+\draw[->, thick, bend left=20] (a.south) to node[right]{\(\rho\)} (s.south east);
+\draw[->, thick, dashed] (s) -- (e);
+\draw[->, thick, dashed] (e) -- (scores);
+
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Mathematical trace model. A concrete request is mapped to an
+ordered Gateway stage sequence, a separate post-G18 Agent Runtime event
+sequence, and an evidence ledger. The return edge \(\rho\) prevents the
+analysis from stopping at resolver selection.}
+\label{fig:trace-model}
+\end{figure}
+
+\subsection*{Positioning Against Common Approaches}
+
+\small
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabularx}{\linewidth}{
+    @{}
+    >{\raggedright\arraybackslash}p{0.20\linewidth}
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}X
+    @{}
+}
+\toprule
+\textbf{Approach} &
+\textbf{What it usually shows} &
+\textbf{What it misses} &
+\textbf{TraceClaw difference} \\
+\midrule
+Architecture overview &
+Main components and high-level data flow. &
+Concrete branch choices, request values, and code-level evidence. &
+Architecture is orientation only; every stage must map back to source and
+case evidence. \\
+\addlinespace
+Log-only analysis &
+Events emitted during one run. &
+Silent branches and the source reason for each decision. &
+Runtime events are aligned with source branches and negative evidence. \\
+\addlinespace
+Static code reading &
+Possible paths in the implementation. &
+Which path a real request actually took. &
+The code path is bound to R1 values and runtime observations. \\
+\addlinespace
+Model-output evaluation &
+Quality or safety of the final model response. &
+Gateway admission, routing, duplicate-run handling, and resolver boundary. &
+The audited object is the control path that must be trusted before the
+answer is generated. \\
+\bottomrule
+\end{tabularx}
+\end{adjustbox}
+\normalsize
+
 \section{Framework}
 \label{sec:framework}
+
+Figure~\ref{fig:framework} is the central framework of the paper. A
+concrete request enters the Gateway, the Gateway is reconstructed as
+ordered stage groups, and each stage is checked against a source/value
+ledger. The trace then supports auditable claims about authentication,
+routing, work admission, resolver selection, and runtime return.
+
+The framework is intentionally modest. It does not summarize all
+OpenClaw behavior, and it does not claim that one trace explains every
+request. Its unit of analysis is narrower: one pinned source snapshot,
+one ordered trace per run, and one explicit evidence ledger. The same
+unit can be repeated for other prompts, compared across versions, or used
+to decide where additional instrumentation is needed.
 
 \begin{figure}[H]
 \centering
@@ -289,6 +415,10 @@ unchanged, no explicit Agent override is supplied, the Session resolves,
 Agent \texttt{main} is selected, send policy allows the turn, the run is
 new, work is admitted, the message context is built, and the default
 \texttt{getReplyFromConfig} resolver is selected at G18.
+Appendix~\ref{app:detailed-gateway-audit} gives the detailed per-stage
+source audit for R1, including source anchors, concrete values, taken and
+not-taken branches, observation status, rationale visibility, and
+not-recorded fields.
 
 \section{Deeper Agent Runtime and Return Path}
 \label{sec:ar-path}
@@ -431,7 +561,8 @@ reply wording.
 \begin{table}[H]
 \centering
 \caption{Compressed stage-by-run matrix for R1--R7. The full matrix is
-kept in the appendix.}
+kept in Appendix~\ref{app:stage-matrix}; the R1 per-stage source audit is
+kept in Appendix~\ref{app:detailed-gateway-audit}.}
 \label{tab:stage-matrix}
 {\scriptsize
 \input{../artifacts/controlled/stage-run-matrix-r1-r7.tex}

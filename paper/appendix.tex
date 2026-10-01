@@ -5,43 +5,32 @@
 \section{Controlled Cohort Evidence}
 \label{app:controlled}
 
-This appendix contains the evidence tables for the controlled R1--R7
-cohort. It replaces the earlier long source note that centered on the old
-Cake2 trace. The old Cake2 artifact is still preserved in the viewer
-artifact, but it is not used in any quantitative table here.
+This appendix is the evidence ledger for the controlled R1--R7 cohort. It
+keeps the detailed source and runtime material out of the main paper while
+leaving every main claim checkable. The old Cake2 trace remains a historical
+artifact only; it is not used in the R1--R7 quantitative tables.
+
+\subsection{Reading Guide}
+\label{app:reading-guide}
+
+Each Gateway stage below follows the same format: purpose, source anchors,
+R1 case values, taken and not-taken branches, evidence status, rationale
+visibility, and observability gaps. The status labels mean:
+\textsc{Observed} for a directly emitted runtime/native outcome,
+\textsc{SourceDerived} for a claim recovered from source plus values, and
+\textsc{NotObserved} for a field that matters but is absent from the saved
+trace. Observation of a stage outcome does not mean every internal predicate
+or returned field was recorded.
 
 \subsection{Source-Anchor Convention}
 \label{app:anchor-convention}
 
 All source anchors refer to upstream OpenClaw v2026.7.1-2 at commit
-\seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c}. When a runtime
-event is emitted by TraceClaw instrumentation, the cited source decision
-site is still the upstream branch or function being observed, not the
-patched instrumentation line. This convention keeps source claims stable
-even when the instrumentation patch adds event-emission code nearby.
-
-The instrumentation patch hash used for the controlled R6/R7 collection
-was
-\seqsplit{6736a6be821ae927ebb112328d9552386684d5cbd8090975f52cc8666d8ef11f}.
-The patch is treated as a supplementary artifact and should be sanitized
-before submission.
-
-\subsection{Run Provenance}
-\label{app:provenance}
-
-R1--R5 are saved trace commits from the repository history. R6 and R7
-were collected in the temporary worktree
-\texttt{traceclaw-r6-r7-worktree-20260930} on branch
-\texttt{collect-r6-r7}. They were committed as trace-data commits only:
-\texttt{data/cases/latest-live.js}, \texttt{data/cases/recent-runs.js},
-and \texttt{index.html}. No collector, instrumentation, schema, UI, or
-configuration code changed between 7d742df and the R7 commit.
-
-The traces themselves do not record \texttt{openclawCommit},
-\texttt{traceclawCommit}, or \texttt{configFingerprint}. The paper
-therefore uses the wording ``OpenClaw v2026.7.1-2 (0790d9f) with a
-TraceClaw instrumentation patch applied'' rather than claiming that each
-trace embeds complete environment metadata.
+\seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c}. The local OpenClaw tree
+also contains a TraceClaw instrumentation patch; when that patch shifts line
+numbers, this appendix cites the upstream decision site and records the local
+instrumented event separately in the audit notes. The R1 source-anchor audit is
+summarized in \texttt{artifacts/controlled/source-anchor-audit-r1.csv}.
 
 \begin{table}[H]
 \centering
@@ -52,41 +41,530 @@ trace embeds complete environment metadata.
 }
 \end{table}
 
-\section{R1 Gateway Ledger}
-\label{app:r1-ledger}
+\section{R1 Concrete Values}
+\label{app:r1-values}
 
-R1 is the primary controlled case for the paper. It uses shared-token
-authentication, reaches G1 \texttt{allow}, finishes G2 with
-\texttt{operator.write}, and authorizes \texttt{chat.send} through the
-ordinary write check. The old Cake2 device-token/operator-admin path is
-not imported into this case.
+R1 is the controlled replacement for the old Cake2 case. Its prompt is
+\texttt{How to make a cake?}; its run ID is
+\seqsplit{8d07c88e-188f-4347-9f9a-7fc90412c604}; its Session key is
+\seqsplit{agent:main:dashboard:trace-82fbff4483c4}. The trace does not record a
+separate Session ID. The run uses shared-token authentication, role
+\texttt{operator}, scope \texttt{operator.write}, Agent \texttt{main}, runner
+\texttt{embedded}, provider \texttt{openai}, model \texttt{gpt-5.5}, and
+resolver \texttt{default\_getReplyFromConfig}.
 
 \input{../artifacts/controlled/r1-stage-ledger-table.tex}
 
-\subsection{G0--G3 Authentication and Authorization}
-\label{app:r1-g0-g3}
+\section{Detailed R1 Gateway Source Audit}
+\label{app:detailed-gateway-audit}
 
-The first four stages are the main difference from the old Cake2 trace.
-For R1:
+\begin{longtable}{@{}p{0.13\linewidth}p{0.82\linewidth}@{}}
+\caption{Detailed R1 G0--G18 Gateway audit. Source anchors are upstream
+0790d9f anchors; runtime values are from R1.}\label{tab:app-detailed-gateway-audit}\\
+\toprule
+Stage & R1 source-anchored claim \\
+\midrule
+\endfirsthead
+\toprule
+Stage & R1 source-anchored claim \\
+\midrule
+\endhead
 
-\begin{itemize}
-    \item G0 records token authentication state with
-    \texttt{sharedAuthProvided=True}, \texttt{sharedAuthOk=True}, and no
-    device identity.
-    \item G1 records the shared credential outcome as \texttt{allow}.
-    \item G2 records role \texttt{operator} and scope
-    \texttt{operator.write}; no fallback credential path is used.
-    \item G3 records method authorization for \texttt{chat.send} with
-    \texttt{operator.write}. The administrator shortcut is not an R1
-    claim.
-\end{itemize}
+\textbf{G0} &
+\textbf{Purpose.} Resolve the connection authentication state before a
+\texttt{chat.send} request is accepted. This stage gathers handshake material,
+shared-auth state, and possible device/bootstrap candidates into a structured
+auth state.
 
-The source-level rule is narrower than a causal claim about
-authentication method: \texttt{operator.admin} can short-circuit the
-method-scope check; otherwise \texttt{chat.send} requires
-\texttt{operator.write}. The controlled R1 trace and the historical old
-Cake2 trace differ in observed scopes, but these cases do not prove that
-authentication method alone determines scope.
+\textbf{Anchors.} \src{src/gateway/server/ws-connection/message-handler.ts:941--957}
+calls \texttt{resolveConnectAuthState}; \src{src/gateway/server/ws-connection/auth-context.ts:126--186}
+builds the returned state; \src{auth-context.ts:100--109} resolves shared
+credentials; \src{auth-context.ts:111--124} defines the device-token candidate
+helper.
+
+\textbf{R1 values.} \texttt{authMode=token}; \texttt{authMethod=token};
+\texttt{authOk=True}; \texttt{sharedAuthProvided=True};
+\texttt{sharedAuthOk=True}; \texttt{hasDeviceIdentity=False};
+\texttt{result=authorized}.
+
+\textbf{Branch.} R1 takes the authorized shared-token path. Device-identity
+candidate handling is not taken because \texttt{hasDeviceIdentity=False}.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{connection\_auth\_state\_resolved}. Rationale visibility is partial:
+the final auth outcome is emitted, while raw credentials and token bodies are
+not recorded.
+
+\textbf{Gaps.} Raw token contents and lower-level rate-limit counters are not
+recorded. \\[2mm]
+
+\textbf{G1} &
+\textbf{Purpose.} Authorize the shared credential used by the WebSocket control
+UI connection. This stage decides whether the shared token itself is accepted.
+
+\textbf{Anchors.} \src{src/gateway/server/ws-connection/auth-context.ts:144--153}
+invokes \texttt{authorizeWsControlUiGatewayConnect} for the shared credential.
+The lower authorization helpers are covered by
+\src{src/gateway/auth.ts:597--604} and \src{src/gateway/auth.ts:456--584}.
+
+\textbf{R1 values.} \texttt{authMode=token}; \texttt{authMethod=token};
+\texttt{sharedAuthProvided=True}; \texttt{sharedAuthOk=True};
+\texttt{result=allow}.
+
+\textbf{Branch.} R1 takes \texttt{allow}. The denial branch and retry path are
+not taken for R1.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{shared\_credential\_authorized}. Rationale visibility is partial because
+the trace emits the outcome, not the secret comparison material.
+
+\textbf{Gaps.} Exact token comparison details are intentionally not recorded. \\[2mm]
+
+\textbf{G2} &
+\textbf{Purpose.} Finish connection authentication and bind the authorized
+connection to a role and scope set. This is where the connection becomes usable
+by later Gateway methods.
+
+\textbf{Anchors.} \src{src/gateway/server/ws-connection/message-handler.ts:1215--1285}
+calls \texttt{resolveConnectAuthDecision} and rejects on \texttt{!authOk};
+\src{src/gateway/server/ws-connection/auth-context.ts:188--207} dispatches the
+decision to the core auth logic.
+
+\textbf{R1 values.} \texttt{role=operator}; \texttt{scopes=[operator.write]};
+\texttt{authMethod=token}; \texttt{result=pass}.
+
+\textbf{Branch.} R1 takes the pass branch. Device-token fallback is not an R1
+branch because the shared token already authorized the connection and
+\texttt{hasDeviceIdentity=False}.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{connection\_authentication\_completed}. Rationale visibility is partial:
+role and scopes are emitted, but raw token material is not.
+
+\textbf{Gaps.} The trace does not embed the configuration rule that produced
+the \texttt{operator.write} scope. \\[2mm]
+
+\textbf{G3} &
+\textbf{Purpose.} Authorize the RPC method \texttt{chat.send}. This stage is the
+method-level guard between a connected operator client and the chat handler.
+
+\textbf{Anchors.} \src{src/gateway/server-methods.ts:734--738} calls
+\texttt{authorizeGatewayMethod}; \src{src/gateway/server-methods.ts:262--299}
+contains the role/scope check; \src{src/gateway/methods/core-descriptors.ts:231}
+registers \texttt{chat.send} as \texttt{operator.write};
+\src{src/gateway/method-scopes.ts:257--274} checks required operator scope.
+
+\textbf{R1 values.} \texttt{method=chat.send}; \texttt{role=operator};
+\texttt{scopes=[operator.write]}; \texttt{result=allow}.
+
+\textbf{Branch.} R1 executes the ordinary \texttt{operator.write} check. The
+\texttt{operator.admin} shortcut is not taken for R1; it is only a source-level
+nearby branch.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{gateway\_method\_authorized}. Rationale visibility is partial: the
+allowed scope is recorded, while the full method registry object is not.
+
+\textbf{Gaps.} The trace supports association between shared-token auth and
+\texttt{operator.write} in this run; it does not prove authentication method
+alone caused the scope. \\[2mm]
+
+\textbf{G4} &
+\textbf{Purpose.} Validate the \texttt{chat.send} request envelope and reject
+bad or privileged inputs before the message enters runtime processing.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3699--3769} receives
+\texttt{chat.send}, validates params, checks explicit origin/provenance fields,
+and rejects admin-only fields when the client lacks admin scope.
+
+\textbf{R1 values.} Prompt \texttt{How to make a cake?}; attachments
+\texttt{none}; \texttt{hasPrivilegedFields=False};
+\texttt{hasExplicitOrigin=False}; \texttt{result=pass}.
+
+\textbf{Branch.} R1 passes validation. Invalid params, explicit-origin failure,
+and admin-only provenance/origin branches are not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{chat\_send\_request\_validated}. Rationale visibility is partial because
+the trace records summarized flags rather than every schema field.
+
+\textbf{Gaps.} The complete JSON request body is not reproduced in the paper. \\[2mm]
+
+\textbf{G5} &
+\textbf{Purpose.} Sanitize and normalize the user message while preserving the
+run identity used downstream. This stage decides whether the text changes
+before later context construction.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3770--3784}
+sanitizes the message and sets \texttt{inboundMessage}; \src{src/gateway/chat-input-sanitize.ts:16--24}
+contains the sanitization helper.
+
+\textbf{R1 values.} Message \texttt{How to make a cake?};
+\texttt{messageLength=19}; \texttt{messageChangedBySanitization=False};
+\texttt{result=unchanged}.
+
+\textbf{Branch.} R1 keeps the message unchanged. The invalid-message and
+changed-message branches are not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{chat\_message\_normalized}. Rationale visibility is partial because
+only the summary change flag and length are emitted.
+
+\textbf{Gaps.} Character-level sanitizer intermediate state is not recorded. \\[2mm]
+
+\textbf{G6} &
+\textbf{Purpose.} Resolve an optional requested Agent override from the request
+and Session key. This stage decides whether a requested Agent should influence
+Session loading.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3800--3809} reads the
+raw Session key, normalizes the optional \texttt{agentId}, and calls
+\texttt{resolveRequestedChatAgentId}.
+
+\textbf{R1 values.} \texttt{sessionKey=agent:main:dashboard:trace-...};
+\texttt{explicit agentId=none}; \texttt{requestedAgentId=none};
+\texttt{result=resolved}.
+
+\textbf{Branch.} R1 has no explicit Agent override. The override-specific
+Session load option is not used.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{requested\_agent\_resolved}. Rationale visibility is partial because the
+trace records the absence of override but not every config lookup.
+
+\textbf{Gaps.} The full runtime config snapshot is not embedded in the trace. \\[2mm]
+
+\textbf{G7} &
+\textbf{Purpose.} Load and canonicalize the Session. This stage establishes the
+canonical Session key used by later policy, dedupe, and runtime dispatch.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3810--3824} loads the
+Session entry and returns \texttt{canonicalKey: sessionKey}.
+
+\textbf{R1 values.} Raw and canonical Session key both equal
+\seqsplit{agent:main:dashboard:trace-82fbff4483c4}; \texttt{result=resolved}.
+No separate Session ID is recorded in the run summary.
+
+\textbf{Branch.} R1 resolves to a stable canonical key. The routing-changed
+error branch is not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by \texttt{session\_resolved}.
+Rationale visibility is partial because the full SessionEntry is not printed in
+the paper.
+
+\textbf{Gaps.} Complete persistent Session entry fields are not recorded. \\[2mm]
+
+\textbf{G8} &
+\textbf{Purpose.} Validate that the selected or requested Agent is compatible
+with the loaded Session. This prevents dispatch into an invalid Agent/Session
+pair.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3839--3863} validates
+the selected Agent and rejects deleted or invalid Agent state.
+
+\textbf{R1 values.} \texttt{requestedAgentId=none}; canonical Session key
+\seqsplit{agent:main:dashboard:trace-82fbff4483c4}; \texttt{result=pass}.
+
+\textbf{Branch.} R1 passes validation. The invalid selected-Agent and deleted
+Agent branches are not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{agent\_session\_validated}. Rationale visibility is partial because the
+full Agent config object is not emitted.
+
+\textbf{Gaps.} Complete Agent configuration is not embedded in the trace. \\[2mm]
+
+\textbf{G9} &
+\textbf{Purpose.} Choose the effective Agent for the request after Session
+resolution and optional override handling.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3864--3874} calls
+\texttt{resolveSessionAgentId} and derives the active run scope key.
+
+\textbf{R1 values.} \texttt{selectedAgentId=none}; \texttt{agentId=main};
+\texttt{result=resolved}.
+
+\textbf{Branch.} R1 resolves to Agent \texttt{main}. A requested-Agent override
+branch is not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{effective\_agent\_resolved}. Rationale visibility is partial because the
+complete config tree is not recorded.
+
+\textbf{Gaps.} The exact config object used by \texttt{resolveSessionAgentId} is
+not stored in the trace. \\[2mm]
+
+\textbf{G10} &
+\textbf{Purpose.} Evaluate Session send policy. This stage can block a turn even
+after authentication and method authorization succeeded.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3891--3905} calls
+\texttt{resolveSendPolicy} and rejects on \texttt{deny};
+\src{src/sessions/send-policy.ts:76--159} defines the allow/deny matching logic.
+
+\textbf{R1 values.} \texttt{sendPolicy=allow}; \texttt{result=allow}.
+
+\textbf{Branch.} R1 takes the allow branch. The explicit deny branch and blocked
+response are not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{session\_send\_policy\_evaluated}. Rationale visibility is partial
+because the exact allow sub-branch and full ruleset are not emitted.
+
+\textbf{Gaps.} The trace does not say whether allow came from no policy, a
+matching allow rule, or fallback default. \\[2mm]
+
+\textbf{G11} &
+\textbf{Purpose.} Guard idempotency and duplicate dispatch. This stage decides
+whether the run is a new dispatch or a cached/in-flight duplicate.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:3936--4005} checks
+dedupe cache, abort markers, pending reservations, active controllers, queued
+turns, routing changes, and archived Sessions.
+
+\textbf{R1 values.} Run ID
+\seqsplit{8d07c88e-188f-4347-9f9a-7fc90412c604}; \texttt{dedupeDecision=new\_dispatch};
+\texttt{result=pass}.
+
+\textbf{Branch.} R1 is a new dispatch. Cached, in-flight, aborted, queued, and
+archived-session branches are not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{run\_idempotency\_guard\_passed}. Rationale visibility is partial
+because cache contents are summarized, not dumped.
+
+\textbf{Gaps.} Full dedupe map state is not recorded. \\[2mm]
+
+\textbf{G12} &
+\textbf{Purpose.} Admit the run into Session work and register abort ownership.
+This is the last Gateway admission point before message context construction.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:4025--4170} creates
+the pending reservation and calls \texttt{beginSessionWorkAdmission};
+\src{src/sessions/session-lifecycle-admission.ts:327--378} records admission and
+release behavior.
+
+\textbf{R1 values.} Run ID
+\seqsplit{8d07c88e-188f-4347-9f9a-7fc90412c604}; \texttt{admissionDecision=admitted};
+\texttt{result=admitted}.
+
+\textbf{Branch.} R1 is admitted. Restart, timeout, routing-change, superseded,
+and admission-failed branches are not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{work\_admission\_completed}. Rationale visibility is partial because the
+lock queue and all active admission sets are not emitted.
+
+\textbf{Gaps.} Lock queue contents are not recorded. \\[2mm]
+
+\textbf{G13} &
+\textbf{Purpose.} Build the runtime message context passed toward auto-reply.
+This stage binds the normalized message, Session, Agent, run ID, and media
+state into a \texttt{MsgContext}.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:4454--4545} constructs
+\texttt{baseUserTurnInput} and \texttt{ctx}; \src{src/gateway/server-methods/chat.ts:4535--4545}
+adds message ID, approval reviewer fields, and Gateway client scopes.
+
+\textbf{R1 values.} \texttt{MsgContext.Body=How to make a cake?};
+\texttt{SessionKey=agent:main:dashboard:trace-...}; \texttt{AgentId=main};
+\texttt{ChatType=direct}; \texttt{MessageSid=8d07c88e-...}; media fields absent.
+
+\textbf{Branch.} R1 builds a normal direct-message context with no media branch
+and no text-slash command branch.
+
+\textbf{Evidence.} Outcome \textsc{Observed} by
+\texttt{runtime\_context\_constructed}. Rationale visibility is partial because
+the paper redacts or shortens identifiers.
+
+\textbf{Gaps.} Complete \texttt{MsgContext} object is not printed. \\[2mm]
+
+\textbf{G14} &
+\textbf{Purpose.} Enter inbound dispatch from the Gateway path. This is the
+handoff from \texttt{chat.send} to auto-reply dispatch.
+
+\textbf{Anchors.} \src{src/gateway/server-methods/chat.ts:4788--4797} invokes
+\texttt{dispatchInboundMessage}; \src{src/auto-reply/dispatch.ts:528--583}
+finalizes context and calls \texttt{dispatchReplyFromConfig}. These ranges were
+content-checked in \texttt{anchor-content-audit.csv}.
+
+\textbf{R1 values.} R1 context carries body \texttt{How to make a cake?}, Agent
+\texttt{main}, direct chat type, and R1 run ID. The dispatch result returned.
+
+\textbf{Branch.} R1 enters dispatch and continues to G17/G18. The branch where
+dispatch is never entered is not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed}; individual
+\texttt{DispatchInboundResult} fields are not logged. Rationale visibility is
+partial.
+
+\textbf{Gaps.} \texttt{DispatchInboundResult} internals and some reply option
+fields are not recorded. \\[2mm]
+
+\textbf{G15} &
+\textbf{Purpose.} Finalize inbound context for the auto-reply layer. This stage
+turns the Gateway context into the form consumed by the reply dispatcher.
+
+\textbf{Anchors.} \src{src/auto-reply/dispatch.ts:543--551} calls
+\texttt{finalizeInboundContext}; \src{src/gateway/server-methods/chat.ts:4454--4545}
+provides the Gateway-side context values that R1 carries into the finalizer.
+
+\textbf{R1 values.} Finalized body, body-for-Agent, and body-for-commands all
+remain \texttt{How to make a cake?}; \texttt{CommandTurn.kind=normal};
+\texttt{AgentId=main}.
+
+\textbf{Branch.} R1 takes normal message finalization. Slash-command and media
+staging branches are not taken.
+
+\textbf{Evidence.} Source-mapped for this run and supported by the fact that R1
+continues through G16--G18. The stage outcome is treated as \textsc{Observed} in
+the controlled stage ledger, with partial rationale visibility.
+
+\textbf{Gaps.} There is no standalone G15 runtime snapshot containing the full
+finalized context. \\[2mm]
+
+\textbf{G16} &
+\textbf{Purpose.} Orchestrate reply dispatch from configuration. This is the
+entry point of the deeper reply path selected after Gateway admission.
+
+\textbf{Anchors.} \src{src/auto-reply/reply/dispatch-from-config.ts:1215--1228}
+starts \texttt{dispatchReplyFromConfig}; the earlier broad range
+\texttt{1215--4080} is real but too wide and is not used as the primary anchor.
+This correction follows \texttt{anchor-content-audit.csv}.
+
+\textbf{R1 values.} R1 context has body \texttt{How to make a cake?}, Session
+key \seqsplit{agent:main:dashboard:trace-82fbff4483c4}, Agent \texttt{main}, and
+R1 run ID. \texttt{DispatchFromConfigResult} returned.
+
+\textbf{Branch.} R1 follows the normal reply path. The early abort branch at
+function entry is not taken.
+
+\textbf{Evidence.} Outcome \textsc{Observed}; full return fields are not logged
+as a standalone G16 object. Rationale visibility is partial.
+
+\textbf{Gaps.} Detailed reply-operation state and complete return payload are
+not recorded. \\[2mm]
+
+\textbf{G17} &
+\textbf{Purpose.} Re-resolve the effective downstream Agent inside reply
+dispatch. This verifies that the runtime boundary still targets the expected
+Agent.
+
+\textbf{Anchors.} \src{src/auto-reply/reply/dispatch-from-config.ts:1422--1427}
+calls \texttt{resolveSessionAgentId} and \texttt{resolveAgentConfig}. This range
+was content-checked in \texttt{anchor-content-audit.csv}.
+
+\textbf{R1 values.} \texttt{acpDispatchSessionKey=agent:main:dashboard:trace-...};
+fallback Agent \texttt{main}; resolved Agent \texttt{main};
+\texttt{sessionAgentCfg=not directly logged}.
+
+\textbf{Branch.} R1 remains on Agent \texttt{main}. Agent fallback/changeover
+branches are not observed.
+
+\textbf{Evidence.} Outcome \textsc{Observed}. Rationale visibility is partial
+because the full Agent config is not logged.
+
+\textbf{Gaps.} Complete \texttt{sessionAgentCfg} is not recorded. \\[2mm]
+
+\textbf{G18} &
+\textbf{Purpose.} Select the reply resolver and cross into Agent Runtime. This
+stage defines whether a custom resolver or the default
+\texttt{getReplyFromConfig} runtime handles the turn.
+
+\textbf{Anchors.} \src{src/auto-reply/reply/dispatch-from-config.ts:3381--3384}
+selects the resolver; \src{src/auto-reply/reply/dispatch-from-config.ts:3809+}
+contains the post-resolver return path. Both are content-checked in
+\texttt{anchor-content-audit.csv}.
+
+\textbf{R1 values.} \texttt{custom replyResolver=none};
+\texttt{resolverSource=default\_getReplyFromConfig}; reply result returned to
+G16.
+
+\textbf{Branch.} R1 selects the default resolver. The custom resolver branch is
+not taken.
+
+\textbf{Evidence.} Resolver selection and \texttt{reply\_resolver\_returned} are
+\textsc{Observed}; later Gateway post-processing after resolver return is
+source-derived unless separately instrumented. Rationale visibility is partial.
+
+\textbf{Gaps.} Full \texttt{replyResult} payload is not recorded at this
+boundary. \\
+
+\bottomrule
+\end{longtable}
+
+\section{Detailed Agent Runtime Audit}
+\label{app:ar-ledger}
+
+The Agent Runtime layer is scored separately from the Gateway layer. AR6 is
+intentionally \textsc{SourceDerived}: \texttt{reply\_resolver\_returned}
+observes the resolver return, while subsequent G16/G14 post-processing follows
+from source control flow unless separately instrumented.
+
+\begin{longtable}{@{}p{0.10\linewidth}p{0.22\linewidth}p{0.58\linewidth}@{}}
+\caption{AR-layer logical stages and R1/R3 evidence.}\label{tab:app-ar-definitions}\\
+\toprule
+Stage & R1 no-tool path & R3 external side-effect path \\
+\midrule
+\endfirsthead
+\toprule
+Stage & R1 no-tool path & R3 external side-effect path \\
+\midrule
+\endhead
+AR0 & \textsc{Observed}: \texttt{agent\_runtime\_selected}; Agent
+\texttt{main}, runner \texttt{embedded}. & Same stage observed for R3. \\
+AR1 & \textsc{Observed}: \texttt{agent\_run\_started}. & Same stage observed for
+R3 before tool execution. \\
+AR2 & \textsc{Observed(no\_tool)}: R1 records no tool calls. This is negative
+runtime evidence, not a missing tool trace. & \textsc{Observed(tool\_results)}:
+five \texttt{bash} calls are recorded. Four are capability probes:
+\texttt{command -v osascript || true}, \texttt{command -v mutt || true},
+\texttt{command -v mail || true}, and \texttt{command -v msmtp || true}. The
+fifth invokes Apple Mail through \texttt{osascript}. All five have observed
+tool results. \\
+AR3 & \textsc{Observed}: \texttt{agent\_reply\_finalized}. & \textsc{Observed}:
+final reply event exists, but the natural-language reply overstates what the
+trace can prove about downstream delivery. \\
+AR4 & \textsc{Observed}: \texttt{agent\_run\_ended}, stop reason
+\texttt{stop}. & \textsc{Observed}: run ended with stop reason \texttt{stop}. \\
+AR5 & \textsc{Observed}: \texttt{reply\_resolver\_returned}; result kind
+\texttt{single}. & \textsc{Observed}: resolver returned after the Apple Mail
+command completed with exit code 0. \\
+AR6 & \textsc{SourceDerived}: return to Gateway post-processing follows from
+dispatch source after resolver return. & \textsc{SourceDerived}: same boundary;
+no extra event proves every later G16/G14 internal step. \\
+\bottomrule
+\end{longtable}
+
+\paragraph{R3 rationale gap.}
+The R3 probes use \texttt{command -v ... || true}, so exit code 0 does not by
+itself reveal whether a binary was found. The trace records timing and exit
+status but not probe stdout. Therefore, the reason Apple Mail was selected is a
+rationale-level gap. The final Apple Mail command completed on the host with
+exit code 0; downstream email delivery was not verified.
+
+\begin{table}[H]
+\centering
+\caption{AR-layer observations and tool-call-level ratios.}
+\label{tab:app-ar-metrics}
+{\scriptsize
+\input{../artifacts/controlled/ar-metrics-table.tex}
+}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Execution classes derived only from observed runtime paths.}
+\label{tab:app-execution-classes}
+{\scriptsize
+\input{../artifacts/controlled/execution-classes-table.tex}
+}
+\end{table}
+
+For R2, R4, R5, R6, and R7 the compact AR table is sufficient. R2 records six
+\texttt{web\_search} start/result pairs. R4 records \texttt{bash},
+\texttt{bash}, \texttt{apply\_patch}, and \texttt{bash}. R5/R6 and R7 are
+no-tool repetitions of R1-style and R5-style paths.
 
 \section{Full Stage-by-Run Matrix}
 \label{app:stage-matrix}
@@ -102,62 +580,6 @@ level while rationale visibility remains partial.}
 }
 \end{table}
 
-\section{Agent Runtime Ledger and Metrics}
-\label{app:ar-ledger}
-
-The Agent Runtime layer is scored separately from the Gateway layer.
-AR0--AR6 are seven logical stages:
-
-\begin{longtable}{@{}p{0.10\linewidth}p{0.27\linewidth}p{0.55\linewidth}@{}}
-\caption{AR-layer logical stages.}\label{tab:app-ar-definitions}\\
-\toprule
-Stage & Evidence type & Definition \\
-\midrule
-\endfirsthead
-\toprule
-Stage & Evidence type & Definition \\
-\midrule
-\endhead
-AR0 & Runtime & Runtime attempt selected. \\
-AR1 & Runtime & Agent lifecycle started. \\
-AR2 & Runtime coverage & Either tool start/result pairs are observed, or a completed no-tool run records the no-tool outcome. \\
-AR3 & Runtime & Final reply is observed at the Agent boundary. \\
-AR4 & Runtime & Agent lifecycle ends. \\
-AR5 & Runtime & Reply resolver returns a result. \\
-AR6 & Source-derived & Later Gateway post-processing follows from the dispatch source after resolver return unless separately instrumented. \\
-\bottomrule
-\end{longtable}
-
-\begin{table}[H]
-\centering
-\caption{AR-layer observations and tool-call-level ratios.}
-\label{tab:app-ar-metrics}
-{\scriptsize
-\input{../artifacts/controlled/ar-metrics-table.tex}
-}
-\end{table}
-
-\section{Execution Classes}
-\label{app:execution-classes}
-
-\begin{table}[H]
-\centering
-\caption{Execution classes derived only from observed runtime paths.}
-\label{tab:app-execution-classes}
-{\scriptsize
-\input{../artifacts/controlled/execution-classes-table.tex}
-}
-\end{table}
-
-R2 is read-only retrieval: its runtime layer records six
-\texttt{web\_search} calls with matching results. R4 is a local mutation:
-it records shell activity, an \texttt{apply\_patch} call, and a follow-up
-check inside the workspace. R3 is an external side-effect path: four
-short capability probes are followed by one Apple Mail invocation through
-\texttt{osascript}. The trace records exit code 0 for the host-side
-command; downstream delivery is not verified. The submitted paper and
-artifact must redact the recipient address and sender name.
-
 \section{Exact-Prompt Repeatability}
 \label{app:repeatability}
 
@@ -172,36 +594,68 @@ artifact must redact the recipient address and sender name.
 
 For R1/R7 and R5/R6, the repeated prompt pairs have no G0--G18 branch
 differences. Agent, resolver, tool/no-tool choice, stop reason, and AR
-structure also match. The accepted differences are run ID, Session
-key/ID, timestamps, and reply wording.
+structure also match. The accepted differences are run ID, Session key/ID,
+timestamps, and reply wording.
+
+\section{Experimental Setting and Artifact Checklist}
+\label{app:settings-checklist}
+
+\begin{longtable}{@{}p{0.28\linewidth}p{0.62\linewidth}@{}}
+\caption{Settings and reproducibility checklist.}\label{tab:app-settings}\\
+\toprule
+Item & Required record \\
+\midrule
+\endfirsthead
+\toprule
+Item & Required record \\
+\midrule
+\endhead
+OpenClaw source & v2026.7.1-2 at
+\seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c}, with a TraceClaw
+instrumentation patch applied. \\
+Instrumentation patch & SHA-256
+\seqsplit{6736a6be821ae927ebb112328d9552386684d5cbd8090975f52cc8666d8ef11f}
+in the R6/R7 before/after fingerprint. \\
+Missing embedded metadata & Saved traces do not record
+\texttt{openclawCommit}, \texttt{traceclawCommit}, or
+\texttt{configFingerprint}. \\
+Runtime & Agent \texttt{main}; runner \texttt{embedded}; provider
+\texttt{openai}; model \texttt{gpt-5.5}; resolver
+\texttt{default\_getReplyFromConfig}. \\
+Build requirement & Main paper and appendix should compile under XeLaTeX;
+CI should upload \texttt{main.pdf} and \texttt{appendix\_main.pdf}. \\
+Trace-data files & Controlled run commits update trace data such as
+\texttt{data/cases/latest-live.js}, \texttt{data/cases/recent-runs.js}, and
+\texttt{index.html} cache strings. \\
+\bottomrule
+\end{longtable}
 
 \section{Historical Notes}
 \label{app:historical}
 
 \subsection{Old Cake2 Artifact}
 
-The old Cake2 trace is retained in the artifact only as historical
-context. It was collected under an earlier instrumentation version, took
-a device-token/operator-admin path, and is excluded from all quantitative
-results in this paper. It should not be used to compute R1--R7 coverage,
-observation, repeatability, or AR metrics.
+The old Cake2 trace is retained in the artifact only as historical context. It
+was collected under an earlier instrumentation version, took a
+device-token/operator-admin path, and is excluded from all quantitative results
+in this paper. It should not be used to compute R1--R7 coverage, observation,
+repeatability, or AR metrics.
 
 \subsection{Weather Runs}
 
-The Weather runs are also historical notes. They showed that post-G18
-tool behavior can vary within a prompt family: some runs recorded
-\texttt{web\_search} only, while W3, W5, and the Beijing run also
-recorded a \texttt{bash} skill-loading probe before \texttt{web\_search}.
-They are useful artifact evidence for how post-G18 tool paths can differ
-while G0--G18 remains stable, but they are not mixed with the controlled
-R1--R7 scores.
+The Weather runs are historical notes. They showed that post-G18 tool behavior
+can vary within a prompt family: some runs recorded \texttt{web\_search} only,
+while W3, W5, and the Beijing run also recorded a \texttt{bash} skill-loading
+probe before \texttt{web\_search}. They are useful artifact evidence for how
+post-G18 tool paths can differ while G0--G18 remains stable, but they are not
+mixed with the controlled R1--R7 scores.
 
 \section{Privacy and Submission Boundary}
 \label{app:privacy}
 
-The working \texttt{artifacts/audit/} directory contains raw audit notes,
-local paths, and sensitive prompt material. It is not a submission bundle.
-Submitted artifacts must redact personal email addresses, sender names,
-usernames, hostnames, absolute local paths, and author-identifying URLs.
-If an audit-derived file is copied into a submission artifact, it must be
-redacted first.
+The working \texttt{artifacts/audit/} directory contains raw audit notes, local
+paths, and sensitive prompt material. It is not a submission bundle. Submitted
+artifacts must redact personal email addresses, sender names, usernames,
+hostnames, absolute local paths, and author-identifying URLs. If an
+audit-derived file is copied into a submission artifact, it must be redacted
+first.

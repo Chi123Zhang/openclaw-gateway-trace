@@ -6,9 +6,12 @@ Revision base: `b375dd68ee6af1adfa49d8148e14eba3041d14e9`
 
 Push status: branch pushed to `origin/revision-r1-r7-controlled`.
 
-Latest paper CI: GitHub Actions run `36814141719` succeeded on commit
+Previous paper CI: GitHub Actions run `36814141719` succeeded on commit
 `7a3c52e`. The workflow compiled both `paper/main.tex` and
 `paper/appendix_main.tex` and uploaded the `traceclaw-paper-pdfs` artifact.
+
+Current restoration status: working tree updated after `ad58771`; a fresh Paper
+Build CI run is still required for the restored appendix.
 
 ## Modified Files
 
@@ -24,7 +27,9 @@ Latest paper CI: GitHub Actions run `36814141719` succeeded on commit
 - `artifacts/controlled/ar-metrics-table.tex`
 - `artifacts/controlled/repeatability-table.tex`
 - `artifacts/controlled/r1-stage-ledger-table.tex`
+- `artifacts/controlled/source-anchor-audit-r1.csv`
 - `artifacts/controlled/claim-check.md`
+- `artifacts/restore-diff-report.md`
 
 Follow-up layout fix:
 
@@ -39,6 +44,21 @@ Follow-up layout fix:
 - Experiments now use the requested structure: cohort/provenance, Gateway coverage and observation, execution classes, R2 retrieval, R4 local mutation, R3 external side effect, exact-prompt repeatability, stage matrix, audit findings, and coverage limits.
 - Appendix rewritten as controlled cohort evidence rather than a long old-Cake2 source note.
 - Appendix title changed to `Controlled Cohort Evidence`.
+
+Follow-up completeness restoration:
+
+- Restored method detail in `main.tex`: step-by-step source-anchored audit
+  method, claim-level tracing explanation, trace-model figure, positioning
+  table, and richer framework prose.
+- Rebuilt `paper/appendix.tex` as an R1 evidence appendix rather than a compact
+  six-page summary.
+- Added detailed R1 G0--G18 source audit with purpose, upstream anchors, R1
+  values, taken/not-taken branches, observation status, rationale visibility,
+  and gaps.
+- Added detailed AR0--AR6 ledger for R1 and R3; compact AR handling remains for
+  R2/R4/R5/R6/R7.
+- Added `artifacts/controlled/source-anchor-audit-r1.csv` for the restored
+  source anchors.
 
 ## Claims Removed or Weakened
 
@@ -85,8 +105,24 @@ Passed:
 Not completed locally:
 
 - Local PDF build could not run because this machine does not have `latexmk` or `xelatex` on PATH.
-- Docker was present but the Docker daemon was not running, so a LaTeX container could not be used locally.
+- Docker is installed, but the current process cannot connect to the Docker API
+  socket, so a LaTeX container could not be used locally.
 - No `latexmk -f` or error-suppression path was used.
+
+Current restoration validation:
+
+- `python3 scripts/validate_repeated_weather_runs.py`
+- `python3 -m json.tool artifacts/controlled/controlled-runs.json`
+- CSV parse check for `artifacts/controlled/source-anchor-audit-r1.csv`,
+  `artifacts/controlled/controlled-runs.csv`, and
+  `artifacts/controlled/stage-matrix.csv`
+- `git diff --check`
+- Label check for `app:detailed-gateway-audit`, `app:ar-ledger`, and
+  `app:stage-matrix`
+- Privacy grep over `paper/` and `artifacts/controlled/`: no hits for real
+  recipient email, old Cake2 run/session IDs, or absolute `/Users/mac` paths.
+  One expected historical-note hit remains for the phrase
+  `device-token/operator-admin path`; it is not an R1 claim.
 
 Completed through CI:
 
