@@ -1,0 +1,31 @@
+\begin{longtable}{@{}p{0.06\linewidth}p{0.14\linewidth}p{0.15\linewidth}p{0.16\linewidth}p{0.41\linewidth}@{}}
+\caption{R1 per-stage Gateway ledger. Values are redacted or shortened where they are identifiers; full raw values remain in the saved trace artifact.}\label{tab:app-r1-ledger}\\
+\toprule
+Stage & Branch & Outcome evidence & Rationale visibility & R1 value / note \\
+\midrule
+\endfirsthead
+\toprule
+Stage & Branch & Outcome evidence & Rationale visibility & R1 value / note \\
+\midrule
+\endhead
+G0 & authorized & Observed & partial & scope = gateway-runtime; authMode = token; authMethod = token; authOk = True; sharedAuthOk = True; sharedAuthProvided = True; hasDeviceIdentity = False; result = authorized \\
+G1 & allow & Observed & partial & scope = gateway-runtime; authMode = token; authMethod = token; sharedAuthProvided = True; sharedAuthOk = True; result = allow \\
+G2 & pass & Observed & partial & scope = gateway-runtime; authMode = token; authMethod = token; role = operator; scopes = [operator.write]; result = pass \\
+G3 & allow & Observed & partial & result = allow \\
+G4 & pass & Observed & partial & result = pass; hasPrivilegedFields = False; hasExplicitOrigin = False \\
+G5 & unchanged & Observed & partial & result = unchanged; messageLength = 19; messageChangedBySanitization = False \\
+G6 & resolved & Observed & partial & requestedAgentId = none; result = resolved \\
+G7 & resolved & Observed & partial & canonicalSessionKey = agent:main:dashboard:trace-...; result = resolved \\
+G8 & pass & Observed & partial & result = pass \\
+G9 & resolved & Observed & partial & agentId = main; result = resolved \\
+G10 & allow & Observed & partial & sendPolicy = allow; result = allow \\
+G11 & pass & Observed & partial & dedupeDecision = new\_dispatch; result = pass \\
+G12 & admitted & Observed & partial & admissionDecision = admitted; result = admitted \\
+G13 & constructed & Observed & partial & MsgContext.Body = 'How to make a cake?'; MsgContext.SessionKey = agent:main:dashboard:trace-...; MsgContext.AgentId = main; MsgContext.ChatType = direct; MsgContext.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90... \\
+G14 & entered & Observed & partial & DispatchInboundResult = returned \\
+G15 & finalized & Observed & partial & FinalizedMsgContext.Body = 'How to make a cake?'; FinalizedMsgContext.BodyForAgent = 'How to make a cake?'; FinalizedMsgContext.BodyForCommands = 'How to make a cake?'; FinalizedMsgContext.SessionKey = agent... \\
+G16 & normal\_path & Observed & partial & DispatchFromConfigResult = returned \\
+G17 & resolved & Observed & partial & sessionAgentId = main; sessionAgentCfg = not directly logged \\
+G18 & selected & Observed & partial & replyResult = returned to G16 \\
+\bottomrule
+\end{longtable}

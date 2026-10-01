@@ -1,0 +1,624 @@
+label,stage,branch,observed,rationale,input,output,case2
+R1,G0,authorized,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+authOk = True
+sharedAuthOk = True
+sharedAuthProvided = True
+hasDeviceIdentity = False
+result = authorized",Observed runtime event: connection_auth_state_resolved.
+R1,G1,allow,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+sharedAuthProvided = True
+sharedAuthOk = True
+result = allow",Observed runtime event: shared_credential_authorized.
+R1,G2,pass,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+role = operator
+scopes = [""operator.write""]
+result = pass",Observed runtime event: connection_authentication_completed.
+R1,G3,allow,Observed,partial,"method = chat.send
+role = operator
+scopes = [""operator.write""]",result = allow,Observed runtime event: gateway_method_authorized.
+R1,G4,pass,Observed,partial,"method = chat.send
+sessionKey = agent:main:dashboard:trace-82fbff4483c4
+message = 'How to make a cake?'
+attachments = none
+idempotencyKey / runId = 8d07c88e-188f-4347-9f9a-7fc90412c604","result = pass
+hasPrivilegedFields = False
+hasExplicitOrigin = False",Observed runtime event: chat_send_request_validated.
+R1,G5,unchanged,Observed,partial,"message = 'How to make a cake?'
+attachments = none","result = unchanged
+messageLength = 19
+messageChangedBySanitization = False",Observed runtime event: chat_message_normalized.
+R1,G6,resolved,Observed,partial,"sessionKey = agent:main:dashboard:trace-82fbff4483c4
+explicit agentId = none","requestedAgentId = none
+result = resolved",Observed runtime event: requested_agent_resolved.
+R1,G7,resolved,Observed,partial,rawSessionKey = agent:main:dashboard:trace-82fbff4483c4,"canonicalSessionKey = agent:main:dashboard:trace-82fbff4483c4
+result = resolved",Observed runtime event: session_resolved.
+R1,G8,pass,Observed,partial,"requestedAgentId = none
+canonicalSessionKey = agent:main:dashboard:trace-82fbff4483c4",result = pass,Observed runtime event: agent_session_validated.
+R1,G9,resolved,Observed,partial,"canonicalSessionKey = agent:main:dashboard:trace-82fbff4483c4
+selectedAgentId = none","agentId = main
+result = resolved",Observed runtime event: effective_agent_resolved.
+R1,G10,allow,Observed,partial,sessionKey = agent:main:dashboard:trace-82fbff4483c4,"sendPolicy = allow
+result = allow",Observed runtime event: session_send_policy_evaluated.
+R1,G11,pass,Observed,partial,"runId = 8d07c88e-188f-4347-9f9a-7fc90412c604
+sessionKey = agent:main:dashboard:trace-82fbff4483c4","dedupeDecision = new_dispatch
+result = pass",Observed runtime event: run_idempotency_guard_passed.
+R1,G12,admitted,Observed,partial,"runId = 8d07c88e-188f-4347-9f9a-7fc90412c604
+sessionKey = agent:main:dashboard:trace-82fbff4483c4","admissionDecision = admitted
+result = admitted",Observed runtime event: work_admission_completed.
+R1,G13,constructed,Observed,partial,"parsedMessage = 'How to make a cake?'
+sessionKey = agent:main:dashboard:trace-82fbff4483c4
+agentId = main
+clientRunId = 8d07c88e-188f-4347-9f9a-7fc90412c604
+stagedMedia = none","MsgContext.Body = 'How to make a cake?'
+MsgContext.SessionKey = agent:main:dashboard:trace-82fbff4483c4
+MsgContext.AgentId = main
+MsgContext.ChatType = direct
+MsgContext.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604
+media fields = absent",Observed runtime event: runtime_context_constructed.
+R1,G14,entered,Observed,partial,"ctx.Body = 'How to make a cake?'
+ctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604",DispatchInboundResult = returned,"This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+R1,G15,finalized,Observed,partial,"ctx.Body = 'How to make a cake?'
+ctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604","FinalizedMsgContext.Body = 'How to make a cake?'
+FinalizedMsgContext.BodyForAgent = 'How to make a cake?'
+FinalizedMsgContext.BodyForCommands = 'How to make a cake?'
+FinalizedMsgContext.SessionKey = agent:main:dashboard:trace-82fbff4483c4
+FinalizedMsgContext.AgentId = main
+FinalizedMsgContext.ChatType = direct
+FinalizedMsgContext.CommandTurn.kind = normal","G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+R1,G16,normal_path,Observed,partial,"ctx.Body = 'How to make a cake?'
+ctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604",DispatchFromConfigResult = returned,"This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+R1,G17,resolved,Observed,partial,"acpDispatchSessionKey = agent:main:dashboard:trace-82fbff4483c4
+fallback ctx.AgentId = main","sessionAgentId = main
+sessionAgentCfg = not directly logged",The Agent was checked again in this run and stayed main.
+R1,G18,selected,Observed,partial,"ctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4
+ctx.AgentId = main
+custom replyResolver = none",replyResult = returned to G16,This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary.
+R2,G0,authorized,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+authOk = True
+sharedAuthOk = True
+sharedAuthProvided = True
+hasDeviceIdentity = False
+result = authorized",Observed runtime event: connection_auth_state_resolved.
+R2,G1,allow,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+sharedAuthProvided = True
+sharedAuthOk = True
+result = allow",Observed runtime event: shared_credential_authorized.
+R2,G2,pass,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+role = operator
+scopes = [""operator.write""]
+result = pass",Observed runtime event: connection_authentication_completed.
+R2,G3,allow,Observed,partial,"method = chat.send
+role = operator
+scopes = [""operator.write""]",result = allow,Observed runtime event: gateway_method_authorized.
+R2,G4,pass,Observed,partial,"method = chat.send
+sessionKey = agent:main:dashboard:trace-fad2b243a13f
+message = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+attachments = none
+idempotencyKey / runId = fba117de-41bb-4b71-bd7b-e73f57f661d6","result = pass
+hasPrivilegedFields = False
+hasExplicitOrigin = False",Observed runtime event: chat_send_request_validated.
+R2,G5,unchanged,Observed,partial,"message = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+attachments = none","result = unchanged
+messageLength = 83
+messageChangedBySanitization = False",Observed runtime event: chat_message_normalized.
+R2,G6,resolved,Observed,partial,"sessionKey = agent:main:dashboard:trace-fad2b243a13f
+explicit agentId = none","requestedAgentId = none
+result = resolved",Observed runtime event: requested_agent_resolved.
+R2,G7,resolved,Observed,partial,rawSessionKey = agent:main:dashboard:trace-fad2b243a13f,"canonicalSessionKey = agent:main:dashboard:trace-fad2b243a13f
+result = resolved",Observed runtime event: session_resolved.
+R2,G8,pass,Observed,partial,"requestedAgentId = none
+canonicalSessionKey = agent:main:dashboard:trace-fad2b243a13f",result = pass,Observed runtime event: agent_session_validated.
+R2,G9,resolved,Observed,partial,"canonicalSessionKey = agent:main:dashboard:trace-fad2b243a13f
+selectedAgentId = none","agentId = main
+result = resolved",Observed runtime event: effective_agent_resolved.
+R2,G10,allow,Observed,partial,sessionKey = agent:main:dashboard:trace-fad2b243a13f,"sendPolicy = allow
+result = allow",Observed runtime event: session_send_policy_evaluated.
+R2,G11,pass,Observed,partial,"runId = fba117de-41bb-4b71-bd7b-e73f57f661d6
+sessionKey = agent:main:dashboard:trace-fad2b243a13f","dedupeDecision = new_dispatch
+result = pass",Observed runtime event: run_idempotency_guard_passed.
+R2,G12,admitted,Observed,partial,"runId = fba117de-41bb-4b71-bd7b-e73f57f661d6
+sessionKey = agent:main:dashboard:trace-fad2b243a13f","admissionDecision = admitted
+result = admitted",Observed runtime event: work_admission_completed.
+R2,G13,constructed,Observed,partial,"parsedMessage = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+sessionKey = agent:main:dashboard:trace-fad2b243a13f
+agentId = main
+clientRunId = fba117de-41bb-4b71-bd7b-e73f57f661d6
+stagedMedia = none","MsgContext.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+MsgContext.SessionKey = agent:main:dashboard:trace-fad2b243a13f
+MsgContext.AgentId = main
+MsgContext.ChatType = direct
+MsgContext.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6
+media fields = absent",Observed runtime event: runtime_context_constructed.
+R2,G14,entered,Observed,partial,"ctx.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+ctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6",DispatchInboundResult = returned,"This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+R2,G15,finalized,Observed,partial,"ctx.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+ctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6","FinalizedMsgContext.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+FinalizedMsgContext.BodyForAgent = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+FinalizedMsgContext.BodyForCommands = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+FinalizedMsgContext.SessionKey = agent:main:dashboard:trace-fad2b243a13f
+FinalizedMsgContext.AgentId = main
+FinalizedMsgContext.ChatType = direct
+FinalizedMsgContext.CommandTurn.kind = normal","G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+R2,G16,normal_path,Observed,partial,"ctx.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'
+ctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6",DispatchFromConfigResult = returned,"This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+R2,G17,resolved,Observed,partial,"acpDispatchSessionKey = agent:main:dashboard:trace-fad2b243a13f
+fallback ctx.AgentId = main","sessionAgentId = main
+sessionAgentCfg = not directly logged",The Agent was checked again in this run and stayed main.
+R2,G18,selected,Observed,partial,"ctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f
+ctx.AgentId = main
+custom replyResolver = none",replyResult = returned to G16,This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary.
+R3,G0,authorized,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+authOk = True
+sharedAuthOk = True
+sharedAuthProvided = True
+hasDeviceIdentity = False
+result = authorized",Observed runtime event: connection_auth_state_resolved.
+R3,G1,allow,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+sharedAuthProvided = True
+sharedAuthOk = True
+result = allow",Observed runtime event: shared_credential_authorized.
+R3,G2,pass,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+role = operator
+scopes = [""operator.write""]
+result = pass",Observed runtime event: connection_authentication_completed.
+R3,G3,allow,Observed,partial,"method = chat.send
+role = operator
+scopes = [""operator.write""]",result = allow,Observed runtime event: gateway_method_authorized.
+R3,G4,pass,Observed,partial,"method = chat.send
+sessionKey = agent:main:dashboard:trace-adf9c1279622
+message = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+attachments = none
+idempotencyKey / runId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4","result = pass
+hasPrivilegedFields = False
+hasExplicitOrigin = False",Observed runtime event: chat_send_request_validated.
+R3,G5,unchanged,Observed,partial,"message = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+attachments = none","result = unchanged
+messageLength = 114
+messageChangedBySanitization = False",Observed runtime event: chat_message_normalized.
+R3,G6,resolved,Observed,partial,"sessionKey = agent:main:dashboard:trace-adf9c1279622
+explicit agentId = none","requestedAgentId = none
+result = resolved",Observed runtime event: requested_agent_resolved.
+R3,G7,resolved,Observed,partial,rawSessionKey = agent:main:dashboard:trace-adf9c1279622,"canonicalSessionKey = agent:main:dashboard:trace-adf9c1279622
+result = resolved",Observed runtime event: session_resolved.
+R3,G8,pass,Observed,partial,"requestedAgentId = none
+canonicalSessionKey = agent:main:dashboard:trace-adf9c1279622",result = pass,Observed runtime event: agent_session_validated.
+R3,G9,resolved,Observed,partial,"canonicalSessionKey = agent:main:dashboard:trace-adf9c1279622
+selectedAgentId = none","agentId = main
+result = resolved",Observed runtime event: effective_agent_resolved.
+R3,G10,allow,Observed,partial,sessionKey = agent:main:dashboard:trace-adf9c1279622,"sendPolicy = allow
+result = allow",Observed runtime event: session_send_policy_evaluated.
+R3,G11,pass,Observed,partial,"runId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4
+sessionKey = agent:main:dashboard:trace-adf9c1279622","dedupeDecision = new_dispatch
+result = pass",Observed runtime event: run_idempotency_guard_passed.
+R3,G12,admitted,Observed,partial,"runId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4
+sessionKey = agent:main:dashboard:trace-adf9c1279622","admissionDecision = admitted
+result = admitted",Observed runtime event: work_admission_completed.
+R3,G13,constructed,Observed,partial,"parsedMessage = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+sessionKey = agent:main:dashboard:trace-adf9c1279622
+agentId = main
+clientRunId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4
+stagedMedia = none","MsgContext.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+MsgContext.SessionKey = agent:main:dashboard:trace-adf9c1279622
+MsgContext.AgentId = main
+MsgContext.ChatType = direct
+MsgContext.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4
+media fields = absent",Observed runtime event: runtime_context_constructed.
+R3,G14,entered,Observed,partial,"ctx.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+ctx.SessionKey = agent:main:dashboard:trace-adf9c1279622
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4",DispatchInboundResult = returned,"This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+R3,G15,finalized,Observed,partial,"ctx.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+ctx.SessionKey = agent:main:dashboard:trace-adf9c1279622
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4","FinalizedMsgContext.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+FinalizedMsgContext.BodyForAgent = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+FinalizedMsgContext.BodyForCommands = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+FinalizedMsgContext.SessionKey = agent:main:dashboard:trace-adf9c1279622
+FinalizedMsgContext.AgentId = main
+FinalizedMsgContext.ChatType = direct
+FinalizedMsgContext.CommandTurn.kind = normal","G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+R3,G16,normal_path,Observed,partial,"ctx.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'
+ctx.SessionKey = agent:main:dashboard:trace-adf9c1279622
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4",DispatchFromConfigResult = returned,"This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+R3,G17,resolved,Observed,partial,"acpDispatchSessionKey = agent:main:dashboard:trace-adf9c1279622
+fallback ctx.AgentId = main","sessionAgentId = main
+sessionAgentCfg = not directly logged",The Agent was checked again in this run and stayed main.
+R3,G18,selected,Observed,partial,"ctx.SessionKey = agent:main:dashboard:trace-adf9c1279622
+ctx.AgentId = main
+custom replyResolver = none",replyResult = returned to G16,This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary.
+R4,G0,authorized,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+authOk = True
+sharedAuthOk = True
+sharedAuthProvided = True
+hasDeviceIdentity = False
+result = authorized",Observed runtime event: connection_auth_state_resolved.
+R4,G1,allow,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+sharedAuthProvided = True
+sharedAuthOk = True
+result = allow",Observed runtime event: shared_credential_authorized.
+R4,G2,pass,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+role = operator
+scopes = [""operator.write""]
+result = pass",Observed runtime event: connection_authentication_completed.
+R4,G3,allow,Observed,partial,"method = chat.send
+role = operator
+scopes = [""operator.write""]",result = allow,Observed runtime event: gateway_method_authorized.
+R4,G4,pass,Observed,partial,"method = chat.send
+sessionKey = agent:main:dashboard:trace-fcf3c773162b
+message = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+attachments = none
+idempotencyKey / runId = 37bf6523-4daa-44c9-b8ab-f914ac855289","result = pass
+hasPrivilegedFields = False
+hasExplicitOrigin = False",Observed runtime event: chat_send_request_validated.
+R4,G5,unchanged,Observed,partial,"message = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+attachments = none","result = unchanged
+messageLength = 72
+messageChangedBySanitization = False",Observed runtime event: chat_message_normalized.
+R4,G6,resolved,Observed,partial,"sessionKey = agent:main:dashboard:trace-fcf3c773162b
+explicit agentId = none","requestedAgentId = none
+result = resolved",Observed runtime event: requested_agent_resolved.
+R4,G7,resolved,Observed,partial,rawSessionKey = agent:main:dashboard:trace-fcf3c773162b,"canonicalSessionKey = agent:main:dashboard:trace-fcf3c773162b
+result = resolved",Observed runtime event: session_resolved.
+R4,G8,pass,Observed,partial,"requestedAgentId = none
+canonicalSessionKey = agent:main:dashboard:trace-fcf3c773162b",result = pass,Observed runtime event: agent_session_validated.
+R4,G9,resolved,Observed,partial,"canonicalSessionKey = agent:main:dashboard:trace-fcf3c773162b
+selectedAgentId = none","agentId = main
+result = resolved",Observed runtime event: effective_agent_resolved.
+R4,G10,allow,Observed,partial,sessionKey = agent:main:dashboard:trace-fcf3c773162b,"sendPolicy = allow
+result = allow",Observed runtime event: session_send_policy_evaluated.
+R4,G11,pass,Observed,partial,"runId = 37bf6523-4daa-44c9-b8ab-f914ac855289
+sessionKey = agent:main:dashboard:trace-fcf3c773162b","dedupeDecision = new_dispatch
+result = pass",Observed runtime event: run_idempotency_guard_passed.
+R4,G12,admitted,Observed,partial,"runId = 37bf6523-4daa-44c9-b8ab-f914ac855289
+sessionKey = agent:main:dashboard:trace-fcf3c773162b","admissionDecision = admitted
+result = admitted",Observed runtime event: work_admission_completed.
+R4,G13,constructed,Observed,partial,"parsedMessage = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+sessionKey = agent:main:dashboard:trace-fcf3c773162b
+agentId = main
+clientRunId = 37bf6523-4daa-44c9-b8ab-f914ac855289
+stagedMedia = none","MsgContext.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+MsgContext.SessionKey = agent:main:dashboard:trace-fcf3c773162b
+MsgContext.AgentId = main
+MsgContext.ChatType = direct
+MsgContext.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289
+media fields = absent",Observed runtime event: runtime_context_constructed.
+R4,G14,entered,Observed,partial,"ctx.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+ctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289",DispatchInboundResult = returned,"This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+R4,G15,finalized,Observed,partial,"ctx.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+ctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289","FinalizedMsgContext.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+FinalizedMsgContext.BodyForAgent = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+FinalizedMsgContext.BodyForCommands = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+FinalizedMsgContext.SessionKey = agent:main:dashboard:trace-fcf3c773162b
+FinalizedMsgContext.AgentId = main
+FinalizedMsgContext.ChatType = direct
+FinalizedMsgContext.CommandTurn.kind = normal","G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+R4,G16,normal_path,Observed,partial,"ctx.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'
+ctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289",DispatchFromConfigResult = returned,"This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+R4,G17,resolved,Observed,partial,"acpDispatchSessionKey = agent:main:dashboard:trace-fcf3c773162b
+fallback ctx.AgentId = main","sessionAgentId = main
+sessionAgentCfg = not directly logged",The Agent was checked again in this run and stayed main.
+R4,G18,selected,Observed,partial,"ctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b
+ctx.AgentId = main
+custom replyResolver = none",replyResult = returned to G16,This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary.
+R5,G0,authorized,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+authOk = True
+sharedAuthOk = True
+sharedAuthProvided = True
+hasDeviceIdentity = False
+result = authorized",Observed runtime event: connection_auth_state_resolved.
+R5,G1,allow,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+sharedAuthProvided = True
+sharedAuthOk = True
+result = allow",Observed runtime event: shared_credential_authorized.
+R5,G2,pass,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+role = operator
+scopes = [""operator.write""]
+result = pass",Observed runtime event: connection_authentication_completed.
+R5,G3,allow,Observed,partial,"method = chat.send
+role = operator
+scopes = [""operator.write""]",result = allow,Observed runtime event: gateway_method_authorized.
+R5,G4,pass,Observed,partial,"method = chat.send
+sessionKey = agent:main:dashboard:trace-ae5157e96699
+message = 'Explain the difference between tracing and provenance in simple terms.'
+attachments = none
+idempotencyKey / runId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67","result = pass
+hasPrivilegedFields = False
+hasExplicitOrigin = False",Observed runtime event: chat_send_request_validated.
+R5,G5,unchanged,Observed,partial,"message = 'Explain the difference between tracing and provenance in simple terms.'
+attachments = none","result = unchanged
+messageLength = 70
+messageChangedBySanitization = False",Observed runtime event: chat_message_normalized.
+R5,G6,resolved,Observed,partial,"sessionKey = agent:main:dashboard:trace-ae5157e96699
+explicit agentId = none","requestedAgentId = none
+result = resolved",Observed runtime event: requested_agent_resolved.
+R5,G7,resolved,Observed,partial,rawSessionKey = agent:main:dashboard:trace-ae5157e96699,"canonicalSessionKey = agent:main:dashboard:trace-ae5157e96699
+result = resolved",Observed runtime event: session_resolved.
+R5,G8,pass,Observed,partial,"requestedAgentId = none
+canonicalSessionKey = agent:main:dashboard:trace-ae5157e96699",result = pass,Observed runtime event: agent_session_validated.
+R5,G9,resolved,Observed,partial,"canonicalSessionKey = agent:main:dashboard:trace-ae5157e96699
+selectedAgentId = none","agentId = main
+result = resolved",Observed runtime event: effective_agent_resolved.
+R5,G10,allow,Observed,partial,sessionKey = agent:main:dashboard:trace-ae5157e96699,"sendPolicy = allow
+result = allow",Observed runtime event: session_send_policy_evaluated.
+R5,G11,pass,Observed,partial,"runId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67
+sessionKey = agent:main:dashboard:trace-ae5157e96699","dedupeDecision = new_dispatch
+result = pass",Observed runtime event: run_idempotency_guard_passed.
+R5,G12,admitted,Observed,partial,"runId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67
+sessionKey = agent:main:dashboard:trace-ae5157e96699","admissionDecision = admitted
+result = admitted",Observed runtime event: work_admission_completed.
+R5,G13,constructed,Observed,partial,"parsedMessage = 'Explain the difference between tracing and provenance in simple terms.'
+sessionKey = agent:main:dashboard:trace-ae5157e96699
+agentId = main
+clientRunId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67
+stagedMedia = none","MsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'
+MsgContext.SessionKey = agent:main:dashboard:trace-ae5157e96699
+MsgContext.AgentId = main
+MsgContext.ChatType = direct
+MsgContext.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67
+media fields = absent",Observed runtime event: runtime_context_constructed.
+R5,G14,entered,Observed,partial,"ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'
+ctx.SessionKey = agent:main:dashboard:trace-ae5157e96699
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67",DispatchInboundResult = returned,"This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+R5,G15,finalized,Observed,partial,"ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'
+ctx.SessionKey = agent:main:dashboard:trace-ae5157e96699
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67","FinalizedMsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'
+FinalizedMsgContext.BodyForAgent = 'Explain the difference between tracing and provenance in simple terms.'
+FinalizedMsgContext.BodyForCommands = 'Explain the difference between tracing and provenance in simple terms.'
+FinalizedMsgContext.SessionKey = agent:main:dashboard:trace-ae5157e96699
+FinalizedMsgContext.AgentId = main
+FinalizedMsgContext.ChatType = direct
+FinalizedMsgContext.CommandTurn.kind = normal","G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+R5,G16,normal_path,Observed,partial,"ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'
+ctx.SessionKey = agent:main:dashboard:trace-ae5157e96699
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67",DispatchFromConfigResult = returned,"This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+R5,G17,resolved,Observed,partial,"acpDispatchSessionKey = agent:main:dashboard:trace-ae5157e96699
+fallback ctx.AgentId = main","sessionAgentId = main
+sessionAgentCfg = not directly logged",The Agent was checked again in this run and stayed main.
+R5,G18,selected,Observed,partial,"ctx.SessionKey = agent:main:dashboard:trace-ae5157e96699
+ctx.AgentId = main
+custom replyResolver = none",replyResult = returned to G16,This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary.
+R6,G0,authorized,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+authOk = True
+sharedAuthOk = True
+sharedAuthProvided = True
+hasDeviceIdentity = False
+result = authorized",Observed runtime event: connection_auth_state_resolved.
+R6,G1,allow,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+sharedAuthProvided = True
+sharedAuthOk = True
+result = allow",Observed runtime event: shared_credential_authorized.
+R6,G2,pass,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+role = operator
+scopes = [""operator.write""]
+result = pass",Observed runtime event: connection_authentication_completed.
+R6,G3,allow,Observed,partial,"method = chat.send
+role = operator
+scopes = [""operator.write""]",result = allow,Observed runtime event: gateway_method_authorized.
+R6,G4,pass,Observed,partial,"method = chat.send
+sessionKey = agent:main:dashboard:trace-642b7d8fccc3
+message = 'Explain the difference between tracing and provenance in simple terms.'
+attachments = none
+idempotencyKey / runId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5","result = pass
+hasPrivilegedFields = False
+hasExplicitOrigin = False",Observed runtime event: chat_send_request_validated.
+R6,G5,unchanged,Observed,partial,"message = 'Explain the difference between tracing and provenance in simple terms.'
+attachments = none","result = unchanged
+messageLength = 70
+messageChangedBySanitization = False",Observed runtime event: chat_message_normalized.
+R6,G6,resolved,Observed,partial,"sessionKey = agent:main:dashboard:trace-642b7d8fccc3
+explicit agentId = none","requestedAgentId = none
+result = resolved",Observed runtime event: requested_agent_resolved.
+R6,G7,resolved,Observed,partial,rawSessionKey = agent:main:dashboard:trace-642b7d8fccc3,"canonicalSessionKey = agent:main:dashboard:trace-642b7d8fccc3
+result = resolved",Observed runtime event: session_resolved.
+R6,G8,pass,Observed,partial,"requestedAgentId = none
+canonicalSessionKey = agent:main:dashboard:trace-642b7d8fccc3",result = pass,Observed runtime event: agent_session_validated.
+R6,G9,resolved,Observed,partial,"canonicalSessionKey = agent:main:dashboard:trace-642b7d8fccc3
+selectedAgentId = none","agentId = main
+result = resolved",Observed runtime event: effective_agent_resolved.
+R6,G10,allow,Observed,partial,sessionKey = agent:main:dashboard:trace-642b7d8fccc3,"sendPolicy = allow
+result = allow",Observed runtime event: session_send_policy_evaluated.
+R6,G11,pass,Observed,partial,"runId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5
+sessionKey = agent:main:dashboard:trace-642b7d8fccc3","dedupeDecision = new_dispatch
+result = pass",Observed runtime event: run_idempotency_guard_passed.
+R6,G12,admitted,Observed,partial,"runId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5
+sessionKey = agent:main:dashboard:trace-642b7d8fccc3","admissionDecision = admitted
+result = admitted",Observed runtime event: work_admission_completed.
+R6,G13,constructed,Observed,partial,"parsedMessage = 'Explain the difference between tracing and provenance in simple terms.'
+sessionKey = agent:main:dashboard:trace-642b7d8fccc3
+agentId = main
+clientRunId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5
+stagedMedia = none","MsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'
+MsgContext.SessionKey = agent:main:dashboard:trace-642b7d8fccc3
+MsgContext.AgentId = main
+MsgContext.ChatType = direct
+MsgContext.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5
+media fields = absent",Observed runtime event: runtime_context_constructed.
+R6,G14,entered,Observed,partial,"ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'
+ctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5",DispatchInboundResult = returned,"This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+R6,G15,finalized,Observed,partial,"ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'
+ctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5","FinalizedMsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'
+FinalizedMsgContext.BodyForAgent = 'Explain the difference between tracing and provenance in simple terms.'
+FinalizedMsgContext.BodyForCommands = 'Explain the difference between tracing and provenance in simple terms.'
+FinalizedMsgContext.SessionKey = agent:main:dashboard:trace-642b7d8fccc3
+FinalizedMsgContext.AgentId = main
+FinalizedMsgContext.ChatType = direct
+FinalizedMsgContext.CommandTurn.kind = normal","G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+R6,G16,normal_path,Observed,partial,"ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'
+ctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5",DispatchFromConfigResult = returned,"This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+R6,G17,resolved,Observed,partial,"acpDispatchSessionKey = agent:main:dashboard:trace-642b7d8fccc3
+fallback ctx.AgentId = main","sessionAgentId = main
+sessionAgentCfg = not directly logged",The Agent was checked again in this run and stayed main.
+R6,G18,selected,Observed,partial,"ctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3
+ctx.AgentId = main
+custom replyResolver = none",replyResult = returned to G16,This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary.
+R7,G0,authorized,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+authOk = True
+sharedAuthOk = True
+sharedAuthProvided = True
+hasDeviceIdentity = False
+result = authorized",Observed runtime event: connection_auth_state_resolved.
+R7,G1,allow,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+sharedAuthProvided = True
+sharedAuthOk = True
+result = allow",Observed runtime event: shared_credential_authorized.
+R7,G2,pass,Observed,partial,No request-specific input field was captured for this stage.,"scope = gateway-runtime
+authMode = token
+authMethod = token
+role = operator
+scopes = [""operator.write""]
+result = pass",Observed runtime event: connection_authentication_completed.
+R7,G3,allow,Observed,partial,"method = chat.send
+role = operator
+scopes = [""operator.write""]",result = allow,Observed runtime event: gateway_method_authorized.
+R7,G4,pass,Observed,partial,"method = chat.send
+sessionKey = agent:main:dashboard:trace-253fa3a23a78
+message = 'How to make a cake?'
+attachments = none
+idempotencyKey / runId = 02225265-5122-423f-ad75-1a08188cfc23","result = pass
+hasPrivilegedFields = False
+hasExplicitOrigin = False",Observed runtime event: chat_send_request_validated.
+R7,G5,unchanged,Observed,partial,"message = 'How to make a cake?'
+attachments = none","result = unchanged
+messageLength = 19
+messageChangedBySanitization = False",Observed runtime event: chat_message_normalized.
+R7,G6,resolved,Observed,partial,"sessionKey = agent:main:dashboard:trace-253fa3a23a78
+explicit agentId = none","requestedAgentId = none
+result = resolved",Observed runtime event: requested_agent_resolved.
+R7,G7,resolved,Observed,partial,rawSessionKey = agent:main:dashboard:trace-253fa3a23a78,"canonicalSessionKey = agent:main:dashboard:trace-253fa3a23a78
+result = resolved",Observed runtime event: session_resolved.
+R7,G8,pass,Observed,partial,"requestedAgentId = none
+canonicalSessionKey = agent:main:dashboard:trace-253fa3a23a78",result = pass,Observed runtime event: agent_session_validated.
+R7,G9,resolved,Observed,partial,"canonicalSessionKey = agent:main:dashboard:trace-253fa3a23a78
+selectedAgentId = none","agentId = main
+result = resolved",Observed runtime event: effective_agent_resolved.
+R7,G10,allow,Observed,partial,sessionKey = agent:main:dashboard:trace-253fa3a23a78,"sendPolicy = allow
+result = allow",Observed runtime event: session_send_policy_evaluated.
+R7,G11,pass,Observed,partial,"runId = 02225265-5122-423f-ad75-1a08188cfc23
+sessionKey = agent:main:dashboard:trace-253fa3a23a78","dedupeDecision = new_dispatch
+result = pass",Observed runtime event: run_idempotency_guard_passed.
+R7,G12,admitted,Observed,partial,"runId = 02225265-5122-423f-ad75-1a08188cfc23
+sessionKey = agent:main:dashboard:trace-253fa3a23a78","admissionDecision = admitted
+result = admitted",Observed runtime event: work_admission_completed.
+R7,G13,constructed,Observed,partial,"parsedMessage = 'How to make a cake?'
+sessionKey = agent:main:dashboard:trace-253fa3a23a78
+agentId = main
+clientRunId = 02225265-5122-423f-ad75-1a08188cfc23
+stagedMedia = none","MsgContext.Body = 'How to make a cake?'
+MsgContext.SessionKey = agent:main:dashboard:trace-253fa3a23a78
+MsgContext.AgentId = main
+MsgContext.ChatType = direct
+MsgContext.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23
+media fields = absent",Observed runtime event: runtime_context_constructed.
+R7,G14,entered,Observed,partial,"ctx.Body = 'How to make a cake?'
+ctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23",DispatchInboundResult = returned,"This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+R7,G15,finalized,Observed,partial,"ctx.Body = 'How to make a cake?'
+ctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23","FinalizedMsgContext.Body = 'How to make a cake?'
+FinalizedMsgContext.BodyForAgent = 'How to make a cake?'
+FinalizedMsgContext.BodyForCommands = 'How to make a cake?'
+FinalizedMsgContext.SessionKey = agent:main:dashboard:trace-253fa3a23a78
+FinalizedMsgContext.AgentId = main
+FinalizedMsgContext.ChatType = direct
+FinalizedMsgContext.CommandTurn.kind = normal","G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+R7,G16,normal_path,Observed,partial,"ctx.Body = 'How to make a cake?'
+ctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78
+ctx.AgentId = main
+ctx.ChatType = direct
+ctx.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23",DispatchFromConfigResult = returned,"This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+R7,G17,resolved,Observed,partial,"acpDispatchSessionKey = agent:main:dashboard:trace-253fa3a23a78
+fallback ctx.AgentId = main","sessionAgentId = main
+sessionAgentCfg = not directly logged",The Agent was checked again in this run and stayed main.
+R7,G18,selected,Observed,partial,"ctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78
+ctx.AgentId = main
+custom replyResolver = none",replyResult = returned to G16,This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary.

@@ -1,0 +1,13 @@
+\begin{tabularx}{\linewidth}{@{}l X l X@{}}
+\toprule
+Run & Prompt & Class & Observed tools \\
+\midrule
+R1 & How to make a cake? & no-tool & none \\
+R2 & Search the web for the latest OpenTelemetry trac... & read-only retrieval & web\_search + web\_search + web\_search + web\_search + web\_search + web\_search \\
+R3 & Draft an email to <redacted-email> saying that t... & external side effect via host app & bash + bash + bash + bash + bash \\
+R4 & Create a short Python script that prints the fir... & local file write & bash + bash + apply\_patch + bash \\
+R5 & Explain the difference between tracing and prove... & no-tool & none \\
+R6 & Explain the difference between tracing and prove... & no-tool & none \\
+R7 & How to make a cake? & no-tool & none \\
+\bottomrule
+\end{tabularx}

@@ -1,0 +1,13 @@
+\begin{tabularx}{\linewidth}{@{}l l l l l l@{}}
+\toprule
+Run & Prompt class & Run ID & Tools & Gateway & AR return \\
+\midrule
+R1 & no-tool & \texttt{8d07c88e} & none & 19/19, 19/19 & observed \\
+R2 & read-only retrieval & \texttt{fba117de} & web\_search + web\_search + web\_search + web\_search + web\_search + web\_search & 19/19, 19/19 & observed \\
+R3 & external side effect via host app & \texttt{5eb26fda} & bash + bash + bash + bash + bash & 19/19, 19/19 & observed \\
+R4 & local file write & \texttt{37bf6523} & bash + bash + apply\_patch + bash & 19/19, 19/19 & observed \\
+R5 & no-tool & \texttt{42b573dc} & none & 19/19, 19/19 & observed \\
+R6 & no-tool & \texttt{3eb51151} & none & 19/19, 19/19 & observed \\
+R7 & no-tool & \texttt{02225265} & none & 19/19, 19/19 & observed \\
+\bottomrule
+\end{tabularx}
