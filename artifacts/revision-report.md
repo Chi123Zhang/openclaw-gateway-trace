@@ -2,11 +2,11 @@
 
 Branch: `revision-r1-r7-controlled`
 
-Current paper commit checked by CI: `3ab768319af3acd67a140b45f6735fb7e3552618`
+Current paper commit checked by CI: `4eac6c4caf1ffda4e19681138e98a7ac39ba8e77`
 
-Paper Build CI: `36828873407`
+Paper Build CI: `36830890606`
 
-CI URL: https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36828873407
+CI URL: https://github.com/Chi123Zhang/openclaw-gateway-trace/actions/runs/36830890606
 
 CI result: `success`
 
@@ -235,7 +235,7 @@ path was used.
 
 ## CI Validation
 
-GitHub Actions Paper Build run `36828873407` passed on commit `3ab7683`.
+GitHub Actions Paper Build run `36830890606` passed on commit `4eac6c4`.
 
 The workflow completed:
 
@@ -249,7 +249,7 @@ The workflow completed:
 
 Downloaded CI artifact page counts:
 
-- `main.pdf`: 10 pages
+- `main.pdf`: 12 pages
 - `appendix_main.pdf`: 92 pages
 
 PDF text extraction found no unresolved `??`, old Cake2 run/session IDs, real
