@@ -12813,23 +12813,23 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{pre\_dispatch = await ensureDispatchReplyOperation("pre\_dispatch")}
+\pytI{pre\_dispatch = await ensureDispatchReplyOperation("pre\_dispatch")}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:2478}
 \\
 
-\pyI{if pre\_dispatch.status == "aborted": return aborted result}
+\pytI{if pre\_dispatch.status == "aborted": return aborted result}
 &
 \src{dispatch-from-config.ts:2479--2480}
 \\
 
-\pyI{if pre\_dispatch.status == "busy": return busy result}
+\pytI{if pre\_dispatch.status == "busy": return busy result}
 &
 \src{dispatch-from-config.ts:2482--2483}
 \\
 
-\pyI{if plugin-owned binding exists: evaluate plugin ownership path}
+\pytI{if plugin-owned binding exists: evaluate plugin ownership path}
 &
 \src{dispatch-from-config.ts:2486 onward}
 \\
@@ -12845,44 +12845,44 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{if hook\_runner.hasHooks("before\_dispatch"):}
+\pytI{if hook\_runner.hasHooks("before\_dispatch"):}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:2908--2968}
 \\
 
-\pyII{before\_dispatch\_result = await traceReplyPhase(}
+\pytII{before\_dispatch\_result = await traceReplyPhase(}
 &
 \src{dispatch-from-config.ts:2910--2947}
 \\
 
-\pyIII{"reply.before\_dispatch\_hooks", ...}
+\pytIII{"reply.before\_dispatch\_hooks", ...}
 &
 \src{dispatch-from-config.ts:2910--2947}
 \\
 
-\pyII{)}
+\pytII{)}
 &
 \src{dispatch-from-config.ts:2910--2947}
 \\
 
-\pyII{if handled: deliver result and return}
+\pytII{if handled: deliver result and return}
 &
 \src{dispatch-from-config.ts:2948--2968}
 \\
 
-\pyI{if hook\_runner.hasHooks("reply\_dispatch"):}
+\pytI{if hook\_runner.hasHooks("reply\_dispatch"):}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:2973--3023}
 \\
 
-\pyII{reply\_dispatch\_result = await traceReplyPhase(}
+\pytII{reply\_dispatch\_result = await traceReplyPhase(}
 &
 \src{dispatch-from-config.ts:2974--3014}
 \\
 
-\pyIII{"reply.reply\_dispatch\_hooks", ...}
+\pytIII{"reply.reply\_dispatch\_hooks", ...}
 &
 \src{dispatch-from-config.ts:2974--3014}
 \\
@@ -12892,7 +12892,7 @@ boundary.
 \src{dispatch-from-config.ts:2974--3014}
 \\
 
-\pyII{if handled: return hook result}
+\pytII{if handled: return hook result}
 &
 \src{dispatch-from-config.ts:3015--3023}
 \\
@@ -12908,23 +12908,23 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{dispatch\_acquisition = await ensureDispatchReplyOperation("dispatch")}
+\pytI{dispatch\_acquisition = await ensureDispatchReplyOperation("dispatch")}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:3025}
 \\
 
-\pyI{if aborted: return aborted result}
+\pytI{if aborted: return aborted result}
 &
 \src{dispatch-from-config.ts:3026--3027}
 \\
 
-\pyI{if busy: return busy result}
+\pytI{if busy: return busy result}
 &
 \src{dispatch-from-config.ts:3029--3030}
 \\
 
-\pyI{prepare progress / tool / block / plan / approval callbacks}
+\pytI{prepare progress / tool / block / plan / approval callbacks}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:3297--3380; line not pinned}
@@ -12947,7 +12947,7 @@ boundary.
 \src{dispatch-from-config.ts:3381--3384}
 \\
 
-\pyII{traceReplyPhase("reply.load\_reply\_resolver",}
+\pytII{traceReplyPhase("reply.load\_reply\_resolver",}
 &
 \src{dispatch-from-config.ts:3381--3384}
 \\
@@ -12957,27 +12957,27 @@ boundary.
 \src{dispatch-from-config.ts:3381--3384}
 \\
 
-\pyI{reply\_config = withFullRuntimeReplyConfig(...)}
+\pytI{reply\_config = withFullRuntimeReplyConfig(...)}
 &
 \src{dispatch-from-config.ts:3385--3387}
 \\
 
-\pyI{recordAgentDispatchStarted()}
+\pytI{recordAgentDispatchStarted()}
 &
 \src{dispatch-from-config.ts:3385--3387}
 \\
 
-\pyI{reply\_result = await runWithDispatchLifecycleAdmission(}
+\pytI{reply\_result = await runWithDispatchLifecycleAdmission(}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyII{traceReplyPhase("reply.run\_reply\_resolver",}
+\pytII{traceReplyPhase("reply.run\_reply\_resolver",}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply\_resolver(ctx, options, reply\_config)}
+\pytIII{reply\_resolver(ctx, options, reply\_config)}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
@@ -13963,39 +13963,39 @@ boundary remains \texttt{"main"}.
 
 \hline
 
-\py{reply_config = withFullRuntimeReplyConfig(...)}
+\pyt{reply\_config = withFullRuntimeReplyConfig(...)}
 &
 \src{dispatch-from-config.ts:3388}
 \\
 
-\pyI{# optional configOverride is merged before use}
+\pytI{\# optional configOverride is merged before use}
 &
 \src{dispatch-from-config.ts:3385--3387}
 \\
 
-\py{recordAgentDispatchStarted()}
+\pyt{recordAgentDispatchStarted()}
 &
 \src{dispatch-from-config.ts:3385--3387}
 \\
 
 \hline
 
-\py{reply_result = await runWithDispatchLifecycleAdmission(...)}
+\pyt{reply\_result = await runWithDispatchLifecycleAdmission(...)}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyI{runWithDispatchAbortSignal(...)}
+\pytI{runWithDispatchAbortSignal(...)}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyII{traceReplyPhase("reply.run_reply_resolver", ...)}
+\pytII{traceReplyPhase("reply.run\_reply\_resolver", ...)}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply_resolver(}
+\pytIII{reply\_resolver(}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
@@ -14005,12 +14005,12 @@ boundary remains \texttt{"main"}.
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply_options,}
+\pytIII{reply\_options,}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply_config}
+\pytIII{reply\_config}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
@@ -14022,7 +14022,7 @@ boundary remains \texttt{"main"}.
 
 \hline
 
-\py{# reply_result returns to the surrounding G16 flow}
+\pyt{\# reply\_result returns to the surrounding G16 flow}
 &
 \src{dispatch-from-config.ts:3812 onward}
 \\
