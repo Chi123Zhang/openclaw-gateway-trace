@@ -12103,17 +12103,17 @@ boundary.
 \src{dispatch-from-config.ts:1215--1220}
 \\
 
-\pyI{if params.replyOptions.abortSignal.aborted:}
+\pytI{if params.replyOptions.abortSignal.aborted:}
 &
 \src{dispatch-from-config.ts:1221--1228}
 \\
 
-\pyII{return \{"queuedFinal": False,}
+\pytII{return \{"queuedFinal": False,}
 &
 \src{dispatch-from-config.ts:1221--1228}
 \\
 
-\pyIII{"counts": dispatcher.getQueuedCounts()\}}
+\pytIII{"counts": dispatcher.getQueuedCounts()\}}
 &
 \src{dispatch-from-config.ts:1221--1228}
 \\
@@ -12129,49 +12129,49 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{diagnostics\_enabled = isDiagnosticsEnabled(cfg)}
+\pytI{diagnostics\_enabled = isDiagnosticsEnabled(cfg)}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:1225}
 \\
 
-\pyI{channel = normalize(ctx.Surface or ctx.Provider)}
+\pytI{channel = normalize(ctx.Surface or ctx.Provider)}
 &
 \src{dispatch-from-config.ts:1226}
 \\
 
-\pyI{chat\_id = ctx.To or ctx.From}
+\pytI{chat\_id = ctx.To or ctx.From}
 &
 \src{dispatch-from-config.ts:1227}
 \\
 
-\pyI{message\_id = ctx.MessageSid or fallback message IDs}
+\pytI{message\_id = ctx.MessageSid or fallback message IDs}
 &
 \src{dispatch-from-config.ts:1228}
 \\
 
-\pyI{session\_key = ctx.SessionKey or ctx.CommandTargetSessionKey}
+\pytI{session\_key = ctx.SessionKey or ctx.CommandTargetSessionKey}
 &
 \src{dispatch-from-config.ts:1229--1230}
 \\
 
-\pyI{initial\_session = resolveSessionStoreLookup(ctx, cfg)}
+\pytI{initial\_session = resolveSessionStoreLookup(ctx, cfg)}
 &
 \src{dispatch-from-config.ts:1233}
 \\
 
-\py{def resolveSessionStoreLookup(ctx, cfg):}
+\pyt{def resolveSessionStoreLookup(ctx, cfg):}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:441--470}
 \\
 
-\pyI{target = resolveCommandTurnTargetSessionKey(ctx)}
+\pytI{target = resolveCommandTurnTargetSessionKey(ctx)}
 &
 \src{dispatch-from-config.ts:450}
 \\
 
-\pyI{agent\_id = resolveSessionAgentId(...)}
+\pytI{agent\_id = resolveSessionAgentId(...)}
 &
 \src{dispatch-from-config.ts:455}
 \\
