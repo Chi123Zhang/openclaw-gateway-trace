@@ -1,90 +1,36 @@
 % ======================================================
-\documentclass[12pt,a4paper,twoside]{article}
-
-% ==============================================================
-% Page layout
-% ==============================================================
+\documentclass[11pt,a4paper]{article}
 
 \usepackage{geometry}
-
-\geometry{
-    left=1.9cm,
-    right=1.9cm,
-    top=1.9cm,
-    bottom=1.9cm
-}
-
-% ==============================================================
-% Graphics
-% ==============================================================
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{microtype}
 
 \usepackage{graphicx}
 \usepackage{float}
-
-% ==============================================================
-% Chinese / Unicode
-% ==============================================================
-
 \usepackage{xeCJK}
-
-% ==============================================================
-% Mathematics
-% ==============================================================
-
 \usepackage{amsmath}
 \usepackage{amssymb}
-
-% ==============================================================
-% Tables
-% ==============================================================
-
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{longtable}
-
-\newcolumntype{L}{>{\raggedright\arraybackslash}X}
-
-% ==============================================================
-% Algorithms / code
-% ==============================================================
-
 \usepackage{seqsplit}
 \usepackage{algorithm}
 \usepackage{listings}
-
-% ==============================================================
-% TikZ / diagrams
-% ==============================================================
-
 \usepackage{tikz}
 \usepackage{adjustbox}
 \usepackage{pdflscape}
-
-\usetikzlibrary{
-    positioning,
-    arrows.meta,
-    fit,
-    backgrounds
-}
-
-% ==============================================================
-% Colors / URLs
-% ==============================================================
-
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds}
 \usepackage{xcolor}
 \usepackage{xurl}
-
-% ==============================================================
-% Cross-references
-% ==============================================================
-
 \usepackage[hidelinks]{hyperref}
 \usepackage{cleveref}
 
-% ==============================================================
-% Python-style pseudocode
-% ==============================================================
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\setlength{\tabcolsep}{3pt}
+\setlength{\extrarowheight}{0pt}
+\setlength{\LTpre}{2pt}
+\setlength{\LTpost}{5pt}
 
 \lstset{
     language=Python,
@@ -97,274 +43,196 @@
     postbreak=\mbox{\scriptsize$\hookrightarrow$\space},
 }
 
-% No indentation
-\newcommand{\py}[1]{%
-    \lstinline{#1}%
-}
-
-% One indentation level
-\newcommand{\pyI}[1]{%
-    \hspace*{1.4em}\lstinline{#1}%
-}
-
-% Two indentation levels
-\newcommand{\pyII}[1]{%
-    \hspace*{2.8em}\lstinline{#1}%
-}
-
-% Three indentation levels
-\newcommand{\pyIII}[1]{%
-    \hspace*{4.2em}\lstinline{#1}%
-}
-
-% Four indentation levels
-\newcommand{\pyIIII}[1]{%
-    \hspace*{5.6em}\lstinline{#1}%
-}
-
-% Exact source-code location
-\newcommand{\src}[1]{%
-    \begingroup
-    \color{gray}
-    \scriptsize
-    \ttfamily
-    \raggedright
-    \nolinkurl{#1}%
-    \endgroup
-}
-
-% ==============================================================
-% Table spacing
-% ==============================================================
-
-\setlength{\tabcolsep}{3pt}
-\setlength{\extrarowheight}{0pt}
-\setlength{\LTpre}{2pt}
-\setlength{\LTpost}{5pt}
-
-% ==============================================================
-% Your content starts here
-% ==============================================================
-
-% Example:
-%
-% \section*{OpenClaw Gateway Source-Level Analysis}
-%
-% G0
-% G1
-% ...
-% G18
-%
-% Overall G0--G18 flowchart can also be inserted here.
-
-% ==============================================================
-% Document information
-% ==============================================================
+\newcommand{\py}[1]{\lstinline{#1}}
+\newcommand{\pyI}[1]{\hspace*{1.4em}\lstinline{#1}}
+\newcommand{\pyII}[1]{\hspace*{2.8em}\lstinline{#1}}
+\newcommand{\src}[1]{\begingroup\color{gray}\scriptsize\ttfamily\raggedright\nolinkurl{#1}\endgroup}
 
 \title{TraceClaw: Source-Anchored Auditing of the\\
 LLM Agent Control Plane}
-
-\author{Anonymous Author(s)}
-
-\date{August 2026}
+\author{Chi Zhang\\[0.4em]
+\normalsize Computer Network Information Center (CNIC)\\
+\normalsize Chinese Academy of Sciences\\[0.6em]
+\normalsize Advisor: Kun Yang}
+\date{October 2026}
 
 \begin{document}
-
 \maketitle
 
 \begin{abstract}
-Most agent papers evaluate what an agent answers. Much less attention is
-given to the control plane that decides whether a request is accepted,
-which agent receives it, whether work is admitted, and where control
-passes from gateway code into the deeper runtime. This gap matters because
-many safety, reliability, and reproducibility claims depend on decisions
-made before model generation starts.
+Most agent evaluations focus on the final answer. TraceClaw studies a
+different object: the control plane that authenticates a connection,
+authorizes a method, resolves Session and Agent state, admits work, and
+hands the request to the deeper runtime. We present a source-anchored
+ledger for auditing this path in OpenClaw v2026.7.1-2
+(\seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c}) with a TraceClaw
+instrumentation patch applied. Each Gateway stage is written as a
+falsifiable claim with source anchors, case values, observation status,
+and a branch outcome. In a seven-run controlled cohort, all runs cover
+the same G0--G18 Gateway path (\(\mathrm{cov}=19/19\)) and directly emit
+the stage outcomes (\(\mathrm{obs}=19/19\)). Source anchoring turns these
+successful agent executions into checkable evidence:
+R1/R7 and R5/R6 repeat the same prompts with identical Gateway branches,
+R2 exercises read-only retrieval, R4 exercises a local workspace
+mutation, and R3 exposes an external side-effect path whose command
+completed but whose downstream delivery is not verified. We also separate
+stage-outcome observation from rationale visibility: even when
+a stage outcome is observed, internal predicates and returned fields may
+remain only partially visible.
 
-This paper introduces TraceClaw, a source-anchored ledger for auditing
-LLM agent control planes. Distributed traces can say what executed, and
-source code can say what may execute, but neither by itself explains why a
-specific branch was selected or which nearby branches were not taken.
-TraceClaw writes each control-plane stage as a falsifiable claim: the
-claim has source anchors, concrete request values, an observation status,
-and the branch decision. We apply the method to the OpenClaw Control
-UI/WebChat \texttt{chat.send} path for the Cake2 request,
-\texttt{How to make a cake?}. The ledger covers all 19 Gateway stages
-(\(\mathrm{cov}=19/19\)); 16 of those stages have direct runtime or native
-stage-outcome observation, while G6, G15, and G16 require
-source-grounded reconstruction. We then audit six separately saved New
-York weather
-traces from repository history. These traces preserve the same G0--G18
-control-plane structure and record a tool-using post-G18 path through
-\texttt{web\_search}, \texttt{agent\_reply\_finalized}, and
-\texttt{reply\_resolver\_returned}; two of the six also record a
-\texttt{bash} skill-loading probe before \texttt{web\_search}. The
-evaluation is small and same-configuration, but it shows how hidden agent
-infrastructure behavior can be turned into a checkable evidence ledger
-rather than a loose narrative.
+\medskip
+\noindent\textbf{Keywords:} LLM agents, control plane, runtime auditing,
+source anchoring, provenance, OpenClaw
 \end{abstract}
 
 \section{Introduction}
 \label{sec:introduction}
 
-LLM agents are increasingly deployed as runtime systems rather than as
-single model calls. A user message may look simple in the interface, but
-the system must first decide whether the connection is trusted, whether
-the method is allowed, whether the payload is valid, which Session owns
-the work, which Agent should handle it, whether an existing run blocks the
-new one, and which resolver should produce the reply. These decisions are
-not background plumbing. They form the control plane of the agent system.
+An LLM agent request includes more than a model call. Before a model
+answer exists, the system has already made a sequence of control-plane
+decisions: whether the connection is authenticated, whether the method is
+authorized, which Session and Agent own the request, whether the run is
+new, whether work is admitted, and which reply resolver receives control.
+These decisions are security- and reliability-relevant, yet they are easy
+to hide behind a final natural-language answer.
 
-The problem is that this control plane is hard to audit after the fact.
-Product logs often show that a reply was generated, but not why the
-request was allowed. Architecture diagrams show components, but not the
-branch a concrete request took. Source code contains the rules, but source
-alone gives possible paths rather than the path that actually happened.
-This paper argues for a middle layer: a compact trace that is readable in
-the paper, yet precise enough to be checked against source and runtime
-evidence.
+We start from a simple concern: a final answer can be acceptable while
+the path that produced it remains hard to justify. An auditor may need to
+know whether an accepted request used a shared token or a device-token
+fallback, whether an administrator shortcut was taken, whether
+duplicate-run protection admitted or suppressed the work, or whether a
+tool-side effect was approved by an explicit event or executed inside a
+shell command. These questions concern the agent control plane rather
+than answer quality. A screenshot of the answer or a high-level
+architecture diagram usually misses them.
 
-We study this problem through OpenClaw v2026.7.1-2, commit
-\seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c}. The case is the
-Control UI/WebChat \texttt{chat.send} path for the Cake2 request,
-\texttt{How to make a cake?}. The case is intentionally small. Its value
-is that the whole gateway path can be reconstructed end to end, including
-where the request crosses from Gateway control logic into deeper reply
-runtime work, and how the result returns to Gateway control flow.
-We use existing OpenClaw architecture notes as orientation, especially for
-the control-plane, session, event-loop, and observability concepts
-\cite{openclawPart1,openclawPart6,openclawExplained}. The stage labels and
-source ranges in this paper are then re-derived from the pinned OpenClaw
-source snapshot, not copied from those overview articles.
+TraceClaw treats this control plane as the audit object. We write each
+stage of a concrete request as a small checkable claim. A claim says
+which source range defines the decision, which run value selected the
+branch, which runtime event supports the outcome, and which nearby
+branches were not taken. Ordinary tracing records what executed.
+Provenance records where data or artifacts came from. TraceClaw records
+why a branch was selected for one agent request, and whether that reason
+is directly observed or source-derived.
 
-The motivation is not that Cake2 is a special benchmark. It is the
-opposite: an ordinary request is enough to reveal a missing audit
-primitive. If we cannot explain how one message becomes accepted runtime
-work, then stronger claims about agent safety, routing, provenance, or
-reproducibility rest on a fragile base.
+TraceClaw connects tracing, provenance, and code review at the decision
+boundary. A trace event without source context may show that a stage
+returned \texttt{allow}, but not which predicate made the allow branch
+valid. Source code without a saved run may show possible paths, but not
+the one selected by the request. TraceClaw asks for the join: a source
+decision site, a concrete run value, a branch outcome, and a statement
+about whether the rationale is directly visible.
 
-TraceClaw treats control-plane auditing as an alignment problem between
-three imperfect evidence sources. Logs give facts about one run, but can
-miss silent branches. Source code gives the rules, but includes paths that
-were not taken. Architecture diagrams give orientation, but erase
-case-specific decisions. The proposed trace binds these sources together:
-it records the value that selected a branch, the source range that defines
-the branch, the runtime event that supports it when available, and the
-point where evidence becomes indirect. This is the paper's central
-theme: an agent request should be auditable as a chain of source-grounded,
-case-specific claims.
+The study uses OpenClaw v2026.7.1-2 with a TraceClaw instrumentation
+patch. The primary controlled case is R1, the prompt \texttt{How to make
+a cake?}. R7 repeats that prompt under the same frozen environment. R5
+and R6 repeat a tracing vs. provenance explanation prompt. R2, R3, and R4
+exercise retrieval, external side effect, and local mutation paths. The
+exact provenance strengths and metadata gaps are discussed in
+Section~\ref{sec:experiments}.
 
 \section{Research Questions and Contributions}
 \label{sec:questions-contributions}
 
-The study is guided by three research questions. They are phrased around
-the control-plane audit problem, not around answer quality.
+We ask three questions.
 
 \begin{enumerate}
-    \item \textbf{RQ1: Executed control path.} Which concrete gateway
-    path turns a user-visible message into accepted runtime work?
+    \item \textbf{RQ1: Gateway path.} Can a concrete request be followed
+    through all G0--G18 Gateway stages without relying on architecture
+    diagrams alone?
 
-    \item \textbf{RQ2: Source-runtime alignment.} Which source branches,
-    request values, and runtime events are needed to justify each step of
-    that path?
+    \item \textbf{RQ2: Evidence quality.} For each stage, what is
+    directly observed, what is source-derived, and what internal rationale
+    remains only partially visible?
 
-    \item \textbf{RQ3: Boundary closure.} Where does Gateway processing
-    hand control to the deeper Agent Runtime, and how can the returned
-    result be linked back to Gateway post-processing?
+    \item \textbf{RQ3: Runtime return.} After G18 selects the reply
+    resolver, can the Agent Runtime lifecycle and the resolver return edge
+    be linked back to Gateway post-processing?
 \end{enumerate}
 
-The paper makes three contributions, each tied to a checkable result.
+The contributions are phrased as claims plus evidence.
 
 \begin{enumerate}
-    \item \textbf{Control-plane audit framing.} We treat authentication,
-    routing, admission, duplicate-run checks, and resolver selection as
-    first-class audit targets, rather than evaluating only the final model
-    output.
+    \item \textbf{Control-plane audit framing.} We make authentication,
+    authorization, Session/Agent routing, duplicate-run checks, admission,
+    resolver selection, and resolver return first-class audit targets.
 
-    \item \textbf{Source-anchored evidence ledger.} We propose a trace
-    representation in which each stage is a small claim backed by source
-    anchors, case values, observation status, negative evidence, and a
-    branch decision. On the Cake2 case, the ledger explains all 19 Gateway
-    stages while showing that direct runtime/native stage-outcome
-    observation covers 16 of them.
+    \item \textbf{Source-anchored ledger.} We define a stage ledger
+    \(E_i=(C_i,V_i,O_i,B_i)\), covering source anchors, concrete values,
+    observation status, and branch outcome. In R1--R7, all 19 Gateway
+    stages are covered and directly observed at the stage-outcome level.
 
-    \item \textbf{Boundary-return accounting.} We show that a gateway
-    trace should not stop at resolver selection. The Cake2 case maps
-    G0--G18 and the G18 boundary; six separately saved weather traces
-    show the tool-using post-G18 path and the resolver return edge back to
-    G16/G14.
+    \item \textbf{Rationale-gap accounting.} We separate outcome
+    observation from rationale visibility. The controlled traces expose
+    all stage outcomes, but rationale visibility remains partial because
+    internal predicates, stdout for short probe commands, and some return
+    fields are not fully emitted.
+
+    \item \textbf{Runtime-return analysis.} We apply the ledger idea to a
+    separate AR0--AR6 runtime layer and show how no-tool, tool-using,
+    local-mutation, and external side-effect executions differ without
+    mixing them with historical Weather or old Cake2 traces.
 \end{enumerate}
-
-\subsection*{Why This Is Nontrivial}
-
-Gateway tracing is difficult because the gateway is neither a single
-request handler nor a clean model pipeline. One accepted message touches
-connection state, permission checks, message normalization, Session
-metadata, Agent lookup, lifecycle admission, and a resolver boundary. Some
-of these decisions emit runtime events; others leave only source-level
-evidence. The method is therefore designed to be honest about mixed
-evidence. It does not pretend that every stage is equally observed.
-Instead, it marks what was observed, what was derived from source, and
-where additional instrumentation would make the claim stronger.
 
 \section{Related Work}
 \label{sec:related-work}
 
-\textbf{Agent-system architecture.}
-OpenClaw architecture notes describe the broad control plane, sessions,
-event loop, Gateway, and Agent Runtime design
-\cite{openclawPart1,openclawExplained}. The reliability and observability
-discussion further argues that production agent systems need durable
-evidence, not only final outputs \cite{openclawPart6}. These sources are
-useful orientation for the system studied here. Our analysis differs in
-scope and evidence level: instead of restating the architecture, we pin
-the primary OpenClaw source snapshot and reconstruct the actual source
-path taken by a primary request, then separately audit a small set of
-saved tool-using traces.
+\textbf{OpenClaw architecture.}
+OpenClaw architecture notes describe the broad control plane, Sessions,
+Gateway, event loop, and observability goals
+\cite{openclawPart1,openclawPart6,openclawExplained}. They are useful
+orientation, but they are not the evidence used for stage claims. The
+stage labels and branch claims in this paper are re-derived from the
+pinned source and saved traces.
 
-\textbf{Distributed tracing and provenance.}
-Systems such as Dapper and OpenTelemetry make distributed execution
-visible through traces and spans \cite{dapper2010,opentelemetryTrace}.
-Provenance models such as W3C PROV provide a general vocabulary for
-recording how entities and activities are related \cite{provDM}. These
-ideas are close to TraceClaw, but the unit of explanation is different.
-Distributed tracing records what executed. Provenance records where data
-or artifacts came from. TraceClaw records why a control-plane branch was
-taken for a concrete request: which value selected it, which adjacent
-branches were not selected, and whether the decision was directly logged
-or only source-derived.
+\textbf{Tracing and provenance.}
+Dapper and OpenTelemetry make distributed execution visible through
+spans and trace context \cite{dapper2010,opentelemetryTrace}. W3C PROV
+offers a vocabulary for data and activity provenance \cite{provDM}. These
+systems answer related but different questions. TraceClaw asks which
+concrete value selected a control-plane branch and which unselected
+branch is therefore excluded for this run.
 
-\textbf{Dynamic analysis and slicing.}
-Program slicing and dynamic slicing reduce a program to statements
-relevant to a value or execution \cite{weiser1984,agrawalHorgan1990}.
-Dynamic invariant detection, exemplified by Daikon, observes executions
-and reports likely properties of computed values \cite{daikon2007}.
-TraceClaw borrows the spirit of execution-specific analysis, but it does
-not try to compute a minimal slice or infer invariants automatically. Its
-output is an audit ledger for agent infrastructure: a stage-by-stage
-record of branch claims, values, source anchors, direct observations, and
-missing observations.
+This distinction matters for agent systems because many important
+decisions are not naturally span-shaped. A span can record that
+\texttt{chat.send} authorization completed, but the audit question is
+which scope made the call legal and whether a more privileged shortcut was
+skipped. A provenance relation can record that a reply depends on a tool
+result, but the audit question may be whether the tool was reached after
+a policy gate, a duplicate-run check, and a resolver decision. TraceClaw
+therefore treats traces and provenance records as evidence sources rather
+than as the complete explanation.
 
-\textbf{Debugging and visual analytics for agents.}
-Recent work on agent debugging and visual analytics shows that process
-structure matters when final answers are not enough. XAgen studies
-explainability and failure correction in multi-agent workflows
-\cite{xagen2026}. Illuminating LLM Coding Agents analyzes coding-agent
-behavior across code, process, and model levels
-\cite{wang2025illuminating}. FlowForge uses interactive visualization as
-a scaffold for designing multi-agent workflows \cite{hao2025flowforge}.
-These systems motivate trace views that expose execution structure. Our
-focus is lower in the stack: we trace the Gateway decisions that happen
-before the deeper agent loop is allowed to run.
+\textbf{Dynamic program analysis.}
+Program slicing and dynamic slicing connect execution behavior to source
+statements \cite{weiser1984,agrawalHorgan1990}. Dynamic invariant
+detection infers likely properties from executions \cite{daikon2007}.
+TraceClaw borrows the execution-specific mindset, but its output is an
+audit ledger rather than a slice or an inferred invariant set.
 
-\textbf{Runtime observability and security.}
-Runtime-observability systems such as Fangcun Observer emphasize evidence
-about commands, file activity, network access, and behavior chains
-\cite{fangcunObserver}. TraceClaw is closer to this line of work than to a
-model-output benchmark: it treats source branches, runtime events, and
-concrete request values as audit evidence \cite{traceclawArtifact}. The
-main difference is the boundary being studied. We ask how an accepted
-request crosses from Gateway control logic into the Agent Runtime and how
-the resolver result returns to Gateway post-processing.
+The ledger is deliberately less automatic than slicing. It does not try
+to compute every statement that influenced a value. We record the
+decision sites that an auditor would cite in a paper: the source range,
+the run value, the observed outcome, and the nearby branch that did not
+fire. This makes the ledger inspectable, while keeping source-anchor
+checking and conservative ``not recorded'' labels central to the method.
+
+\textbf{Agent debugging and runtime observability.}
+Agent debugging and visualization systems such as XAgen, FlowForge, and
+visual analytics for coding agents show that process structure matters
+\cite{xagen2026,wang2025illuminating,hao2025flowforge}. Runtime
+observability systems such as Fangcun Observer focus on commands, file
+activity, and behavior chains \cite{fangcunObserver}. TraceClaw works at
+the Gateway boundary: it connects control-plane decisions to later
+runtime evidence.
+
+The closest connection to these systems is the post-G18 runtime layer.
+TraceClaw follows the run after the Gateway chooses a resolver. It
+records whether the deeper run is no-tool, retrieval-only,
+local-mutation, or an external side-effect execution, then links the
+resolver-return event back to the Gateway source path. This gives us a
+repeatable way to separate control-plane evidence, runtime evidence, and
+source-derived return-path claims.
 
 \section{Method: Source-Anchored Runtime Trace}
 \label{sec:method}
@@ -378,101 +246,82 @@ has four steps.
     \item \textbf{Choose an audited request family.} Keep one primary
     request for the full source audit, then add repeated comparison runs
     when saved traces are available. Preserve the request values that
-    determine control flow, such as Session key, Session ID, message,
-    Agent ID, and run ID.
+    determine control flow, such as Session key, run ID, message, Agent
+    ID, and authorization scope.
 
     \item \textbf{Trace the source path in execution order.} Follow the
-    path from WebSocket connection handling to reply-resolver selection.
+    path from connection authentication to reply-resolver selection and
+    record the handoff to the Agent Runtime.
 
     \item \textbf{Attach runtime evidence.} Add observed events, values,
     and timing information where the trace exposes them. When a branch is
     source-derived rather than directly logged, mark it as such.
 
     \item \textbf{Separate explanation from evidence.} Keep the main text
-    readable, and move exact source locations, long traces, and settings
-    to the appendix.
+    readable, and move exact source locations, branch checks, and
+    not-recorded fields to the appendix.
 \end{enumerate}
 
 The main design choice is claim-level tracing. The trace is not a prose
 story written after the run; it is a set of small claims. Each stage
 answers four questions: which code can execute this step, which concrete
-value selects the branch, which runtime evidence supports the claim, and
-what would contradict it. The last question is important. Negative
-evidence, such as the absence of a duplicate run or the absence of an
-Agent-specific override, often explains why the accepted path was taken.
-Recording this negative evidence makes the trace useful for audit and
-debugging. If a later run takes a different branch, the difference should
-appear as a changed value, a changed source range, or a missing event,
-rather than as an informal disagreement about the architecture.
+value selects the branch, which runtime evidence supports the outcome,
+and what nearby branch is ruled out for this run. Negative evidence,
+such as the absence of a duplicate run or the absence of an Agent
+override, is part of the audit because it often explains why the accepted
+path was taken.
 
-For analysis, the Gateway path is decomposed into nineteen stages,
-G0--G18. These labels are introduced by this paper; they are not native
-OpenClaw stage names. They make it possible to refer to a stable step
-without copying hundreds of lines of source into the main text. The
-numbered Gateway model stops at G18 on purpose. Events after G18 are
-kept in a separate Agent Runtime layer, following the TraceClaw artifact
-design \cite{traceclawArtifact}, rather than being renamed into a synthetic
-G19.
-
-\subsection*{Trace Model}
-
-Let one user request be
+For one request \(r\), the Gateway path is represented as
 \[
-    r=(m,k,u,a,c),
+    \tau_G(r)=\langle s_0,\ldots,s_{18}\rangle .
 \]
-where \(m\) is the message text, \(k\) is the Session key, \(u\) is the
-run identifier, \(a\) is the resolved Agent, and \(c\) is the channel or
-client context. A source-anchored trace is modeled as
-\[
-    \tau(r)=\langle S,A,E,\rho\rangle .
-\]
-Here \(S=\langle s_0,\ldots,s_{18}\rangle\) is the ordered Gateway stage
-sequence, \(A=\langle a_0,\ldots,a_6\rangle\) is the post-G18 Agent
-Runtime event sequence, \(E=\{E_i\}_{i=0}^{18}\) is the evidence ledger,
-and \(\rho\) is the return edge from the deeper runtime back to Gateway
-post-processing.
-
-For each Gateway stage \(s_i\), the evidence item is
+Each stage \(s_i\) has an evidence item
 \[
     E_i=(C_i,V_i,O_i,B_i),
 \]
-where \(C_i\) is the set of source-code anchors, \(V_i\) is the set of
-case values used by that stage, \(O_i\in\{\mathrm{Observed},
-\mathrm{SourceDerived},\mathrm{NotObserved}\}\) is the evidence status,
-and \(B_i\) is the branch decision supported by the source and runtime
-data. The method is useful only if most stages have both source anchors
-and case values. We therefore report coverage as
+where \(C_i\) is a set of source anchors, \(V_i\) contains concrete case
+values, \(O_i\) is the observation status, and \(B_i\) is the branch or
+outcome. A stage is covered when it has at least one verified upstream
+source anchor and at least one concrete run value. It is not required
+that every internal predicate, object field, or return payload field be
+recorded. We report:
 \[
-    \mathrm{cov}(\tau)=
+    \mathrm{cov}(\tau_G)=
     \frac{1}{19}\sum_{i=0}^{18}
-    \mathbb{1}\!\left[C_i\neq\varnothing \wedge V_i\neq\varnothing\right],
+    \mathbb{1}[C_i\neq\varnothing \wedge V_i\neq\varnothing],
 \]
-and direct observation support as
 \[
-    \mathrm{obs}(\tau)=
+    \mathrm{obs}(\tau_G)=
     \frac{1}{19}\sum_{i=0}^{18}
-    \mathbb{1}\!\left[O_i=\mathrm{Observed}\right].
+    \mathbb{1}[O_i=\mathrm{Observed}].
 \]
-The first score asks whether the stage is auditable; the second asks
-whether the stage outcome is directly emitted by the runtime. The second
-score is deliberately narrow. It does not mean that every internal
-predicate, intermediate value, returned field, or rationale for that
-outcome is also emitted. Thus a run can have
-\(\mathrm{obs}=19/19\) at the stage-outcome level and still expose
-rationale-level observability gaps inside G10, G14, G16, or G18. This
-distinction is central: a stage can be source-grounded and still not have
-a standalone runtime event, and an observed stage can still hide the
-predicate that made the branch succeed. In practice, this lets the paper
-avoid a common trap in agent observability: equating ``not logged'' with
-``not explainable.''
+Here \(\mathrm{obs}\) measures direct stage-outcome observation. It does
+not mean that every predicate, intermediate value, stdout string, token,
+or returned field explaining that outcome is emitted. We therefore also
+record a rationale-visibility label: \textsc{full},
+\textsc{partial}, or \textsc{source-derived}. In the controlled cohort,
+the Gateway outcome visibility is 19/19 for every run, while rationale
+visibility is partial across stages because internal predicates and some
+return fields are not fully exposed. For R1, the generated stage matrix
+marks 19 of 19 Gateway stages as \textsc{partial}: every stage outcome is
+observed, but none exposes all predicate-level rationale and returned
+state needed for a complete semantic explanation.
 
-This model gives the method a clear failure mode. A trace is weak if many
-stages have source anchors but no case values, because it may describe a
-possible path rather than the executed path. It is also weak if runtime
-events are present but cannot be mapped back to code, because the evidence
-then explains that something happened without explaining why it happened.
-The strongest evidence is the intersection of source anchor, concrete
-value, runtime event, and branch decision.
+The post-G18 Agent Runtime is modeled separately as AR0--AR6. AR scores
+are not divided by 19. In this paper AR2 is counted as one logical stage
+with an observed outcome: either observed tool start/result pairs, or
+observed \texttt{no\_tool} coverage when the Agent lifecycle completes
+without tool events. Tool-call-level completeness is reported separately
+as \(\#\texttt{tool\_result}/\#\texttt{tool\_started}\). AR6 is marked
+\textsc{source-derived}: the resolver-return event proves return to the
+dispatch source point, while later Gateway post-processing is not a
+separate runtime event unless instrumented.
+
+With this distinction, a run can have \(\mathrm{cov}=19/19\) and
+\(\mathrm{obs}=19/19\) while still containing field-level gaps. The
+appendix therefore lists
+\texttt{NOT RECORDED} values without lowering coverage when the stage has
+enough source/value evidence to audit its outcome.
 
 \begin{figure}[H]
 \centering
@@ -491,8 +340,8 @@ value, runtime event, and branch decision.
 \node[box, fill=purple!10, right=12mm of s, text width=4.2cm] (a) {Agent Runtime\\\(A=\langle a_0,\ldots,a_6\rangle\)};
 
 \node[smallbox, fill=orange!12, below=10mm of s, text width=5.4cm] (e) {Evidence ledger\\\(E_i=(C_i,V_i,O_i,B_i)\)};
-\node[note, below=9mm of e, text width=7.6cm] (scores) {Coverage: \(\mathrm{cov}(\tau)\) checks source anchors + values.\\
-Observation: \(\mathrm{obs}(\tau)\) counts direct stage-outcome evidence.};
+\node[note, below=9mm of e, text width=7.6cm] (scores) {Coverage: \(\mathrm{cov}(\tau_G)\) checks source anchors + values.\\
+Observation: \(\mathrm{obs}(\tau_G)\) counts direct stage-outcome evidence.};
 
 \draw[->, thick] (r) -- (s);
 \draw[->, thick] (s) -- node[above]{G18} (a);
@@ -505,7 +354,7 @@ Observation: \(\mathrm{obs}(\tau)\) counts direct stage-outcome evidence.};
 \caption{Mathematical trace model. A concrete request is mapped to an
 ordered Gateway stage sequence, a separate post-G18 Agent Runtime event
 sequence, and an evidence ledger. The return edge \(\rho\) prevents the
-analysis from stopping too early at G18.}
+analysis from stopping at resolver selection.}
 \label{fig:trace-model}
 \end{figure}
 
@@ -525,30 +374,29 @@ analysis from stopping too early at G18.}
 \textbf{Approach} &
 \textbf{What it usually shows} &
 \textbf{What it misses} &
-\textbf{Our difference} \\
+\textbf{TraceClaw difference} \\
 \midrule
 Architecture overview &
 Main components and high-level data flow. &
 Concrete branch choices, request values, and code-level evidence. &
-We use the architecture only as orientation; every stage must map back to
-source and case evidence. \\
+Architecture is orientation only; every stage must map back to source and
+case evidence. \\
 \addlinespace
 Log-only analysis &
 Events emitted during one run. &
 Silent branches and the source reason for each decision. &
-We treat logs as evidence, then align them with source branches and
-negative evidence. \\
+Runtime events are aligned with source branches and negative evidence. \\
 \addlinespace
 Static code reading &
 Possible paths in the implementation. &
 Which path a real request actually took. &
-We bind the code path to concrete Cake2 values and runtime observations. \\
+The code path is bound to R1 values and runtime observations. \\
 \addlinespace
 Model-output evaluation &
 Quality or safety of the final model response. &
 Gateway admission, routing, duplicate-run handling, and resolver boundary. &
-We analyze the control path that must be trusted before the answer is
-even generated. \\
+The audited object is the control path that must be trusted before the
+answer is generated. \\
 \bottomrule
 \end{tabularx}
 \end{adjustbox}
@@ -557,688 +405,468 @@ even generated. \\
 \section{Framework}
 \label{sec:framework}
 
-Figure~\ref{fig:paper-framework} is the central framework of the paper.
-It shows the paper's argument in one view. A concrete request enters the
-gateway. The gateway is reconstructed as four ordered stage groups. Each
-stage is checked against an evidence ledger. The trace then supports
-three auditable claims: the request was accepted, routed, and handed to
-the deeper runtime at a clear boundary.
+Figure~\ref{fig:framework} is the central framework of the paper. A
+concrete request enters the Gateway, the Gateway is reconstructed as
+ordered stage groups, and each stage is checked against a source/value
+ledger. The trace then supports auditable claims about authentication,
+routing, work admission, resolver selection, and runtime return.
 
-The framework is intentionally modest. It does not try to summarize the
-whole OpenClaw system, and it does not claim that one trace explains every
-possible request. Its contribution is a disciplined unit of analysis for
-agent infrastructure: one pinned source snapshot, one ordered trace per
-run, and one explicit evidence ledger. The same unit can be repeated for
-other requests, compared across versions, or used to decide where more
-logging is needed.
-
-\begin{figure}[H]
-\centering
-\begin{adjustbox}{max width=0.98\linewidth}
-\begin{tikzpicture}[
-    >=Latex,
-    node distance=7mm,
-    every node/.style={font=\small, align=center},
-    stage/.style={draw, thick, rounded corners, inner sep=6pt, minimum height=16mm, text width=2.55cm},
-    ledger/.style={draw, thick, rounded corners, inner sep=6pt, text width=3.35cm},
-    claim/.style={draw, dashed, rounded corners, inner sep=6pt, text width=3.35cm}
-]
-
-\node[stage, fill=blue!8] (input) {\textbf{Concrete request}\\
-Cake2\\
-\texttt{chat.send}\\
-message + Session + run};
-
-\node[stage, fill=green!8, right=of input] (auth) {\textbf{G0--G2}\\
-Connection\\
-authentication};
-
-\node[stage, fill=green!8, right=of auth] (request) {\textbf{G3--G8}\\
-Request and\\
-Session checks};
-
-\node[stage, fill=green!8, right=of request] (routing) {\textbf{G9--G13}\\
-Agent routing\\
-run admission};
-
-\node[stage, fill=green!8, right=of routing] (reply) {\textbf{G14--G18}\\
-Reply dispatch\\
-boundary};
-
-\node[stage, fill=purple!10, right=of reply] (runtime) {\textbf{AR0--AR6}\\
-Agent Runtime\\
-tools + final reply\\
-resolver return};
-
-\node[ledger, fill=orange!12, below=11mm of request] (evidence) {\textbf{Evidence ledger}\\
-source branch\\
-runtime event\\
-concrete value\\
-missing observation};
-
-\node[claim, below=11mm of reply] (claims) {\textbf{Paper claims}\\
-accepted request\\
-Agent \texttt{main}\\
-new run admitted\\
-G18 boundary\\
-return to G16};
-
-\draw[->, thick] (input) -- (auth);
-\draw[->, thick] (auth) -- (request);
-\draw[->, thick] (request) -- (routing);
-\draw[->, thick] (routing) -- (reply);
-\draw[->, thick] (reply) -- (runtime);
-\draw[->, thick, bend left=28] (runtime.south) to (claims.east);
-\draw[->, thick, dashed] (auth) -- (evidence);
-\draw[->, thick, dashed] (request) -- (evidence);
-\draw[->, thick, dashed] (routing) -- (evidence);
-\draw[->, thick, dashed] (reply) -- (claims);
-\draw[->, thick, dashed] (evidence) -- (claims);
-
-\end{tikzpicture}
-\end{adjustbox}
-\caption{Framework of the source-anchored trace. The main text follows
-one concrete request through four gateway stage groups. The evidence
-ledger records why each transition is justified. The trace ends at G18,
-where the gateway selects the reply resolver and hands control to the
-deeper runtime; the post-G18 runtime then returns a resolver result back
-to G16 for final Gateway processing.}
-\label{fig:paper-framework}
-\end{figure}
-
-The figure also gives the reading order. The main text follows the
-horizontal trace, while the supplementary appendix keeps the
-evidence ledger. The same ledger can later support an interactive artifact
-without changing the paper's claims.
-
-\section{Case Study: Cake2 Gateway Path}
-\label{sec:case-study}
-
-The Cake2 request uses the Control UI/WebChat \texttt{chat.send} path.
-The concrete values below are not merely identifiers. They are the
-values that make the trace auditable. They connect the user-visible
-message to the Session loaded in G7, the Agent selected in G9, and the
-run admitted in G12. Exact source locations are kept in
-the supplementary appendix.
-
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{adjustbox}{max width=\linewidth}
-\begin{tabularx}{\linewidth}{
-    @{}
-    >{\raggedright\arraybackslash}p{0.12\linewidth}
-    >{\raggedright\arraybackslash\ttfamily\footnotesize}X
-    >{\raggedright\arraybackslash}p{0.29\linewidth}
-    @{}
-}
-\toprule
-\textbf{Variable} &
-\textbf{Concrete Cake2 value} &
-\textbf{Role in the G0--G18 path} \\
-\midrule
-\texttt{SESSION\_KEY} &
-\seqsplit{agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4} &
-Extracted in G5, parsed in G6, loaded in G7, and used again when the
-effective Agent is resolved. \\[6pt]
-\texttt{SESSION\_ID} &
-\seqsplit{af48dd1c-2e18-4d4d-9b08-432df4352674} &
-Loaded in G7 from the persistent Session entry and reused as the backing
-Session identity. \\[6pt]
-\texttt{MESSAGE} &
-\texttt{How to make a cake?} &
-Validated in G4, cleaned in G5, and carried into the deeper reply path
-after G18. \\[6pt]
-\texttt{RUN\_ID} &
-\seqsplit{808b4380-f27b-4c2e-9421-74e043c3badd} &
-Checked for duplicate work in G11 and used to track the admitted run in
-G12--G18. \\
-\bottomrule
-\end{tabularx}
-\end{adjustbox}
-\setlength{\tabcolsep}{6pt}
-\normalsize
-
-\subsection*{Complete G0--G18 Path}
-
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{longtable}{
-    @{}
-    >{\raggedright\arraybackslash}p{0.07\linewidth}
-    >{\raggedright\arraybackslash}p{0.27\linewidth}
-    >{\raggedright\arraybackslash}p{0.34\linewidth}
-    >{\raggedright\arraybackslash}p{0.12\linewidth}
-    @{}
-}
-\caption{Readable summary of the complete G0--G18 Gateway path.}
-\label{tab:g0-g18-readable}\\
-\toprule
-\textbf{Stage} &
-\textbf{Plain meaning} &
-\textbf{Cake2 result} &
-\textbf{Details} \\
-\midrule
-\endfirsthead
-\toprule
-\textbf{Stage} &
-\textbf{Plain meaning} &
-\textbf{Cake2 result} &
-\textbf{Details} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{4}{r}{Continued on next page}\\
-\endfoot
-\bottomrule
-\endlastfoot
-G0 & Build connection authentication state. & Shared-token auth was not enough, but a device-token candidate was kept. & Appendix G0 \\
-G1 & Try shared-credential authorization. & The shared credential was denied. & Appendix G1 \\
-G2 & Finish connection authentication. & The device-token path passed; the client became an \texttt{operator}. & Appendix G2 \\
-G3 & Check permission to call \texttt{chat.send}. & Allowed by the admin-scope shortcut. & Appendix G3 \\
-G4 & Validate the \texttt{chat.send} request shape. & The request was valid. & Appendix G4 \\
-G5 & Clean the message and extract IDs. & The text stayed unchanged; no control command or attachment was found. & Appendix G5 \\
-G6 & Check for an explicit Agent request. & No explicit Agent was supplied. & Appendix G6 \\
-G7 & Load the persistent Session. & The Session key resolved to the existing \texttt{main} Dashboard Session. & Appendix G7 \\
-G8 & Check Session / Agent consistency. & The Session was valid; no deleted-Agent case was found. & Appendix G8 \\
-G9 & Resolve the effective Gateway-side Agent. & Agent \texttt{main} was selected from the Session key. & Appendix G9 \\
-G10 & Apply the Session send policy. & The policy result was \texttt{allow}. & Appendix G10 \\
-G11 & Check duplicate or overlapping runs. & The run ID was new. & Appendix G11 \\
-G12 & Admit Session work and claim the run. & The run was admitted and registered. & Appendix G12 \\
-G13 & Build runtime message context. & The context carried body, Session key, run ID, Agent ID, channel, and scopes. & Appendix G13 \\
-G14 & Enter reply dispatch. & The message entered \texttt{dispatchReplyFromConfig}. & Appendix G14 \\
-G15 & Finalize inbound context. & The finalized context became the input to reply dispatch. & Appendix G15 \\
-G16 & Prepare reply dispatch. & Normal dispatch continued; no earlier hook or duplicate path handled it. & Appendix G16 \\
-G17 & Re-resolve downstream Agent. & The downstream Agent was again \texttt{main}. & Appendix G17 \\
-G18 & Select reply resolver. & The default \texttt{getReplyFromConfig} resolver was selected. & Appendix G18 \\
-\end{longtable}
-\setlength{\tabcolsep}{6pt}
-\normalsize
-
-\subsection*{Run Narrative}
-
-The run has three parts. First, G0--G2 decide whether the WebSocket
-connection can be trusted. The shared-token attempt does not accept the
-connection by itself, but a device-token candidate is present, and G2
-accepts that path. Second, G3--G13 decide whether this particular
-\texttt{chat.send} call is allowed to become work. The gateway validates
-the request, loads the Session, resolves Agent \texttt{main}, checks that
-the run is new, and builds the message context. Third, G14--G18 move the
-accepted request into reply dispatch. G18 selects
-\texttt{getReplyFromConfig}. That is the practical boundary between
-Gateway-side control logic and the deeper reply / Agent runtime.
-
-\section{Post-G18 Agent Runtime and Return Path}
-\label{sec:post-g18-runtime}
-
-G18 is a boundary, not the end of execution. Once the default resolver is
-selected, OpenClaw moves into the deeper Agent Runtime. The archived Cake2
-case is enough to validate the Gateway path through G18, but it does not
-archive a full top-level \texttt{agentRuntime} object. For that reason,
-the post-G18 claims use separately saved weather runs. Those runs are not
-substitutes for Cake2; they show the event vocabulary and return edge that
-Cake2 would need to record before making a Cake2-specific runtime claim.
-In the claims below, Cake2 supports G0--G18 and the G18 boundary, while
-the weather traces support the tool-using AR0--AR6 path.
-
-\small
-\begin{adjustbox}{max width=\linewidth}
-\begin{tabularx}{\linewidth}{
-    @{}
-    >{\raggedright\arraybackslash}p{0.12\linewidth}
-    >{\raggedright\arraybackslash}p{0.29\linewidth}
-    >{\raggedright\arraybackslash}X
-    @{}
-}
-\toprule
-\textbf{Layer} &
-\textbf{Observed / modeled event} &
-\textbf{Meaning for the end-to-end path} \\
-\midrule
-AR0 &
-\texttt{agent\_runtime\_selected} &
-The resolver selects the effective Agent Runtime attempt, including
-Agent, runner, provider, and model when observed. \\
-\addlinespace
-AR1 &
-\texttt{agent\_run\_started} &
-The Agent lifecycle begins. This is the first direct runtime evidence
-that the request has crossed beyond Gateway orchestration. \\
-\addlinespace
-AR2 &
-\texttt{tool\_started} / \texttt{tool\_result} &
-Tool execution belongs to the deeper runtime. A final answer should not
-be treated as complete until tool paths and possible follow-up work have
-settled. \\
-\addlinespace
-AR3 &
-\texttt{agent\_reply\_finalized} &
-The final assistant reply is captured from the winning run result, not
-from an earlier message-end hook. \\
-\addlinespace
-AR4 &
-\texttt{agent\_run\_ended} &
-The Agent lifecycle reaches a terminal state. \\
-\addlinespace
-AR5 &
-\texttt{reply\_resolver\_}\allowbreak\texttt{returned} &
-The reply resolver returns a result to the original G16 flow. \\
-\addlinespace
-AR6 &
-G16/G14 resume &
-The resolver-return event proves the handoff back to
-\texttt{dispatchFromConfig}; later G16/G14 post-processing is
-source-derived unless additional Gateway-side return instrumentation is
-present. \\
-\bottomrule
-\end{tabularx}
-\end{adjustbox}
-\normalsize
-
-The same evidence discipline applies to the runtime layer. Table
-\ref{tab:ar-ledger} summarizes what the weather traces directly observe
-and what remains source-derived. This matters because AR6 is not the same
-kind of evidence as AR0--AR5: \texttt{reply\_resolver\_returned} is a
-direct runtime event, while the subsequent G16/G14 resume follows from
-Gateway source control flow.
-
-\begin{table}[H]
-\centering
-\caption{Post-G18 runtime ledger for the six recovered weather runs.}
-\label{tab:ar-ledger}
-{\scriptsize
-\begin{tabularx}{\linewidth}{@{}l l X@{}}
-\toprule
-\textbf{Layer} & \textbf{Status} & \textbf{Verified value or limitation} \\
-\midrule
-AR0 & Observed & Runtime selected \texttt{main}; runner is \texttt{embedded}; provider/model are recorded. \\
-AR1 & Observed & Agent run started for the current run. \\
-AR2 & Observed & All six runs record \texttt{web\_search} start/result; W3 and W5 also record a completed \texttt{bash} skill-loading probe before \texttt{web\_search}. \\
-AR3 & Observed & Final assistant reply is captured by \texttt{agent\_reply\_finalized}. \\
-AR4 & Observed & Agent run reaches \texttt{agent\_run\_ended}. \\
-AR5 & Observed & \texttt{reply\_resolver\_returned} records \texttt{replyResultKind=single} and \texttt{replyCount=1}. \\
-AR6 & SourceDerived & Return into later G16/G14 post-processing is inferred from the dispatch source path after AR5, not separately emitted as its own runtime event. \\
-\bottomrule
-\end{tabularx}
-}
-\end{table}
-
-The post-G18 layer is included because stopping at G18 would leave the
-request half explained. A complete explanation has to cover admission,
-handoff, Agent execution, resolver return, and final Gateway completion.
-The appendix keeps the two evidence levels separate: Cake2 anchors the
-Gateway path and boundary, while the weather traces show the runtime
-events that should be captured again for Cake2.
+The framework does not summarize all OpenClaw behavior, and one trace
+does not explain every request. Its unit of analysis is narrower: one
+pinned source snapshot, one ordered trace per run, and one explicit
+evidence ledger. The same
+unit can be repeated for other prompts, compared across versions, or used
+to decide where additional instrumentation is needed.
 
 \begin{figure}[H]
 \centering
 \begin{adjustbox}{max width=0.96\linewidth}
 \begin{tikzpicture}[
     >=Latex,
-    node distance=7mm,
+    node distance=8mm,
     every node/.style={font=\small, align=center},
-    gateway/.style={draw, thick, rounded corners, fill=green!8, inner sep=6pt, text width=3.0cm},
-    runtime/.style={draw, thick, rounded corners, fill=purple!10, inner sep=6pt, text width=3.2cm},
-    evidence/.style={draw, rounded corners, fill=orange!12, inner sep=5pt, text width=3.2cm}
+    box/.style={draw, thick, rounded corners, inner sep=6pt, text width=3.0cm},
+    note/.style={draw, dashed, rounded corners, inner sep=6pt, text width=4.0cm}
 ]
-
-\node[gateway] (g14) {G14\\dispatch entry};
-\node[gateway, right=of g14] (g16) {G16\\reply dispatch};
-\node[gateway, right=of g16] (g18) {G18\\resolver selected};
-\node[runtime, right=of g18] (ar) {AR0--AR6\\runtime events};
-\node[gateway, below=13mm of g16] (return) {G16/G14\\post-processing return};
-\node[evidence, below=13mm of g18] (final) {Final evidence\\resolver returned\\single reply result};
-
-\draw[->, thick] (g14) -- (g16);
-\draw[->, thick] (g16) -- (g18);
-\draw[->, thick] (g18) -- node[above]{handoff} (ar);
-\draw[->, thick] (ar.south) |- node[pos=0.25, right]{\(\rho\)} (return.east);
-\draw[->, thick] (return) -- (final);
-\draw[->, thick, dashed] (final) -- (g16.south);
-
+\node[box, fill=blue!8] (req) {Concrete request\\message + session + run ID};
+\node[box, fill=green!8, right=of req] (gate) {Gateway ledger\\G0--G18};
+\node[box, fill=orange!12, right=of gate] (ev) {Claim evidence\\source + value + outcome};
+\node[box, fill=purple!10, right=of ev] (ar) {Agent Runtime\\AR0--AR6};
+\node[note, below=11mm of ev] (claim) {Auditable result: accepted path,
+tool/no-tool class, resolver return, and rationale gaps};
+\draw[->, thick] (req) -- (gate);
+\draw[->, thick] (gate) -- (ev);
+\draw[->, thick] (ev) -- (ar);
+\draw[->, thick, bend left=24] (ar.south) to node[right]{return edge} (claim.east);
+\draw[->, thick, dashed] (ev) -- (claim);
 \end{tikzpicture}
 \end{adjustbox}
-\caption{Gateway-to-runtime boundary and return. Cake2 validates the
-Gateway path through G18. The AR0--AR6 chain and resolver-return edge are
-shown from separately saved weather runs, and should be regenerated
-for Cake2 before making Cake2-specific post-G18 claims.}
-\label{fig:runtime-return}
+\caption{TraceClaw framework. We separate Gateway-stage evidence from the
+deeper Agent Runtime layer, then connect them with the resolver return
+edge.}
+\label{fig:framework}
 \end{figure}
 
-\section{Experiments and Evidence}
-\label{sec:experiments}
+\section{Primary Controlled Case (R1)}
+\label{sec:primary-case}
 
-The evaluation is a trace-validation study, not a model-quality
-benchmark. We are not asking whether an answer is good; we are asking
-whether the path that produced it can be checked against source code and
-runtime values. The evidence is split deliberately. Cake2 is the Gateway
-path case, used to follow the primary Cake2 request through G0--G18 and
-the G18 resolver boundary. The weather runs serve a different purpose:
-they test whether successful tool-using requests keep the same
-control-plane shape while recording the deeper \texttt{web\_search}
-runtime path.
+R1 is the controlled replacement for the old Cake2 case. Its prompt is
+\texttt{How to make a cake?}. The old Cake2 artifact is kept only as
+historical context because it was collected under earlier instrumentation
+and used a different authentication path.
 
-Table~\ref{tab:coverage-observation} reports the two ledger scores
-defined in Section~\ref{sec:method}. The score is not a performance
-metric. It tells the reader how much of each run is backed by both source
-and concrete values, and how much of the same run has directly observed
-stage outcomes. It should not be read as a controlled comparison between
-Cake2 and Weather. The Cake2 artifact is a historical primary audit case
-that predates later TraceClaw collector improvements used for the Weather
-runs; the score table therefore reports evidence status, not an intrinsic
-property of the prompts.
+R1 is a baseline, not the main novelty by itself. The prompt is ordinary
+on purpose: the value of the case is that an apparently simple accepted
+request still crosses authentication, method authorization, Session
+resolution, Agent selection, send policy, duplicate-run checking,
+admission, context construction, resolver selection, and resolver return.
+If this baseline path cannot be audited carefully, then stronger claims
+about tool use or side effects would rest on a weak foundation.
+
+R1 takes the shared-token path. G0 records token authentication material,
+G1 allows the shared credential, G2 finishes with role \texttt{operator}
+and scope \texttt{operator.write}, and G3 authorizes
+\texttt{chat.send} through the write check. The administrator shortcut is
+not an R1 claim. R1 records \texttt{hasDeviceIdentity=False}; the
+device-identity and device-signature branches are therefore not used for
+the R1 branch and are treated as source-derived not-taken paths. The
+source establishes only this rule: if \texttt{operator.admin} is present,
+authorization can short-circuit; otherwise \texttt{chat.send} requires
+\texttt{operator.write}. The old Cake2 trace and R1 differ on scope, but
+this paper does not claim that authentication method alone causes that
+scope.
+
+The source-anchored ledger prevents a common mistake here. The trace
+directly shows the R1 branch outcome and the observed scopes. The source
+explains which branches those scopes make possible. The small cohort does
+not establish the causal path from authentication method to resulting
+scope, so we do not state that path as a finding.
+
+From G4 onward, R1 follows the same successful Gateway branch structure
+as the later controlled runs: request validation passes, the message is
+unchanged, no explicit Agent override is supplied, the Session resolves,
+Agent \texttt{main} is selected, send policy allows the turn, the run is
+new, work is admitted, the message context is built, and the default
+\texttt{getReplyFromConfig} resolver is selected at G18. The supplementary
+appendix gives the detailed per-stage source audit for R1, including source
+anchors, concrete values, taken and not-taken branches, observation status,
+rationale visibility, and not-recorded fields.
+
+The baseline also fixes what the later controlled runs are compared
+against. R2, R3, and R4 do not need a new Gateway theory; they reuse the
+same G0--G18 ledger shape while exercising different AR classes. R5/R6
+and R1/R7 then test whether exact-prompt repeats preserve the same
+Gateway branch structure while changing run-specific identifiers.
+
+\section{Deeper Agent Runtime and Return Path}
+\label{sec:ar-path}
+
+The AR layer records what happens after G18. In all seven controlled
+runs, the runtime selects Agent \texttt{main}, runner \texttt{embedded},
+provider \texttt{openai}, and model \texttt{gpt-5.5}. The Agent run
+starts, finalizes a reply, ends with stop reason \texttt{stop}, and emits
+\texttt{reply\_resolver\_returned} with a single reply result. AR6 is
+then source-derived: the dispatch source resumes after the resolver
+return, but the later G16/G14 post-processing is not emitted as its own
+runtime event.
+
+The AR layer uses the same audit discipline as the Gateway layer, but it
+answers a different question. G0--G18 explains how the request reaches a
+resolver. AR0--AR6 explains what kind of runtime execution the resolver
+produces: no tool, read-only retrieval, local workspace mutation, or
+external side effect. This separation prevents the paper from treating a
+successful answer as the only result of interest.
 
 \begin{table}[H]
 \centering
-\caption{Coverage and direct-observation scores for the primary Cake2
-case and the six repeated Weather traces.}
-\label{tab:coverage-observation}
+\caption{AR-layer scores. AR2 is a logical outcome stage; no-tool runs
+count the observed no-tool outcome, while tool result ratio is reported
+separately.}
+\label{tab:ar-metrics}
 {\scriptsize
-\begin{tabularx}{\linewidth}{@{}lccX@{}}
+\input{../artifacts/controlled/ar-metrics-table.tex}
+}
+\end{table}
+
+R3 also exposes a rationale-level gap. The runtime records four short
+capability probes using \texttt{command -v ... || true} for
+\texttt{osascript}, \texttt{mutt}, \texttt{mail}, and \texttt{msmtp}.
+Each exits 0, but stdout is not recorded, so the trace does not directly
+show why \texttt{osascript} was chosen. The fifth command invokes Apple
+Mail through \texttt{osascript} and exits 0. The evidence supports only
+the host-side command completion; downstream email delivery is not
+verified.
+
+We use the runtime layer in two ways. A no-tool run is still evidence: it
+shows that the Agent lifecycle completed without tool events, so the
+absence of tools is recorded rather than assumed. Tool runs are recorded
+as sequences, not as a single ``used tools'' flag. We keep command count,
+result count, stop reason, final reply, and resolver return separate
+because each supports a different claim.
+
+\section{Controlled Experiments}
+\label{sec:experiments}
+
+\subsection{Cohort and Provenance}
+
+The controlled cohort contains seven saved runs, R1--R7. R1--R5 come
+from saved trace artifacts in the repository history. For these five
+runs, the TraceClaw-side provenance is verified from repository history,
+and the saved-run commits show no TraceClaw collection-code changes
+within the controlled cohort. Their OpenClaw-side source identity is
+reconstructed from the saved local instrumentation patch and audit notes,
+because the trace payloads themselves do not embed an OpenClaw commit or
+configuration fingerprint. R6 and R7 were collected later in a temporary
+collection worktree. For R6/R7 only, the before and after fingerprints
+directly verify the frozen environment: OpenClaw HEAD
+\seqsplit{0790d9f593ad30c940ed93b5872a8cf6d6f3cf8c} and the same
+instrumentation-patch hash recorded in the anonymous artifact. Between
+the earlier saved-run artifact and the later repeat artifact, the only
+committed changes are saved trace data and viewer cache-busting metadata.
+The saved traces still do not embed the OpenClaw commit, TraceClaw
+commit, or configuration fingerprint.
+
+The table therefore should be read as a controlled cohort with two
+provenance strengths. All seven runs are saved trace artifacts in the
+TraceClaw repository. R6/R7 additionally have direct before/after
+fingerprint evidence for the local OpenClaw checkout and patch hash.
+R1--R5 are included because the repository audit found stable TraceClaw
+collection code and saved trace artifacts for those runs; branch
+consistency is reported below as a result, not used as an inclusion
+criterion. Their OpenClaw environment is supported by post-hoc audit
+rather than by trace-embedded metadata.
+
+\begin{table}[H]
+\centering
+\caption{Controlled cohort and runtime class. In the Gateway / AR column,
+\textit{complete} means \(\mathrm{cov}=19/19\) and \(\mathrm{obs}=19/19\);
+\textit{observed} means the AR lifecycle reaches a recorded completion
+state. Tool summaries report counts rather than full event sequences.}
+\label{tab:controlled-cohort}
+{\scriptsize
+\input{../artifacts/controlled/controlled-cohort-table.tex}
+}
+\end{table}
+
+\subsection{Gateway Coverage and Observation}
+
+All seven controlled runs have \(\mathrm{cov}=19/19\) and
+\(\mathrm{obs}=19/19\). This does not mean the traces are complete in a
+strong semantic sense. It means every Gateway stage has source/value
+coverage and a directly observed stage outcome. Rationale visibility is
+still partial: exact internal allow sub-branches, stdout from short
+probes, tokens, and some return payload fields are not fully emitted.
+After re-auditing G0--G18, the final count is
+\(\mathrm{full}=0/19\), \(\mathrm{partial}=19/19\), and
+\(\mathrm{source\mbox{-}derived}=0/19\) for the
+\texttt{rationale\_visibility} label.
+
+\subsection{Runtime Classes}
+
+R1, R5, R6, and R7 are no-tool runs. R2 is read-only retrieval and records
+six \texttt{web\_search} calls with matching results. R4 records
+\texttt{bash}, \texttt{bash}, \texttt{apply\_patch}, and \texttt{bash},
+creating a local workspace file. R3 records five \texttt{bash} calls and
+is the only external side-effect path. No separate approval or
+confirmation event is observed in the R3 trace. The initiating user
+instruction is the only explicit user-intent context recorded for that
+action.
+
+\subsection{Read-Only Retrieval (R2)}
+
+R2 searches for OpenTelemetry tracing documentation and summarizes it.
+The runtime evidence extends beyond the final summary. The trace records
+six serial \texttt{web\_search} tool calls and six matching results. The
+first call searches OpenTelemetry tracing documentation; the
+second opens the signals page; the third searches trace concepts; the
+fourth opens the traces page; the fifth reopens the traces page; and the
+sixth opens the trace SDK page. The calls run from 17:06:44.737Z to
+17:07:21.532Z, followed by \texttt{agent\_reply\_finalized},
+\texttt{agent\_run\_ended}, and \texttt{reply\_resolver\_returned}. This
+shows how the AR layer can distinguish retrieval-heavy reasoning from a
+no-tool answer even when the Gateway path is unchanged.
+
+R2 keeps the control plane constant while changing the runtime class.
+G0--G18 still authenticate, authorize, admit, and route the request
+through the same successful structure. The difference appears after G18:
+AR2 contains retrieval tool activity and matching tool results. A
+Gateway-only ledger can say how the request reached the resolver. The AR
+layer shows that the answer used external retrieval events rather than
+model-only generation.
+
+\subsection{Local Mutation (R4)}
+
+R4 asks for a short Python script that prints Fibonacci numbers. The AR
+ledger records a four-step local sequence: \texttt{pwd}, \texttt{rg
+--files}, an \texttt{apply\_patch} add of \texttt{fibonacci.py}, and
+\texttt{python3 fibonacci.py}. The observed tool window runs from
+17:08:57.709Z to 17:09:07.329Z. The mutation is local to the workspace.
+The claim is therefore narrower than ``the agent can edit arbitrary
+files'': in this run, the saved trace shows a local workspace write and
+subsequent runtime completion.
+
+R4 separates permission from effect. The Gateway permits a normal
+\texttt{chat.send} request; it does not by itself describe the later
+workspace mutation. The AR ledger records the mutation as a concrete tool
+sequence, including the post-mutation check. The claim stays narrow: the
+evidence is local, saved, and tied to this workspace trace.
+
+\subsection{External Side Effect (R3)}
+
+R3 requests an email draft-and-send action. The trace records four
+concurrent capability probes, then one \texttt{osascript} invocation of
+Apple Mail. The host-side send command completed with exit code 0; the
+trace does not verify downstream delivery. The final assistant reply says
+more than the trace can prove. The trace directly observes \texttt{bash}
+execution. The effective tool-policy path that allows that execution is
+source-derived from the G16 dispatch path, not emitted as a separate
+authorization event in the saved trace.
+
+R3 gives the clearest rationale-visibility gap. The runtime records
+command completion, but it does not record stdout from the short
+\texttt{command -v ... || true} probes and it does not emit a separate
+approval or delivery-confirmation event. The ledger supports the narrower
+claim: the host-side command path completed, and the missing
+approval/delivery evidence is an observability gap.
+
+\subsection{Exact-Prompt Repeatability}
+
+\begin{table}[H]
+\centering
+\caption{Exact-prompt repeatability checks.}
+\label{tab:repeatability}
+{\scriptsize
+\input{../artifacts/controlled/repeatability-table.tex}
+}
+\end{table}
+
+R1/R7 and R5/R6 repeat exact prompts. In both pairs, G0--G18 branches,
+Agent, resolver, tool/no-tool choice, stop reason, and AR structure match.
+The expected differences are run ID, Gateway Session key, AR session
+identifier where emitted, timestamps, and reply wording.
+
+Both exact-prompt repeat pairs are no-tool runs. They test repeatability
+of the Gateway path and the no-tool runtime path; they do not establish
+that tool-using runtime paths are stable under exact-prompt repetition.
+If the same prompt under the same controlled environment changed Gateway
+branches without a recorded reason, the stage model would be suspect. In
+these two pairs, the branch structure is stable and the run-specific
+identifiers change as expected. This supports using R1 as the detailed
+source-audit baseline while using R7 as an exact-prompt repeat.
+
+\subsection{Historical Weather Supplement}
+\label{sec:historical-weather}
+
+The repository also contains historical Weather traces collected under
+earlier instrumentation. We keep them outside the R1--R7 quantitative
+cohort. They are useful only as qualitative replication evidence: the
+successful Weather requests follow a comparable G0--G18 Gateway skeleton,
+while their post-G18 tool paths vary. The New York Weather evidence
+contains six saved traces with near-identical prompts rather than exact
+prompt repeats. Four use only \texttt{web\_search}; two contain a
+\texttt{bash} setup or skill-loading step followed by \texttt{web\_search}.
+A separate Beijing Weather trace also contains \texttt{bash} followed by
+\texttt{web\_search}. We do not mix the Beijing trace into the New York
+count, and no Weather score is combined with R1--R7.
+
+\begin{table}[H]
+\centering
+\caption{Historical Weather evidence kept as supplementary context. The
+counts come from saved repository artifacts, not from new runs.}
+\label{tab:historical-weather}
+{\scriptsize
+\begin{tabularx}{\linewidth}{@{}l c X X X@{}}
 \toprule
-\textbf{Run} & \textbf{cov} & \textbf{obs outcome} & \textbf{Interpretation} \\
+Evidence set & Saved runs & Prompt relationship & Observed post-G18 tool pattern & Role in this paper \\
 \midrule
-Cake2 & 19/19 (1.00) & 16/19 (0.84) & Gateway path case \\
-W1 & 19/19 (1.00) & 19/19 (1.00) & Weather tool run \\
-W2 & 19/19 (1.00) & 19/19 (1.00) & Weather tool run \\
-W3 & 19/19 (1.00) & 19/19 (1.00) & Weather tool run \\
-W4 & 19/19 (1.00) & 19/19 (1.00) & Weather tool run \\
-W5 & 19/19 (1.00) & 19/19 (1.00) & Weather tool run \\
-W6 & 19/19 (1.00) & 19/19 (1.00) & Weather tool run \\
+New York Weather & 6 & near-identical Weather requests & 4 \(\times\) \texttt{web\_search}; 2 \(\times\) \texttt{bash} + \texttt{web\_search} & historical qualitative replication only \\
+Beijing Weather & 1 & separate Weather request & \texttt{bash} + \texttt{web\_search} & separate historical example; excluded from New York count \\
 \bottomrule
 \end{tabularx}
 }
 \end{table}
 
-\subsection{Gateway Path Validation -- Cake2}
+\subsection{Repeated-Run Consistency and Rationale Gaps}
 
-The Cake2 request is the primary Gateway-path case. It can be followed
-through all G0--G18 stages, not only the early G0--G8 checks. The trace
-shows how the connection is accepted, how \texttt{chat.send} is authorized
-and normalized, how the Session and Agent are resolved, how duplicate work
-is excluded, and where the default resolver is selected.
+All 19 Gateway stages take the same branch across R1--R7. Across the
+exact-prompt repeat pairs, run-specific identifiers, Session keys, and
+timestamps differ as expected while the audited Gateway branch structure
+stays unchanged. Across different request classes, the post-G18 runtime
+path changes, most visibly in whether and how tools are used. Because
+every Gateway stage still has only \textsc{partial} rationale visibility,
+the compact main-paper table lists the gaps that matter instead of
+printing 19 rows with the same visibility label. The full stage-by-run
+matrix and the R1 per-stage source audit are kept in the supplementary
+appendix.
 
-The point is not that Cake2 is special. Its value is that it is ordinary:
-an accepted request still depends on many quiet control decisions. Cake2
-shows that the effective Agent comes from Session state, that admission is
-the result of several Gateway checks, and that G18 is the place where
-control moves toward the deeper Agent Runtime. The archived Cake2 case
-does not contain a complete top-level post-G18 \texttt{agentRuntime}
-object, so this paper does not claim a Cake2-specific internal tool loop.
-
-\subsection{Tool-Using Runtime Validation -- Weather}
-
-We then audited New York weather requests saved on September 21, 2026 in
-the trace repository and its git history. We count a weather run only when
-the saved artifact contains the trace itself, not just a history entry:
-all G0--G18 stages must be present, and the Agent Runtime must record
-\texttt{web\_search} \(\rightarrow\) \texttt{tool\_result}
-\(\rightarrow\) final reply \(\rightarrow\)
-\texttt{reply\_resolver\_returned}. UI history entries alone are not used
-as experimental evidence. Two recovered runs also record a completed
-\texttt{bash} call that reads the weather skill file before
-\texttt{web\_search}. The paper keeps that call in the table because it is
-part of the runtime evidence: even a weather request may exercise a tool
-path with host command execution, working directory, exit status, and then
-network search.
-
+\begin{table}[H]
+\centering
+\caption{Representative rationale-level gaps in the controlled cohort.
+Each listed Gateway stage has an observed outcome, but not every internal
+predicate or returned field is emitted.}
+\label{tab:rationale-gaps}
 {\scriptsize
-\begin{longtable}{
-    @{}
-    >{\raggedright\arraybackslash}p{0.07\linewidth}
-    >{\raggedright\arraybackslash}p{0.22\linewidth}
-    >{\raggedright\arraybackslash}p{0.12\linewidth}
-    >{\raggedright\arraybackslash}p{0.11\linewidth}
-    >{\raggedright\arraybackslash}p{0.14\linewidth}
-    >{\raggedright\arraybackslash}p{0.09\linewidth}
-    >{\raggedright\arraybackslash}p{0.11\linewidth}
-    @{}
-}
-\caption{Compact weather-run comparison generated from historical
-\texttt{latest-live.js} snapshots. Common verified fields for all six runs:
-G0--G18 complete, Agent \texttt{main}, resolver
-\texttt{default\_getReplyFromConfig}, observed \texttt{web\_search}
-tool result, final reply observed, and resolver return observed.}
-\label{tab:repeated-run-validation}\\
+\begin{tabularx}{\linewidth}{@{}l X X@{}}
 \toprule
-\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{Tools} & \textbf{cov} & \textbf{obs outcome} \\
+Stage(s) & Observed outcome & Rationale field not fully emitted \\
 \midrule
-\endfirsthead
-\toprule
-\textbf{Run} & \textbf{Prompt} & \textbf{Run ID} & \textbf{Session} & \textbf{Tools} & \textbf{cov} & \textbf{obs outcome} \\
-\midrule
-\endhead
-\textbf{W1} & \texttt{What is the weather like in NewYork} & \texttt{d9309724} & \texttt{1a4417dc} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W2} & \texttt{What is the weather like in NewYork} & \texttt{86fe2560} & \texttt{067cb8b5} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W3} & \texttt{What is the weather in NewYork?} & \texttt{c60de4ea} & \texttt{73ca2f5a} & \texttt{bash + web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W4} & \texttt{What is the weather like in new york} & \texttt{cbc16469} & \texttt{f897740b} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W5} & \texttt{What is the weather like in New York} & \texttt{cc808a2a} & \texttt{07a37ec5} & \texttt{bash + web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
-\textbf{W6} & \texttt{What is the weather like in New York?} & \texttt{5bf29474} & \texttt{edd61f0e} & \texttt{web\_search} & 19/19 (1.00) & 19/19 (1.00) \\
+G0/G2 & shared-token authentication succeeds; device-token path is not used &
+concrete device-token candidate source and device-signature subpath \\
+G3 & \texttt{chat.send} is allowed through \texttt{operator.write} &
+\texttt{auth\_reason}; administrator shortcut exclusion is source-derived from scopes \\
+G7/G8/G12 & Session resolves, Agent/Session validation passes, work is admitted &
+persistent store details, full Session object, and admission internals \\
+G10 & send policy outcome is \texttt{allow} &
+exact internal allow sub-branch and policy-rule rationale \\
+G14/G16/G18 & dispatch enters auto-reply, normal path continues, resolver is selected &
+full dispatch/reply payloads and post-return Gateway state \\
+AR/R3 & five \texttt{bash} tools complete with exit code 0 &
+probe stdout, separate approval event, and delivery confirmation \\
 \bottomrule
-\end{longtable}
+\end{tabularx}
 }
+\end{table}
 
-\subsection{Repeated-Run Consistency}
+\subsection{Audit Findings}
 
-The repository audit recovered six separately saved weather traces. Each
-run has a different \texttt{RUN\_ID}, \texttt{SESSION\_ID}, and
-\texttt{SESSION\_KEY}. All six were saved on the same day, under the same
-local configuration, and all are successful paths. They should therefore
-be read as repeated same-path validation, not as broad generalization.
-Within that scope, the evidence is useful: all six preserve the G0--G18
-ordering, resolve Agent \texttt{main}, select
-\texttt{default\_getReplyFromConfig}, record \texttt{web\_search} and its
-tool result, capture a final assistant reply, and record
-\texttt{reply\_resolver\_returned}. The later G16/G14 resume is treated
-as source-derived unless a separate Gateway-side return event is present.
+The controlled cohort yields three findings. First, Gateway structure is
+stable across seven successful runs while runtime class varies. Second,
+R3 exposes an approval and tool-policy audit boundary: the trace records
+\texttt{bash} execution and command completion, while the effective
+policy path that permits the tool is source-derived and no separate
+delivery-confirmation event is recorded. Third, the traces show
+rationale-level gaps even when every Gateway stage outcome is observed.
 
-The ledger-level view in Table~\ref{tab:stage-run-matrix} is the stronger
-consistency check. It shows which branch stays stable, which values vary,
-and where the primary Cake2 case differs from the Weather repeated runs.
-This is more informative than saying that the skeleton is complete: it
-shows that run-specific identifiers and prompts change while routing,
-admission, Agent choice, resolver choice, and the G16/G18 boundary remain
-stable within the successful Weather path.
+TraceClaw does not show that OpenClaw is safe in general, nor that a
+successful run proves policy compliance in every layer. It turns an
+accepted request into a falsifiable ledger: G3 identifies the ordinary
+\texttt{operator.write} authorization path; G10 records the
+\texttt{allow} outcome while marking the internal allow sub-branch as
+partially visible; AR6 links resolver return to a source-derived Gateway
+resume. These details sit below the final natural-language answer.
 
-{\scriptsize
-\begin{longtable}{
-    @{}
-    >{\raggedright\arraybackslash}p{0.08\linewidth}
-    >{\raggedright\arraybackslash}p{0.17\linewidth}
-    >{\raggedright\arraybackslash}p{0.18\linewidth}
-    >{\raggedright\arraybackslash}p{0.51\linewidth}
-    @{}
-}
-\caption{Compressed stage-by-run ledger matrix. The Weather column
-is aggregated only when W1--W6 share the same branch; otherwise the
-mixed values are shown explicitly.}
-\label{tab:stage-run-matrix}\\
-\toprule
-\textbf{Stage} & \textbf{Cake2 branch} & \textbf{Weather W1--W6 branch} & \textbf{Values and audit note} \\
-\midrule
-\endfirsthead
-\toprule
-\textbf{Stage} & \textbf{Cake2 branch} & \textbf{Weather W1--W6 branch} & \textbf{Values and audit note} \\
-\midrule
-\endhead
-G0 & \texttt{not\_authorized} & \texttt{authorized} & auth branch. Weather repeats use token/shared-auth success; Cake2 falls back to device-token. \\
-G1 & \texttt{deny} & \texttt{allow} & shared credential. Weather repeats are allow; Cake2 records shared-credential deny. \\
-G2 & \texttt{pass} & \texttt{pass} & final auth. All runs pass; the exact authentication sub-branch and rate-limit state are not equally visible. \\
-G3 & \texttt{allow} & \texttt{allow} & method authorization. All runs allow. Cake2 carries admin scope; Weather is authorized through operator.write. The current traces show co-occurrence, not a causal proof that authentication method alone determines scope. \\
-G4 & \texttt{pass} & \texttt{pass} & request envelope. Run ID, Session key, and prompt vary by run. \\
-G5 & \texttt{unchanged} & \texttt{unchanged} & message normalization. Prompt text varies; normalization branch remains unchanged. \\
-G6 & \texttt{resolved} & \texttt{resolved} & requested Agent. No explicit Agent override is selected. \\
-G7 & \texttt{resolved} & \texttt{resolved} & Session lookup. Session key and Session ID vary by run. \\
-G8 & \texttt{pass} & \texttt{pass} & Agent/Session check. No Agent/Session mismatch is selected. \\
-G9 & \texttt{resolved} & \texttt{resolved} & effective Agent. Effective Agent value remains main. \\
-G10 & \texttt{allow} & \texttt{allow} & send policy. Final policy result is allow; exact internal allow sub-branch is not always logged. \\
-G11 & \texttt{new\_dispatch} & \texttt{new\_dispatch} & dedupe. Each run has a distinct run ID; the branch is new\_dispatch. \\
-G12 & \texttt{admitted} & \texttt{admitted} & admission. Each run is admitted after Session revalidation. \\
-G13 & \texttt{constructed} & \texttt{constructed} & context build. Message and Session values vary; context shape is stable. \\
-G14 & \texttt{entered} & \texttt{entered} & dispatch entry. Dispatch entry is reached; detailed return fields are not logged. \\
-G15 & \texttt{finalized} & \texttt{finalized} & context finalization. Text-only context finalization; no media branch is selected. \\
-G16 & \texttt{normal\_path} & \texttt{normal\_path} & reply dispatch. Normal reply-dispatch path; return fields are only partially logged. \\
-G17 & \texttt{resolved} & \texttt{resolved} & Agent re-check. Downstream Agent value remains main. \\
-G18 & \texttt{selected} & \texttt{selected} & resolver boundary. Default resolver is selected; full replyResult payload is not logged here. \\
-\bottomrule
-\end{longtable}
-}
+\subsection{Coverage Limits}
 
-\subsection{Audit Findings from the Ledger}
+The cohort is small, successful, same-machine, and same-configuration. It
+does not cover rejected, failed, retried, cancelled, cross-version, or
+multi-framework paths. Weather runs and the old Cake2 trace are historical
+notes only. They are useful for artifact continuity, but they are not
+mixed into the R1--R7 quantitative tables.
 
-The ledger produces findings that a final-answer benchmark would miss and
-that raw traces do not state on their own. First, Cake2 has complete
-source-and-value coverage, but only 16 of 19 stages are directly observed
-by runtime or native evidence. The three source-grounded stages are G6
-(requested Agent override is absent), G15 (context finalization), and G16
-(normal reply-dispatch path). This gives a simple runtime-visibility
-baseline: direct runtime/native evidence exposes 16 of 19 Cake2 stage
-outcomes, while source anchoring plus concrete case values makes all 19
-stages auditable. The gap is not cosmetic; it identifies where the system
-currently asks the auditor to trust source reconstruction.
-
-Second, G3 shows an audit-relevant contrast across the saved traces. In
-the observed Cake2 path, G3 is reached after device-token fallback and the
-request carries an administrator scope. In the Weather runs, shared
-authentication succeeds and authorization proceeds through
-\texttt{operator.write}. This contrast is useful for audit, but the
-current cases do not establish that authentication method alone determines
-the resulting scope; client state, Session state, or configuration may
-also contribute. Third, G1 records a shared-credential deny in Cake2, but
-the connection continues through the device-token path. That is a normal
-path in the trace, but it is exactly the kind of fallback that an operator
-may want surfaced.
-
-Fourth, G2 records the final authentication pass, but the native trace
-does not separately expose the device-token rate-limit state or the exact
-pairing sub-branch that made the role and scope check succeed. Finally,
-G10, G14, G16, and G18 show rationale-level observability gaps: the final
-stage outcome is visible, but some internal branch reason or returned
-object fields are not directly emitted. These gaps are direct outputs of
-the ledger, not assumptions about the architecture.
-
-\subsection{Current Coverage and Failure Conditions}
-
-The current evidence supports a conservative claim: Cake2 validates the
-Gateway path, and Weather validates repeated tool-using runtime behavior
-for a small set of successful requests. It does not support broad claims
-about every OpenClaw branch. The evaluation still needs rejected requests,
-failed tool calls, retries, cancellations, concurrent conflicts, and
-cross-version drift.
-
-A trace passes validation only if each required stage has a source anchor
-and the selected branch is consistent with the observed values. It fails
-if a required stage has no source anchor, if an observed value contradicts
-the claimed branch, if a stage is silently skipped without explanation, or
-if a claimed post-G18 runtime chain cannot be linked back to the G16/G14
-return path. These failure conditions are part of the method, not just
-bookkeeping. They make the analysis falsifiable: a trace is not accepted
-merely because it is plausible or because it matches a high-level diagram.
+The controlled runs also share the same broad authorization shape:
+shared-token authentication, role \texttt{operator}, and ordinary
+\texttt{operator.write} authorization for \texttt{chat.send}. This is
+good for controlled comparison, but it leaves other policy branches
+untested. The historical Cake2 artifact remains useful because it shows a
+different authentication/scope combination, yet it is not used as a
+current quantitative baseline because it predates later collector
+changes.
 
 \section{Limitations}
 \label{sec:limitations}
 
-This paper studies one primary request and six additional successful
-weather requests. That is enough to check whether the same control-plane
-shape can be preserved across a small set of runs, but it is still not a
-coverage result for all Gateway behavior. The Cake2 trace should be read
-as a detailed audit case, and the weather traces should be read as
-repeated successful executions. They should not be treated as a controlled
-comparison of prompt types, because the historical Cake2 artifact predates
-later TraceClaw collector changes used by the Weather runs. A stronger
-evaluation would rerun Cake2 and Weather under the same OpenClaw commit,
-TraceClaw instrumentation commit, trace schema, configuration fingerprint,
-and environment, then add rejected, failed, retried, cancelled, and
-cross-version requests.
+The evidence supports a controlled audit of seven successful requests,
+not a broad claim about all OpenClaw behavior. The runs share one local
+configuration and one instrumented OpenClaw source tree. Because the
+traces do not embed commit or configuration fingerprints, provenance has
+to be reconstructed from repository history and audit notes.
 
-The evidence is also uneven. Some branches are directly observed in the
-runtime trace, while others are source-derived because the runtime does
-not emit an event for every internal decision. This is not only a
-weakness; it is also a useful diagnostic result. The trace shows where
-additional instrumentation would make the control path easier to audit.
-At the same time, the paper stays focused on gateway and runtime control
-flow. It does not evaluate the quality, safety, or factuality of the final
-natural-language answer.
+This provenance limit affects the strength of the claims. A stronger
+artifact would store \texttt{openclawCommit}, \texttt{traceclawCommit},
+trace schema version, configuration fingerprint, and instrumentation
+patch hash inside every trace. Without that embedded metadata, we can
+audit saved behavior, but we must describe provenance strength carefully.
+R6/R7 have direct before/after fingerprint checks; R1--R5 are supported
+by saved trace artifacts and repository history plus post-hoc OpenClaw
+patch audit.
 
-Finally, the current presentation is still constrained by the paper
-format. The appendix keeps the evidence available, but long source traces
-are hard to read in print. The same material would be easier to inspect in
-an interactive artifact that links stages to code, values, and runtime
-events. Hardware, environment, repository, and release metadata should
-also be checked again before submission; the supplementary appendix
-records the current state of that information.
+The method is also partly manual. Stage labels are introduced by
+TraceClaw, not by OpenClaw itself, and source anchors require content
+checking. The appendix therefore cites upstream 0790d9f decision sites,
+not patched instrumentation line numbers. This is deliberate: runtime
+events may be emitted by instrumentation, but the branch claim should
+point to the upstream decision it observes.
 
-\section{Reproducibility and Artifact Availability}
-\label{sec:artifact-future}
+Finally, the external side-effect case is intentionally conservative. The
+trace proves that a host-side command exited successfully; it does not
+prove email delivery. We therefore treat R3 as an audit finding about
+command-level evidence and missing approval/confirmation events, not as
+proof of downstream delivery.
 
-The analysis is accompanied by an anonymized trace artifact containing
-the source anchors, extracted runtime evidence, and reproduction notes
-used in this paper \cite{traceclawArtifact}. A short anonymized
-walkthrough video is provided as supporting material \cite{traceclawDemo}.
-Author-identifying links are withheld during double-blind review.
+\section{Artifact, Privacy, and Future Work}
+\label{sec:artifact}
 
-The figures in the main text are intentionally compact. They show the
-argument at the level needed for the paper: a concrete request, the
-Gateway stage groups, the evidence ledger, the G18 boundary, and the
-return from the Agent Runtime. The appendix keeps the longer source trace
-and the fuller G0--G18 diagrams so that the main paper remains readable
-while the evidence remains available for inspection.
+The artifact contains the viewer, saved traces, generated controlled
+tables, and a sanitized instrumentation patch reference. For double-blind
+submission, author-identifying URLs, personal email addresses, hostnames,
+usernames, and absolute local paths should be removed or replaced by
+anonymous placeholders. The working \texttt{artifacts/audit/} directory is
+not a submission bundle. If any audit-derived file is copied into a
+submitted artifact, it must be redacted under the same rules.
 
-\clearpage
+Future work should add commit/config fingerprints directly to every trace,
+rerun failure and rejection paths, and build an interactive evidence graph
+that links each stage to source anchors, runtime events, and case values.
+The next cohort should include rejected authentication, failed
+authorization, duplicate-run suppression, cancelled execution, tool
+policy denial, and cross-version replay. Those cases would test whether
+the ledger remains useful when the path stops early or changes shape.
+
 \begin{thebibliography}{99}
-
-\bibitem{openclawPart1}
-OpenClaw Architecture - Part 1: Control Plane, Sessions, and the Event
-Loop. \url{https://theagentstack.substack.com/p/openclaw-architecture-part-1-control}.
-Accessed 2026-09-24.
-
-\bibitem{openclawPart6}
-OpenClaw Architecture - Part 6: Reliability, Observability, and
-Evaluation.
-\url{https://theagentstack.substack.com/p/openclaw-architecture-part-6-reliability}.
-Accessed 2026-09-24.
-
-\bibitem{openclawExplained}
-OpenClaw Architecture, Explained: How It Works as an OS for AI Agents.
-\url{https://ppaolo.substack.com/p/openclaw-system-architecture-overview}.
-Accessed 2026-09-24.
-
-\bibitem{xagen2026}
-XAgen: An Explainability Tool for Identifying and Correcting Failures in
-Multi-Agent Workflows. \url{https://arxiv.org/abs/2512.17896}.
-arXiv:2512.17896, accessed 2026-09-24.
-
-\bibitem{wang2025illuminating}
-Illuminating LLM Coding Agents: Visual Analytics for Deeper Understanding
-and Enhancement. \url{https://arxiv.org/abs/2508.12555}.
-arXiv:2508.12555, accessed 2026-09-24.
-
-\bibitem{hao2025flowforge}
-FlowForge: Guiding the Creation of Multi-agent Workflows with Interactive
-Visualizations as a Thinking Scaffold.
-\url{https://ieeevis.org/year/2025/program/paper_ed3195e2-8726-4d85-acb7-c5ed2dc361bb.html}.
-IEEE VIS 2025 program page, accessed 2026-09-24.
-
-\bibitem{fangcunObserver}
-Fangcun Observer: Runtime Security for AI Agents.
-\url{https://fangcunleap.com/blog/observer}. Accessed 2026-09-24.
 
 \bibitem{dapper2010}
 Benjamin H. Sigelman, Luiz Andre Barroso, Mike Burrows, Pat Stephenson,
-Manoj Plakal, Donald Beaver, Saul Jaspan, and Chandan Shanbhag.
-Dapper, a Large-Scale Distributed Systems Tracing Infrastructure. Google
+Manoj Plakal, Donald Beaver, Saul Jaspan, and Chandan Shanbhag. Dapper,
+a Large-Scale Distributed Systems Tracing Infrastructure. Google
 Technical Report dapper-2010-1, 2010.
-\url{https://research.google/pubs/dapper-a-large-scale-distributed-systems-tracing-infrastructure/}.
-Accessed 2026-09-30.
 
 \bibitem{opentelemetryTrace}
 OpenTelemetry. Trace API Specification.
-\url{https://opentelemetry.io/docs/specs/otel/trace/api/}. Accessed
-2026-09-30.
+\url{https://opentelemetry.io/docs/specs/otel/trace/api/}. Accessed 2026-09-30.
 
 \bibitem{provDM}
-Luc Moreau and Paolo Missier, editors. PROV-DM: The PROV Data Model.
-W3C Recommendation, 30 April 2013.
-\url{https://www.w3.org/TR/prov-dm/}. Accessed 2026-09-30.
+Luc Moreau and Paolo Missier, editors. PROV-DM: The PROV Data Model. W3C
+Recommendation, 30 April 2013.
 
 \bibitem{weiser1984}
 Mark Weiser. Program slicing. IEEE Transactions on Software Engineering,
@@ -1255,19 +883,41 @@ Carlos Pacheco, Matthew S. Tschantz, and Chen Xiao. The Daikon system for
 dynamic detection of likely invariants. Science of Computer Programming,
 69(1--3):35--45, 2007.
 
+\bibitem{xagen2026}
+XAgen: An Explainability Tool for Identifying and Correcting Failures in
+Multi-Agent Workflows. \url{https://arxiv.org/abs/2512.17896}. Accessed 2026-09-24.
+
+\bibitem{wang2025illuminating}
+Illuminating LLM Coding Agents: Visual Analytics for Deeper Understanding
+and Enhancement. \url{https://arxiv.org/abs/2508.12555}. Accessed 2026-09-24.
+
+\bibitem{hao2025flowforge}
+FlowForge: Guiding the Creation of Multi-agent Workflows with Interactive
+Visualizations as a Thinking Scaffold. IEEE VIS 2025 program page.
+
+\bibitem{fangcunObserver}
+Fangcun Observer: Runtime Security for AI Agents.
+\url{https://fangcunleap.com/blog/observer}. Accessed 2026-09-24.
+
+\bibitem{openclawPart1}
+OpenClaw Architecture - Part 1: Control Plane, Sessions, and the Event Loop.
+\url{https://theagentstack.substack.com/p/openclaw-architecture-part-1-control}.
+Accessed 2026-09-24.
+
+\bibitem{openclawPart6}
+OpenClaw Architecture - Part 6: Reliability, Observability, and Evaluation.
+\url{https://theagentstack.substack.com/p/openclaw-architecture-part-6-reliability}.
+Accessed 2026-09-24.
+
+\bibitem{openclawExplained}
+OpenClaw Architecture, Explained: How It Works as an OS for AI Agents.
+\url{https://ppaolo.substack.com/p/openclaw-system-architecture-overview}.
+Accessed 2026-09-24.
+
 \bibitem{traceclawArtifact}
 Anonymous. TraceClaw Anonymous Artifact. Anonymized artifact submitted as
-supplementary material. Author-identifying URL withheld for double-blind
-review.
-
-\bibitem{traceclawDemo}
-Anonymous. TraceClaw Anonymous Walkthrough Demo. Anonymized demo video
-submitted as supporting material. Author-identifying URL withheld for
-double-blind review.
+supplementary material.
 
 \end{thebibliography}
-
-% The full source trace is kept in appendix.tex as supplementary material.
-% It is not included in the main-paper PDF by default.
 
 \end{document}

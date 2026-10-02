@@ -1,0 +1,2058 @@
+{
+  "runs": [
+    {
+      "label": "R1",
+      "commit": "a68e6d7",
+      "runId": "8d07c88e-188f-4347-9f9a-7fc90412c604",
+      "runShort": "8d07c88e",
+      "sessionKey": "agent:main:dashboard:trace-82fbff4483c4",
+      "sessionId": "",
+      "prompt": "How to make a cake?",
+      "agent": "main",
+      "runner": "embedded",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "resolverSource": "default_getReplyFromConfig",
+      "tools": "none",
+      "toolCount": 0,
+      "class": "no-tool",
+      "cov": "19/19",
+      "obs": "19/19",
+      "complete": true,
+      "finalReply": true,
+      "replyResolverReturned": true,
+      "agentReplyFinalized": true,
+      "agentRunEnded": true,
+      "stopReason": "stop",
+      "replyResultKind": "single",
+      "startedAt": "2026-09-30T17:05:15.517938+00:00",
+      "savedAt": "2026-09-30T17:05:29.708531+00:00"
+    },
+    {
+      "label": "R2",
+      "commit": "96ae1af",
+      "runId": "fba117de-41bb-4b71-bd7b-e73f57f661d6",
+      "runShort": "fba117de",
+      "sessionKey": "agent:main:dashboard:trace-fad2b243a13f",
+      "sessionId": "",
+      "prompt": "Search the web for the latest OpenTelemetry tracing documentation and summarize it.",
+      "agent": "main",
+      "runner": "embedded",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "resolverSource": "default_getReplyFromConfig",
+      "tools": "web_search + web_search + web_search + web_search + web_search + web_search",
+      "toolCount": 6,
+      "class": "read-only retrieval",
+      "cov": "19/19",
+      "obs": "19/19",
+      "complete": true,
+      "finalReply": true,
+      "replyResolverReturned": true,
+      "agentReplyFinalized": true,
+      "agentRunEnded": true,
+      "stopReason": "stop",
+      "replyResultKind": "single",
+      "startedAt": "2026-09-30T17:06:23.756031+00:00",
+      "savedAt": "2026-09-30T17:07:24.760659+00:00"
+    },
+    {
+      "label": "R3",
+      "commit": "44809cf",
+      "runId": "5eb26fda-84fd-4b39-b482-9fe2d7dba6e4",
+      "runShort": "5eb26fda",
+      "sessionKey": "agent:main:dashboard:trace-adf9c1279622",
+      "sessionId": "",
+      "prompt": "Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.",
+      "agent": "main",
+      "runner": "embedded",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "resolverSource": "default_getReplyFromConfig",
+      "tools": "bash + bash + bash + bash + bash",
+      "toolCount": 5,
+      "class": "external side effect via host app",
+      "cov": "19/19",
+      "obs": "19/19",
+      "complete": true,
+      "finalReply": true,
+      "replyResolverReturned": true,
+      "agentReplyFinalized": true,
+      "agentRunEnded": true,
+      "stopReason": "stop",
+      "replyResultKind": "single",
+      "startedAt": "2026-09-30T17:07:48.739791+00:00",
+      "savedAt": "2026-09-30T17:08:24.330368+00:00"
+    },
+    {
+      "label": "R4",
+      "commit": "4f6bde9",
+      "runId": "37bf6523-4daa-44c9-b8ab-f914ac855289",
+      "runShort": "37bf6523",
+      "sessionKey": "agent:main:dashboard:trace-fcf3c773162b",
+      "sessionId": "",
+      "prompt": "Create a short Python script that prints the first 10 Fibonacci numbers.",
+      "agent": "main",
+      "runner": "embedded",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "resolverSource": "default_getReplyFromConfig",
+      "tools": "bash + bash + apply_patch + bash",
+      "toolCount": 4,
+      "class": "local file write",
+      "cov": "19/19",
+      "obs": "19/19",
+      "complete": true,
+      "finalReply": true,
+      "replyResolverReturned": true,
+      "agentReplyFinalized": true,
+      "agentRunEnded": true,
+      "stopReason": "stop",
+      "replyResultKind": "single",
+      "startedAt": "2026-09-30T17:08:46.794724+00:00",
+      "savedAt": "2026-09-30T17:09:11.331642+00:00"
+    },
+    {
+      "label": "R5",
+      "commit": "7d742df",
+      "runId": "42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67",
+      "runShort": "42b573dc",
+      "sessionKey": "agent:main:dashboard:trace-ae5157e96699",
+      "sessionId": "",
+      "prompt": "Explain the difference between tracing and provenance in simple terms.",
+      "agent": "main",
+      "runner": "embedded",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "resolverSource": "default_getReplyFromConfig",
+      "tools": "none",
+      "toolCount": 0,
+      "class": "no-tool",
+      "cov": "19/19",
+      "obs": "19/19",
+      "complete": true,
+      "finalReply": true,
+      "replyResolverReturned": true,
+      "agentReplyFinalized": true,
+      "agentRunEnded": true,
+      "stopReason": "stop",
+      "replyResultKind": "single",
+      "startedAt": "2026-09-30T17:10:11.574207+00:00",
+      "savedAt": "2026-09-30T17:10:20.900232+00:00"
+    },
+    {
+      "label": "R6",
+      "commit": "1e5549f00052dd32edea579d11f0483df5a2213c",
+      "runId": "3eb51151-c37c-4996-ac18-e410bf2e0fe5",
+      "runShort": "3eb51151",
+      "sessionKey": "agent:main:dashboard:trace-642b7d8fccc3",
+      "sessionId": "",
+      "prompt": "Explain the difference between tracing and provenance in simple terms.",
+      "agent": "main",
+      "runner": "embedded",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "resolverSource": "default_getReplyFromConfig",
+      "tools": "none",
+      "toolCount": 0,
+      "class": "no-tool",
+      "cov": "19/19",
+      "obs": "19/19",
+      "complete": true,
+      "finalReply": true,
+      "replyResolverReturned": true,
+      "agentReplyFinalized": true,
+      "agentRunEnded": true,
+      "stopReason": "stop",
+      "replyResultKind": "single",
+      "startedAt": "2026-10-01T01:14:44.885100+00:00",
+      "savedAt": "2026-10-01T01:14:56.206829+00:00"
+    },
+    {
+      "label": "R7",
+      "commit": "b375dd68ee6af1adfa49d8148e14eba3041d14e9",
+      "runId": "02225265-5122-423f-ad75-1a08188cfc23",
+      "runShort": "02225265",
+      "sessionKey": "agent:main:dashboard:trace-253fa3a23a78",
+      "sessionId": "",
+      "prompt": "How to make a cake?",
+      "agent": "main",
+      "runner": "embedded",
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "resolverSource": "default_getReplyFromConfig",
+      "tools": "none",
+      "toolCount": 0,
+      "class": "no-tool",
+      "cov": "19/19",
+      "obs": "19/19",
+      "complete": true,
+      "finalReply": true,
+      "replyResolverReturned": true,
+      "agentReplyFinalized": true,
+      "agentRunEnded": true,
+      "stopReason": "stop",
+      "replyResultKind": "single",
+      "startedAt": "2026-10-01T01:16:01.666158+00:00",
+      "savedAt": "2026-10-01T01:16:15.650944+00:00"
+    }
+  ],
+  "stages": [
+    {
+      "label": "R1",
+      "stage": "G0",
+      "branch": "authorized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+      "case2": "Observed runtime event: connection_auth_state_resolved."
+    },
+    {
+      "label": "R1",
+      "stage": "G1",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+      "case2": "Observed runtime event: shared_credential_authorized."
+    },
+    {
+      "label": "R1",
+      "stage": "G2",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+      "case2": "Observed runtime event: connection_authentication_completed."
+    },
+    {
+      "label": "R1",
+      "stage": "G3",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nrole = operator\nscopes = [\"operator.write\"]",
+      "output": "result = allow",
+      "case2": "Observed runtime event: gateway_method_authorized."
+    },
+    {
+      "label": "R1",
+      "stage": "G4",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nsessionKey = agent:main:dashboard:trace-82fbff4483c4\nmessage = 'How to make a cake?'\nattachments = none\nidempotencyKey / runId = 8d07c88e-188f-4347-9f9a-7fc90412c604",
+      "output": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+      "case2": "Observed runtime event: chat_send_request_validated."
+    },
+    {
+      "label": "R1",
+      "stage": "G5",
+      "branch": "unchanged",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "message = 'How to make a cake?'\nattachments = none",
+      "output": "result = unchanged\nmessageLength = 19\nmessageChangedBySanitization = False",
+      "case2": "Observed runtime event: chat_message_normalized."
+    },
+    {
+      "label": "R1",
+      "stage": "G6",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-82fbff4483c4\nexplicit agentId = none",
+      "output": "requestedAgentId = none\nresult = resolved",
+      "case2": "Observed runtime event: requested_agent_resolved."
+    },
+    {
+      "label": "R1",
+      "stage": "G7",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "rawSessionKey = agent:main:dashboard:trace-82fbff4483c4",
+      "output": "canonicalSessionKey = agent:main:dashboard:trace-82fbff4483c4\nresult = resolved",
+      "case2": "Observed runtime event: session_resolved."
+    },
+    {
+      "label": "R1",
+      "stage": "G8",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "requestedAgentId = none\ncanonicalSessionKey = agent:main:dashboard:trace-82fbff4483c4",
+      "output": "result = pass",
+      "case2": "Observed runtime event: agent_session_validated."
+    },
+    {
+      "label": "R1",
+      "stage": "G9",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "canonicalSessionKey = agent:main:dashboard:trace-82fbff4483c4\nselectedAgentId = none",
+      "output": "agentId = main\nresult = resolved",
+      "case2": "Observed runtime event: effective_agent_resolved."
+    },
+    {
+      "label": "R1",
+      "stage": "G10",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-82fbff4483c4",
+      "output": "sendPolicy = allow\nresult = allow",
+      "case2": "Observed runtime event: session_send_policy_evaluated."
+    },
+    {
+      "label": "R1",
+      "stage": "G11",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 8d07c88e-188f-4347-9f9a-7fc90412c604\nsessionKey = agent:main:dashboard:trace-82fbff4483c4",
+      "output": "dedupeDecision = new_dispatch\nresult = pass",
+      "case2": "Observed runtime event: run_idempotency_guard_passed."
+    },
+    {
+      "label": "R1",
+      "stage": "G12",
+      "branch": "admitted",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 8d07c88e-188f-4347-9f9a-7fc90412c604\nsessionKey = agent:main:dashboard:trace-82fbff4483c4",
+      "output": "admissionDecision = admitted\nresult = admitted",
+      "case2": "Observed runtime event: work_admission_completed."
+    },
+    {
+      "label": "R1",
+      "stage": "G13",
+      "branch": "constructed",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "parsedMessage = 'How to make a cake?'\nsessionKey = agent:main:dashboard:trace-82fbff4483c4\nagentId = main\nclientRunId = 8d07c88e-188f-4347-9f9a-7fc90412c604\nstagedMedia = none",
+      "output": "MsgContext.Body = 'How to make a cake?'\nMsgContext.SessionKey = agent:main:dashboard:trace-82fbff4483c4\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604\nmedia fields = absent",
+      "case2": "Observed runtime event: runtime_context_constructed."
+    },
+    {
+      "label": "R1",
+      "stage": "G14",
+      "branch": "entered",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'How to make a cake?'\nctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604",
+      "output": "DispatchInboundResult = returned",
+      "case2": "This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+    },
+    {
+      "label": "R1",
+      "stage": "G15",
+      "branch": "finalized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'How to make a cake?'\nctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604",
+      "output": "FinalizedMsgContext.Body = 'How to make a cake?'\nFinalizedMsgContext.BodyForAgent = 'How to make a cake?'\nFinalizedMsgContext.BodyForCommands = 'How to make a cake?'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-82fbff4483c4\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+      "case2": "G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+    },
+    {
+      "label": "R1",
+      "stage": "G16",
+      "branch": "normal_path",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'How to make a cake?'\nctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 8d07c88e-188f-4347-9f9a-7fc90412c604",
+      "output": "DispatchFromConfigResult = returned",
+      "case2": "This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+    },
+    {
+      "label": "R1",
+      "stage": "G17",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "acpDispatchSessionKey = agent:main:dashboard:trace-82fbff4483c4\nfallback ctx.AgentId = main",
+      "output": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+      "case2": "The Agent was checked again in this run and stayed main."
+    },
+    {
+      "label": "R1",
+      "stage": "G18",
+      "branch": "selected",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.SessionKey = agent:main:dashboard:trace-82fbff4483c4\nctx.AgentId = main\ncustom replyResolver = none",
+      "output": "replyResult = returned to G16",
+      "case2": "This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary."
+    },
+    {
+      "label": "R2",
+      "stage": "G0",
+      "branch": "authorized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+      "case2": "Observed runtime event: connection_auth_state_resolved."
+    },
+    {
+      "label": "R2",
+      "stage": "G1",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+      "case2": "Observed runtime event: shared_credential_authorized."
+    },
+    {
+      "label": "R2",
+      "stage": "G2",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+      "case2": "Observed runtime event: connection_authentication_completed."
+    },
+    {
+      "label": "R2",
+      "stage": "G3",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nrole = operator\nscopes = [\"operator.write\"]",
+      "output": "result = allow",
+      "case2": "Observed runtime event: gateway_method_authorized."
+    },
+    {
+      "label": "R2",
+      "stage": "G4",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nsessionKey = agent:main:dashboard:trace-fad2b243a13f\nmessage = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nattachments = none\nidempotencyKey / runId = fba117de-41bb-4b71-bd7b-e73f57f661d6",
+      "output": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+      "case2": "Observed runtime event: chat_send_request_validated."
+    },
+    {
+      "label": "R2",
+      "stage": "G5",
+      "branch": "unchanged",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "message = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nattachments = none",
+      "output": "result = unchanged\nmessageLength = 83\nmessageChangedBySanitization = False",
+      "case2": "Observed runtime event: chat_message_normalized."
+    },
+    {
+      "label": "R2",
+      "stage": "G6",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-fad2b243a13f\nexplicit agentId = none",
+      "output": "requestedAgentId = none\nresult = resolved",
+      "case2": "Observed runtime event: requested_agent_resolved."
+    },
+    {
+      "label": "R2",
+      "stage": "G7",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "rawSessionKey = agent:main:dashboard:trace-fad2b243a13f",
+      "output": "canonicalSessionKey = agent:main:dashboard:trace-fad2b243a13f\nresult = resolved",
+      "case2": "Observed runtime event: session_resolved."
+    },
+    {
+      "label": "R2",
+      "stage": "G8",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "requestedAgentId = none\ncanonicalSessionKey = agent:main:dashboard:trace-fad2b243a13f",
+      "output": "result = pass",
+      "case2": "Observed runtime event: agent_session_validated."
+    },
+    {
+      "label": "R2",
+      "stage": "G9",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "canonicalSessionKey = agent:main:dashboard:trace-fad2b243a13f\nselectedAgentId = none",
+      "output": "agentId = main\nresult = resolved",
+      "case2": "Observed runtime event: effective_agent_resolved."
+    },
+    {
+      "label": "R2",
+      "stage": "G10",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-fad2b243a13f",
+      "output": "sendPolicy = allow\nresult = allow",
+      "case2": "Observed runtime event: session_send_policy_evaluated."
+    },
+    {
+      "label": "R2",
+      "stage": "G11",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = fba117de-41bb-4b71-bd7b-e73f57f661d6\nsessionKey = agent:main:dashboard:trace-fad2b243a13f",
+      "output": "dedupeDecision = new_dispatch\nresult = pass",
+      "case2": "Observed runtime event: run_idempotency_guard_passed."
+    },
+    {
+      "label": "R2",
+      "stage": "G12",
+      "branch": "admitted",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = fba117de-41bb-4b71-bd7b-e73f57f661d6\nsessionKey = agent:main:dashboard:trace-fad2b243a13f",
+      "output": "admissionDecision = admitted\nresult = admitted",
+      "case2": "Observed runtime event: work_admission_completed."
+    },
+    {
+      "label": "R2",
+      "stage": "G13",
+      "branch": "constructed",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "parsedMessage = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nsessionKey = agent:main:dashboard:trace-fad2b243a13f\nagentId = main\nclientRunId = fba117de-41bb-4b71-bd7b-e73f57f661d6\nstagedMedia = none",
+      "output": "MsgContext.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nMsgContext.SessionKey = agent:main:dashboard:trace-fad2b243a13f\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6\nmedia fields = absent",
+      "case2": "Observed runtime event: runtime_context_constructed."
+    },
+    {
+      "label": "R2",
+      "stage": "G14",
+      "branch": "entered",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6",
+      "output": "DispatchInboundResult = returned",
+      "case2": "This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+    },
+    {
+      "label": "R2",
+      "stage": "G15",
+      "branch": "finalized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6",
+      "output": "FinalizedMsgContext.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nFinalizedMsgContext.BodyForAgent = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nFinalizedMsgContext.BodyForCommands = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-fad2b243a13f\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+      "case2": "G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+    },
+    {
+      "label": "R2",
+      "stage": "G16",
+      "branch": "normal_path",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Search the web for the latest OpenTelemetry tracing documentation and summarize it.'\nctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = fba117de-41bb-4b71-bd7b-e73f57f661d6",
+      "output": "DispatchFromConfigResult = returned",
+      "case2": "This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+    },
+    {
+      "label": "R2",
+      "stage": "G17",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "acpDispatchSessionKey = agent:main:dashboard:trace-fad2b243a13f\nfallback ctx.AgentId = main",
+      "output": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+      "case2": "The Agent was checked again in this run and stayed main."
+    },
+    {
+      "label": "R2",
+      "stage": "G18",
+      "branch": "selected",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.SessionKey = agent:main:dashboard:trace-fad2b243a13f\nctx.AgentId = main\ncustom replyResolver = none",
+      "output": "replyResult = returned to G16",
+      "case2": "This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary."
+    },
+    {
+      "label": "R3",
+      "stage": "G0",
+      "branch": "authorized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+      "case2": "Observed runtime event: connection_auth_state_resolved."
+    },
+    {
+      "label": "R3",
+      "stage": "G1",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+      "case2": "Observed runtime event: shared_credential_authorized."
+    },
+    {
+      "label": "R3",
+      "stage": "G2",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+      "case2": "Observed runtime event: connection_authentication_completed."
+    },
+    {
+      "label": "R3",
+      "stage": "G3",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nrole = operator\nscopes = [\"operator.write\"]",
+      "output": "result = allow",
+      "case2": "Observed runtime event: gateway_method_authorized."
+    },
+    {
+      "label": "R3",
+      "stage": "G4",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nsessionKey = agent:main:dashboard:trace-adf9c1279622\nmessage = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nattachments = none\nidempotencyKey / runId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4",
+      "output": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+      "case2": "Observed runtime event: chat_send_request_validated."
+    },
+    {
+      "label": "R3",
+      "stage": "G5",
+      "branch": "unchanged",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "message = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nattachments = none",
+      "output": "result = unchanged\nmessageLength = 114\nmessageChangedBySanitization = False",
+      "case2": "Observed runtime event: chat_message_normalized."
+    },
+    {
+      "label": "R3",
+      "stage": "G6",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-adf9c1279622\nexplicit agentId = none",
+      "output": "requestedAgentId = none\nresult = resolved",
+      "case2": "Observed runtime event: requested_agent_resolved."
+    },
+    {
+      "label": "R3",
+      "stage": "G7",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "rawSessionKey = agent:main:dashboard:trace-adf9c1279622",
+      "output": "canonicalSessionKey = agent:main:dashboard:trace-adf9c1279622\nresult = resolved",
+      "case2": "Observed runtime event: session_resolved."
+    },
+    {
+      "label": "R3",
+      "stage": "G8",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "requestedAgentId = none\ncanonicalSessionKey = agent:main:dashboard:trace-adf9c1279622",
+      "output": "result = pass",
+      "case2": "Observed runtime event: agent_session_validated."
+    },
+    {
+      "label": "R3",
+      "stage": "G9",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "canonicalSessionKey = agent:main:dashboard:trace-adf9c1279622\nselectedAgentId = none",
+      "output": "agentId = main\nresult = resolved",
+      "case2": "Observed runtime event: effective_agent_resolved."
+    },
+    {
+      "label": "R3",
+      "stage": "G10",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-adf9c1279622",
+      "output": "sendPolicy = allow\nresult = allow",
+      "case2": "Observed runtime event: session_send_policy_evaluated."
+    },
+    {
+      "label": "R3",
+      "stage": "G11",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4\nsessionKey = agent:main:dashboard:trace-adf9c1279622",
+      "output": "dedupeDecision = new_dispatch\nresult = pass",
+      "case2": "Observed runtime event: run_idempotency_guard_passed."
+    },
+    {
+      "label": "R3",
+      "stage": "G12",
+      "branch": "admitted",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4\nsessionKey = agent:main:dashboard:trace-adf9c1279622",
+      "output": "admissionDecision = admitted\nresult = admitted",
+      "case2": "Observed runtime event: work_admission_completed."
+    },
+    {
+      "label": "R3",
+      "stage": "G13",
+      "branch": "constructed",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "parsedMessage = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nsessionKey = agent:main:dashboard:trace-adf9c1279622\nagentId = main\nclientRunId = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4\nstagedMedia = none",
+      "output": "MsgContext.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nMsgContext.SessionKey = agent:main:dashboard:trace-adf9c1279622\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4\nmedia fields = absent",
+      "case2": "Observed runtime event: runtime_context_constructed."
+    },
+    {
+      "label": "R3",
+      "stage": "G14",
+      "branch": "entered",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nctx.SessionKey = agent:main:dashboard:trace-adf9c1279622\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4",
+      "output": "DispatchInboundResult = returned",
+      "case2": "This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+    },
+    {
+      "label": "R3",
+      "stage": "G15",
+      "branch": "finalized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nctx.SessionKey = agent:main:dashboard:trace-adf9c1279622\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4",
+      "output": "FinalizedMsgContext.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nFinalizedMsgContext.BodyForAgent = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nFinalizedMsgContext.BodyForCommands = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-adf9c1279622\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+      "case2": "G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+    },
+    {
+      "label": "R3",
+      "stage": "G16",
+      "branch": "normal_path",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Draft an email to <redacted-email> saying that the TraceClaw controlled-run experiments are ready, and send it.'\nctx.SessionKey = agent:main:dashboard:trace-adf9c1279622\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 5eb26fda-84fd-4b39-b482-9fe2d7dba6e4",
+      "output": "DispatchFromConfigResult = returned",
+      "case2": "This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+    },
+    {
+      "label": "R3",
+      "stage": "G17",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "acpDispatchSessionKey = agent:main:dashboard:trace-adf9c1279622\nfallback ctx.AgentId = main",
+      "output": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+      "case2": "The Agent was checked again in this run and stayed main."
+    },
+    {
+      "label": "R3",
+      "stage": "G18",
+      "branch": "selected",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.SessionKey = agent:main:dashboard:trace-adf9c1279622\nctx.AgentId = main\ncustom replyResolver = none",
+      "output": "replyResult = returned to G16",
+      "case2": "This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary."
+    },
+    {
+      "label": "R4",
+      "stage": "G0",
+      "branch": "authorized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+      "case2": "Observed runtime event: connection_auth_state_resolved."
+    },
+    {
+      "label": "R4",
+      "stage": "G1",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+      "case2": "Observed runtime event: shared_credential_authorized."
+    },
+    {
+      "label": "R4",
+      "stage": "G2",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+      "case2": "Observed runtime event: connection_authentication_completed."
+    },
+    {
+      "label": "R4",
+      "stage": "G3",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nrole = operator\nscopes = [\"operator.write\"]",
+      "output": "result = allow",
+      "case2": "Observed runtime event: gateway_method_authorized."
+    },
+    {
+      "label": "R4",
+      "stage": "G4",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nsessionKey = agent:main:dashboard:trace-fcf3c773162b\nmessage = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nattachments = none\nidempotencyKey / runId = 37bf6523-4daa-44c9-b8ab-f914ac855289",
+      "output": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+      "case2": "Observed runtime event: chat_send_request_validated."
+    },
+    {
+      "label": "R4",
+      "stage": "G5",
+      "branch": "unchanged",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "message = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nattachments = none",
+      "output": "result = unchanged\nmessageLength = 72\nmessageChangedBySanitization = False",
+      "case2": "Observed runtime event: chat_message_normalized."
+    },
+    {
+      "label": "R4",
+      "stage": "G6",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-fcf3c773162b\nexplicit agentId = none",
+      "output": "requestedAgentId = none\nresult = resolved",
+      "case2": "Observed runtime event: requested_agent_resolved."
+    },
+    {
+      "label": "R4",
+      "stage": "G7",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "rawSessionKey = agent:main:dashboard:trace-fcf3c773162b",
+      "output": "canonicalSessionKey = agent:main:dashboard:trace-fcf3c773162b\nresult = resolved",
+      "case2": "Observed runtime event: session_resolved."
+    },
+    {
+      "label": "R4",
+      "stage": "G8",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "requestedAgentId = none\ncanonicalSessionKey = agent:main:dashboard:trace-fcf3c773162b",
+      "output": "result = pass",
+      "case2": "Observed runtime event: agent_session_validated."
+    },
+    {
+      "label": "R4",
+      "stage": "G9",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "canonicalSessionKey = agent:main:dashboard:trace-fcf3c773162b\nselectedAgentId = none",
+      "output": "agentId = main\nresult = resolved",
+      "case2": "Observed runtime event: effective_agent_resolved."
+    },
+    {
+      "label": "R4",
+      "stage": "G10",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-fcf3c773162b",
+      "output": "sendPolicy = allow\nresult = allow",
+      "case2": "Observed runtime event: session_send_policy_evaluated."
+    },
+    {
+      "label": "R4",
+      "stage": "G11",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 37bf6523-4daa-44c9-b8ab-f914ac855289\nsessionKey = agent:main:dashboard:trace-fcf3c773162b",
+      "output": "dedupeDecision = new_dispatch\nresult = pass",
+      "case2": "Observed runtime event: run_idempotency_guard_passed."
+    },
+    {
+      "label": "R4",
+      "stage": "G12",
+      "branch": "admitted",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 37bf6523-4daa-44c9-b8ab-f914ac855289\nsessionKey = agent:main:dashboard:trace-fcf3c773162b",
+      "output": "admissionDecision = admitted\nresult = admitted",
+      "case2": "Observed runtime event: work_admission_completed."
+    },
+    {
+      "label": "R4",
+      "stage": "G13",
+      "branch": "constructed",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "parsedMessage = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nsessionKey = agent:main:dashboard:trace-fcf3c773162b\nagentId = main\nclientRunId = 37bf6523-4daa-44c9-b8ab-f914ac855289\nstagedMedia = none",
+      "output": "MsgContext.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nMsgContext.SessionKey = agent:main:dashboard:trace-fcf3c773162b\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289\nmedia fields = absent",
+      "case2": "Observed runtime event: runtime_context_constructed."
+    },
+    {
+      "label": "R4",
+      "stage": "G14",
+      "branch": "entered",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289",
+      "output": "DispatchInboundResult = returned",
+      "case2": "This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+    },
+    {
+      "label": "R4",
+      "stage": "G15",
+      "branch": "finalized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289",
+      "output": "FinalizedMsgContext.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nFinalizedMsgContext.BodyForAgent = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nFinalizedMsgContext.BodyForCommands = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-fcf3c773162b\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+      "case2": "G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+    },
+    {
+      "label": "R4",
+      "stage": "G16",
+      "branch": "normal_path",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Create a short Python script that prints the first 10 Fibonacci numbers.'\nctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 37bf6523-4daa-44c9-b8ab-f914ac855289",
+      "output": "DispatchFromConfigResult = returned",
+      "case2": "This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+    },
+    {
+      "label": "R4",
+      "stage": "G17",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "acpDispatchSessionKey = agent:main:dashboard:trace-fcf3c773162b\nfallback ctx.AgentId = main",
+      "output": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+      "case2": "The Agent was checked again in this run and stayed main."
+    },
+    {
+      "label": "R4",
+      "stage": "G18",
+      "branch": "selected",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.SessionKey = agent:main:dashboard:trace-fcf3c773162b\nctx.AgentId = main\ncustom replyResolver = none",
+      "output": "replyResult = returned to G16",
+      "case2": "This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary."
+    },
+    {
+      "label": "R5",
+      "stage": "G0",
+      "branch": "authorized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+      "case2": "Observed runtime event: connection_auth_state_resolved."
+    },
+    {
+      "label": "R5",
+      "stage": "G1",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+      "case2": "Observed runtime event: shared_credential_authorized."
+    },
+    {
+      "label": "R5",
+      "stage": "G2",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+      "case2": "Observed runtime event: connection_authentication_completed."
+    },
+    {
+      "label": "R5",
+      "stage": "G3",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nrole = operator\nscopes = [\"operator.write\"]",
+      "output": "result = allow",
+      "case2": "Observed runtime event: gateway_method_authorized."
+    },
+    {
+      "label": "R5",
+      "stage": "G4",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nsessionKey = agent:main:dashboard:trace-ae5157e96699\nmessage = 'Explain the difference between tracing and provenance in simple terms.'\nattachments = none\nidempotencyKey / runId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67",
+      "output": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+      "case2": "Observed runtime event: chat_send_request_validated."
+    },
+    {
+      "label": "R5",
+      "stage": "G5",
+      "branch": "unchanged",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "message = 'Explain the difference between tracing and provenance in simple terms.'\nattachments = none",
+      "output": "result = unchanged\nmessageLength = 70\nmessageChangedBySanitization = False",
+      "case2": "Observed runtime event: chat_message_normalized."
+    },
+    {
+      "label": "R5",
+      "stage": "G6",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-ae5157e96699\nexplicit agentId = none",
+      "output": "requestedAgentId = none\nresult = resolved",
+      "case2": "Observed runtime event: requested_agent_resolved."
+    },
+    {
+      "label": "R5",
+      "stage": "G7",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "rawSessionKey = agent:main:dashboard:trace-ae5157e96699",
+      "output": "canonicalSessionKey = agent:main:dashboard:trace-ae5157e96699\nresult = resolved",
+      "case2": "Observed runtime event: session_resolved."
+    },
+    {
+      "label": "R5",
+      "stage": "G8",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "requestedAgentId = none\ncanonicalSessionKey = agent:main:dashboard:trace-ae5157e96699",
+      "output": "result = pass",
+      "case2": "Observed runtime event: agent_session_validated."
+    },
+    {
+      "label": "R5",
+      "stage": "G9",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "canonicalSessionKey = agent:main:dashboard:trace-ae5157e96699\nselectedAgentId = none",
+      "output": "agentId = main\nresult = resolved",
+      "case2": "Observed runtime event: effective_agent_resolved."
+    },
+    {
+      "label": "R5",
+      "stage": "G10",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-ae5157e96699",
+      "output": "sendPolicy = allow\nresult = allow",
+      "case2": "Observed runtime event: session_send_policy_evaluated."
+    },
+    {
+      "label": "R5",
+      "stage": "G11",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67\nsessionKey = agent:main:dashboard:trace-ae5157e96699",
+      "output": "dedupeDecision = new_dispatch\nresult = pass",
+      "case2": "Observed runtime event: run_idempotency_guard_passed."
+    },
+    {
+      "label": "R5",
+      "stage": "G12",
+      "branch": "admitted",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67\nsessionKey = agent:main:dashboard:trace-ae5157e96699",
+      "output": "admissionDecision = admitted\nresult = admitted",
+      "case2": "Observed runtime event: work_admission_completed."
+    },
+    {
+      "label": "R5",
+      "stage": "G13",
+      "branch": "constructed",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "parsedMessage = 'Explain the difference between tracing and provenance in simple terms.'\nsessionKey = agent:main:dashboard:trace-ae5157e96699\nagentId = main\nclientRunId = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67\nstagedMedia = none",
+      "output": "MsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'\nMsgContext.SessionKey = agent:main:dashboard:trace-ae5157e96699\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67\nmedia fields = absent",
+      "case2": "Observed runtime event: runtime_context_constructed."
+    },
+    {
+      "label": "R5",
+      "stage": "G14",
+      "branch": "entered",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'\nctx.SessionKey = agent:main:dashboard:trace-ae5157e96699\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67",
+      "output": "DispatchInboundResult = returned",
+      "case2": "This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+    },
+    {
+      "label": "R5",
+      "stage": "G15",
+      "branch": "finalized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'\nctx.SessionKey = agent:main:dashboard:trace-ae5157e96699\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67",
+      "output": "FinalizedMsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'\nFinalizedMsgContext.BodyForAgent = 'Explain the difference between tracing and provenance in simple terms.'\nFinalizedMsgContext.BodyForCommands = 'Explain the difference between tracing and provenance in simple terms.'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-ae5157e96699\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+      "case2": "G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+    },
+    {
+      "label": "R5",
+      "stage": "G16",
+      "branch": "normal_path",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'\nctx.SessionKey = agent:main:dashboard:trace-ae5157e96699\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 42b573dc-2f1d-4fb4-b4ba-e5af4b33fb67",
+      "output": "DispatchFromConfigResult = returned",
+      "case2": "This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+    },
+    {
+      "label": "R5",
+      "stage": "G17",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "acpDispatchSessionKey = agent:main:dashboard:trace-ae5157e96699\nfallback ctx.AgentId = main",
+      "output": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+      "case2": "The Agent was checked again in this run and stayed main."
+    },
+    {
+      "label": "R5",
+      "stage": "G18",
+      "branch": "selected",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.SessionKey = agent:main:dashboard:trace-ae5157e96699\nctx.AgentId = main\ncustom replyResolver = none",
+      "output": "replyResult = returned to G16",
+      "case2": "This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary."
+    },
+    {
+      "label": "R6",
+      "stage": "G0",
+      "branch": "authorized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+      "case2": "Observed runtime event: connection_auth_state_resolved."
+    },
+    {
+      "label": "R6",
+      "stage": "G1",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+      "case2": "Observed runtime event: shared_credential_authorized."
+    },
+    {
+      "label": "R6",
+      "stage": "G2",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+      "case2": "Observed runtime event: connection_authentication_completed."
+    },
+    {
+      "label": "R6",
+      "stage": "G3",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nrole = operator\nscopes = [\"operator.write\"]",
+      "output": "result = allow",
+      "case2": "Observed runtime event: gateway_method_authorized."
+    },
+    {
+      "label": "R6",
+      "stage": "G4",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nsessionKey = agent:main:dashboard:trace-642b7d8fccc3\nmessage = 'Explain the difference between tracing and provenance in simple terms.'\nattachments = none\nidempotencyKey / runId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5",
+      "output": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+      "case2": "Observed runtime event: chat_send_request_validated."
+    },
+    {
+      "label": "R6",
+      "stage": "G5",
+      "branch": "unchanged",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "message = 'Explain the difference between tracing and provenance in simple terms.'\nattachments = none",
+      "output": "result = unchanged\nmessageLength = 70\nmessageChangedBySanitization = False",
+      "case2": "Observed runtime event: chat_message_normalized."
+    },
+    {
+      "label": "R6",
+      "stage": "G6",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-642b7d8fccc3\nexplicit agentId = none",
+      "output": "requestedAgentId = none\nresult = resolved",
+      "case2": "Observed runtime event: requested_agent_resolved."
+    },
+    {
+      "label": "R6",
+      "stage": "G7",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "rawSessionKey = agent:main:dashboard:trace-642b7d8fccc3",
+      "output": "canonicalSessionKey = agent:main:dashboard:trace-642b7d8fccc3\nresult = resolved",
+      "case2": "Observed runtime event: session_resolved."
+    },
+    {
+      "label": "R6",
+      "stage": "G8",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "requestedAgentId = none\ncanonicalSessionKey = agent:main:dashboard:trace-642b7d8fccc3",
+      "output": "result = pass",
+      "case2": "Observed runtime event: agent_session_validated."
+    },
+    {
+      "label": "R6",
+      "stage": "G9",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "canonicalSessionKey = agent:main:dashboard:trace-642b7d8fccc3\nselectedAgentId = none",
+      "output": "agentId = main\nresult = resolved",
+      "case2": "Observed runtime event: effective_agent_resolved."
+    },
+    {
+      "label": "R6",
+      "stage": "G10",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-642b7d8fccc3",
+      "output": "sendPolicy = allow\nresult = allow",
+      "case2": "Observed runtime event: session_send_policy_evaluated."
+    },
+    {
+      "label": "R6",
+      "stage": "G11",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5\nsessionKey = agent:main:dashboard:trace-642b7d8fccc3",
+      "output": "dedupeDecision = new_dispatch\nresult = pass",
+      "case2": "Observed runtime event: run_idempotency_guard_passed."
+    },
+    {
+      "label": "R6",
+      "stage": "G12",
+      "branch": "admitted",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5\nsessionKey = agent:main:dashboard:trace-642b7d8fccc3",
+      "output": "admissionDecision = admitted\nresult = admitted",
+      "case2": "Observed runtime event: work_admission_completed."
+    },
+    {
+      "label": "R6",
+      "stage": "G13",
+      "branch": "constructed",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "parsedMessage = 'Explain the difference between tracing and provenance in simple terms.'\nsessionKey = agent:main:dashboard:trace-642b7d8fccc3\nagentId = main\nclientRunId = 3eb51151-c37c-4996-ac18-e410bf2e0fe5\nstagedMedia = none",
+      "output": "MsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'\nMsgContext.SessionKey = agent:main:dashboard:trace-642b7d8fccc3\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5\nmedia fields = absent",
+      "case2": "Observed runtime event: runtime_context_constructed."
+    },
+    {
+      "label": "R6",
+      "stage": "G14",
+      "branch": "entered",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'\nctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5",
+      "output": "DispatchInboundResult = returned",
+      "case2": "This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+    },
+    {
+      "label": "R6",
+      "stage": "G15",
+      "branch": "finalized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'\nctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5",
+      "output": "FinalizedMsgContext.Body = 'Explain the difference between tracing and provenance in simple terms.'\nFinalizedMsgContext.BodyForAgent = 'Explain the difference between tracing and provenance in simple terms.'\nFinalizedMsgContext.BodyForCommands = 'Explain the difference between tracing and provenance in simple terms.'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-642b7d8fccc3\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+      "case2": "G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+    },
+    {
+      "label": "R6",
+      "stage": "G16",
+      "branch": "normal_path",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'Explain the difference between tracing and provenance in simple terms.'\nctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 3eb51151-c37c-4996-ac18-e410bf2e0fe5",
+      "output": "DispatchFromConfigResult = returned",
+      "case2": "This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+    },
+    {
+      "label": "R6",
+      "stage": "G17",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "acpDispatchSessionKey = agent:main:dashboard:trace-642b7d8fccc3\nfallback ctx.AgentId = main",
+      "output": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+      "case2": "The Agent was checked again in this run and stayed main."
+    },
+    {
+      "label": "R6",
+      "stage": "G18",
+      "branch": "selected",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.SessionKey = agent:main:dashboard:trace-642b7d8fccc3\nctx.AgentId = main\ncustom replyResolver = none",
+      "output": "replyResult = returned to G16",
+      "case2": "This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary."
+    },
+    {
+      "label": "R7",
+      "stage": "G0",
+      "branch": "authorized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nauthOk = True\nsharedAuthOk = True\nsharedAuthProvided = True\nhasDeviceIdentity = False\nresult = authorized",
+      "case2": "Observed runtime event: connection_auth_state_resolved."
+    },
+    {
+      "label": "R7",
+      "stage": "G1",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nsharedAuthProvided = True\nsharedAuthOk = True\nresult = allow",
+      "case2": "Observed runtime event: shared_credential_authorized."
+    },
+    {
+      "label": "R7",
+      "stage": "G2",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "No request-specific input field was captured for this stage.",
+      "output": "scope = gateway-runtime\nauthMode = token\nauthMethod = token\nrole = operator\nscopes = [\"operator.write\"]\nresult = pass",
+      "case2": "Observed runtime event: connection_authentication_completed."
+    },
+    {
+      "label": "R7",
+      "stage": "G3",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nrole = operator\nscopes = [\"operator.write\"]",
+      "output": "result = allow",
+      "case2": "Observed runtime event: gateway_method_authorized."
+    },
+    {
+      "label": "R7",
+      "stage": "G4",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "method = chat.send\nsessionKey = agent:main:dashboard:trace-253fa3a23a78\nmessage = 'How to make a cake?'\nattachments = none\nidempotencyKey / runId = 02225265-5122-423f-ad75-1a08188cfc23",
+      "output": "result = pass\nhasPrivilegedFields = False\nhasExplicitOrigin = False",
+      "case2": "Observed runtime event: chat_send_request_validated."
+    },
+    {
+      "label": "R7",
+      "stage": "G5",
+      "branch": "unchanged",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "message = 'How to make a cake?'\nattachments = none",
+      "output": "result = unchanged\nmessageLength = 19\nmessageChangedBySanitization = False",
+      "case2": "Observed runtime event: chat_message_normalized."
+    },
+    {
+      "label": "R7",
+      "stage": "G6",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-253fa3a23a78\nexplicit agentId = none",
+      "output": "requestedAgentId = none\nresult = resolved",
+      "case2": "Observed runtime event: requested_agent_resolved."
+    },
+    {
+      "label": "R7",
+      "stage": "G7",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "rawSessionKey = agent:main:dashboard:trace-253fa3a23a78",
+      "output": "canonicalSessionKey = agent:main:dashboard:trace-253fa3a23a78\nresult = resolved",
+      "case2": "Observed runtime event: session_resolved."
+    },
+    {
+      "label": "R7",
+      "stage": "G8",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "requestedAgentId = none\ncanonicalSessionKey = agent:main:dashboard:trace-253fa3a23a78",
+      "output": "result = pass",
+      "case2": "Observed runtime event: agent_session_validated."
+    },
+    {
+      "label": "R7",
+      "stage": "G9",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "canonicalSessionKey = agent:main:dashboard:trace-253fa3a23a78\nselectedAgentId = none",
+      "output": "agentId = main\nresult = resolved",
+      "case2": "Observed runtime event: effective_agent_resolved."
+    },
+    {
+      "label": "R7",
+      "stage": "G10",
+      "branch": "allow",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "sessionKey = agent:main:dashboard:trace-253fa3a23a78",
+      "output": "sendPolicy = allow\nresult = allow",
+      "case2": "Observed runtime event: session_send_policy_evaluated."
+    },
+    {
+      "label": "R7",
+      "stage": "G11",
+      "branch": "pass",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 02225265-5122-423f-ad75-1a08188cfc23\nsessionKey = agent:main:dashboard:trace-253fa3a23a78",
+      "output": "dedupeDecision = new_dispatch\nresult = pass",
+      "case2": "Observed runtime event: run_idempotency_guard_passed."
+    },
+    {
+      "label": "R7",
+      "stage": "G12",
+      "branch": "admitted",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "runId = 02225265-5122-423f-ad75-1a08188cfc23\nsessionKey = agent:main:dashboard:trace-253fa3a23a78",
+      "output": "admissionDecision = admitted\nresult = admitted",
+      "case2": "Observed runtime event: work_admission_completed."
+    },
+    {
+      "label": "R7",
+      "stage": "G13",
+      "branch": "constructed",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "parsedMessage = 'How to make a cake?'\nsessionKey = agent:main:dashboard:trace-253fa3a23a78\nagentId = main\nclientRunId = 02225265-5122-423f-ad75-1a08188cfc23\nstagedMedia = none",
+      "output": "MsgContext.Body = 'How to make a cake?'\nMsgContext.SessionKey = agent:main:dashboard:trace-253fa3a23a78\nMsgContext.AgentId = main\nMsgContext.ChatType = direct\nMsgContext.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23\nmedia fields = absent",
+      "case2": "Observed runtime event: runtime_context_constructed."
+    },
+    {
+      "label": "R7",
+      "stage": "G14",
+      "branch": "entered",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'How to make a cake?'\nctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23",
+      "output": "DispatchInboundResult = returned",
+      "case2": "This run entered G14, continued through G17/G18, and later produced the assistant response. The DispatchInboundResult object returned, but its individual fields were not logged."
+    },
+    {
+      "label": "R7",
+      "stage": "G15",
+      "branch": "finalized",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'How to make a cake?'\nctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23",
+      "output": "FinalizedMsgContext.Body = 'How to make a cake?'\nFinalizedMsgContext.BodyForAgent = 'How to make a cake?'\nFinalizedMsgContext.BodyForCommands = 'How to make a cake?'\nFinalizedMsgContext.SessionKey = agent:main:dashboard:trace-253fa3a23a78\nFinalizedMsgContext.AgentId = main\nFinalizedMsgContext.ChatType = direct\nFinalizedMsgContext.CommandTurn.kind = normal",
+      "case2": "G15 finalized the message context and handed it to G16. The same run then reached G17/G18, confirming the handoff. These context values are source-mapped for this run, not a standalone G15 runtime snapshot."
+    },
+    {
+      "label": "R7",
+      "stage": "G16",
+      "branch": "normal_path",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.Body = 'How to make a cake?'\nctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78\nctx.AgentId = main\nctx.ChatType = direct\nctx.MessageSid = 02225265-5122-423f-ad75-1a08188cfc23",
+      "output": "DispatchFromConfigResult = returned",
+      "case2": "This run followed G16 through G17/G18 and later produced the assistant response. DispatchFromConfigResult returned, while its individual fields were not logged as a standalone G16 event."
+    },
+    {
+      "label": "R7",
+      "stage": "G17",
+      "branch": "resolved",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "acpDispatchSessionKey = agent:main:dashboard:trace-253fa3a23a78\nfallback ctx.AgentId = main",
+      "output": "sessionAgentId = main\nsessionAgentCfg = not directly logged",
+      "case2": "The Agent was checked again in this run and stayed main."
+    },
+    {
+      "label": "R7",
+      "stage": "G18",
+      "branch": "selected",
+      "observed": "Observed",
+      "rationale": "partial",
+      "input": "ctx.SessionKey = agent:main:dashboard:trace-253fa3a23a78\nctx.AgentId = main\ncustom replyResolver = none",
+      "output": "replyResult = returned to G16",
+      "case2": "This run directly logged the selected reply resolver: default_getReplyFromConfig. The full replyResult object was not logged at this boundary."
+    }
+  ],
+  "agentRuntime": [
+    {
+      "label": "R1",
+      "events": [
+        "agent_runtime_selected",
+        "agent_run_started",
+        "agent_reply_finalized",
+        "agent_run_ended",
+        "reply_resolver_returned"
+      ],
+      "tools": [],
+      "arStage": {
+        "AR0": "Observed",
+        "AR1": "Observed",
+        "AR2": "Observed(no_tool)",
+        "AR3": "Observed",
+        "AR4": "Observed",
+        "AR5": "Observed",
+        "AR6": "SourceDerived"
+      },
+      "arObservedCount": 6,
+      "toolStarted": 0,
+      "toolResult": 0
+    },
+    {
+      "label": "R2",
+      "events": [
+        "agent_runtime_selected",
+        "agent_run_started",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "agent_reply_finalized",
+        "agent_run_ended",
+        "reply_resolver_returned"
+      ],
+      "tools": [
+        {
+          "toolCallId": "ws_0b134e8dc6295886016abd41a4b56487d1916eb8af0447c449",
+          "name": "web_search",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:06:44.737Z",
+          "args": {
+            "action": "other",
+            "queryUnavailable": true
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "query": "site:opentelemetry.io/docs tracing OpenTelemetry latest documentation traces",
+            "queries": [
+              "site:opentelemetry.io/docs tracing OpenTelemetry latest documentation traces",
+              "site:opentelemetry.io/docs concepts signals traces OpenTelemetry",
+              "site:opentelemetry.io/docs/languages OpenTelemetry tracing documentation latest",
+              "site:opentelemetry.io/docs/specs/otel/trace OpenTelemetry tracing specification"
+            ]
+          },
+          "endedAt": "2026-09-30T17:06:47.422Z"
+        },
+        {
+          "toolCallId": "ws_0b134e8dc6295886016abd41a7cbcc87d18be81bf8fcb5b3e6",
+          "name": "web_search",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:06:47.826Z",
+          "args": {
+            "action": "other",
+            "queryUnavailable": true
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "query": "https://opentelemetry.io/docs/concepts/signals/",
+            "action": "openPage",
+            "url": "https://opentelemetry.io/docs/concepts/signals/"
+          },
+          "endedAt": "2026-09-30T17:06:48.884Z"
+        },
+        {
+          "toolCallId": "ws_0b134e8dc6295886016abd41a9410c87d1b78c011bcb77b593",
+          "name": "web_search",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:06:49.282Z",
+          "args": {
+            "action": "other",
+            "queryUnavailable": true
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "query": "site:opentelemetry.io/docs/concepts/signals/traces OpenTelemetry traces concepts spans events links status",
+            "queries": [
+              "site:opentelemetry.io/docs/concepts/signals/traces OpenTelemetry traces concepts spans events links status"
+            ]
+          },
+          "endedAt": "2026-09-30T17:06:52.644Z"
+        },
+        {
+          "toolCallId": "ws_0b134e8dc6295886016abd41acdd0487d190b3e4a517c601a1",
+          "name": "web_search",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:06:52.885Z",
+          "args": {
+            "action": "other",
+            "queryUnavailable": true
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "query": "https://opentelemetry.io/docs/concepts/signals/traces/",
+            "action": "openPage",
+            "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+          },
+          "endedAt": "2026-09-30T17:07:21.497Z"
+        },
+        {
+          "toolCallId": "ws_0b134e8dc6295886016abd41af5a0887d192f7bb61be618112",
+          "name": "web_search",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:07:21.524Z",
+          "args": {
+            "action": "other",
+            "queryUnavailable": true
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "query": "https://opentelemetry.io/docs/concepts/signals/traces/",
+            "action": "openPage",
+            "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+          },
+          "endedAt": "2026-09-30T17:07:21.526Z"
+        },
+        {
+          "toolCallId": "ws_0b134e8dc6295886016abd41b213cc87d1b00507d395871a34",
+          "name": "web_search",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:07:21.530Z",
+          "args": {
+            "action": "other",
+            "queryUnavailable": true
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "query": "https://opentelemetry.io/docs/specs/otel/trace/sdk/",
+            "action": "openPage",
+            "url": "https://opentelemetry.io/docs/specs/otel/trace/sdk/"
+          },
+          "endedAt": "2026-09-30T17:07:21.532Z"
+        }
+      ],
+      "arStage": {
+        "AR0": "Observed",
+        "AR1": "Observed",
+        "AR2": "Observed(tool_results)",
+        "AR3": "Observed",
+        "AR4": "Observed",
+        "AR5": "Observed",
+        "AR6": "SourceDerived"
+      },
+      "arObservedCount": 6,
+      "toolStarted": 6,
+      "toolResult": 6
+    },
+    {
+      "label": "R3",
+      "events": [
+        "agent_runtime_selected",
+        "agent_run_started",
+        "tool_started",
+        "tool_started",
+        "tool_started",
+        "tool_started",
+        "tool_result",
+        "tool_result",
+        "tool_result",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "agent_reply_finalized",
+        "agent_run_ended",
+        "reply_resolver_returned"
+      ],
+      "tools": [
+        {
+          "toolCallId": "call_yBf3kysW8XCRel4Z7DKNu9Yb",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:08:04.310Z",
+          "args": {
+            "command": "/bin/zsh -lc 'command -v osascript || true'",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 0
+          },
+          "endedAt": "2026-09-30T17:08:04.327Z"
+        },
+        {
+          "toolCallId": "call_65ZYOGzNSz8cSAWSvSDxPVbm",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:08:04.319Z",
+          "args": {
+            "command": "/bin/zsh -lc 'command -v mutt || true'",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 0
+          },
+          "endedAt": "2026-09-30T17:08:04.329Z"
+        },
+        {
+          "toolCallId": "call_rqGzCMGcMzWdLvNTurEq1EQv",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:08:04.322Z",
+          "args": {
+            "command": "/bin/zsh -lc 'command -v mail || true'",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 0
+          },
+          "endedAt": "2026-09-30T17:08:04.328Z"
+        },
+        {
+          "toolCallId": "call_TFG563nAQHtCyTECp9xWcP6p",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:08:04.323Z",
+          "args": {
+            "command": "/bin/zsh -lc 'command -v msmtp || true'",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 0
+          },
+          "endedAt": "2026-09-30T17:08:04.325Z"
+        },
+        {
+          "toolCallId": "call_IkUjxhcv4tOTZxv296RjlFsw",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:08:12.859Z",
+          "args": {
+            "command": "/bin/zsh -lc \"osascript <<'APPLESCRIPT'\ntell application \\\"Mail\\\"\n\tset newMessage to make new outgoing message with properties {subject:\\\"TraceClaw controlled-run experiments ready\\\", content:\\\"Hi,\\\\n\\\\nThe TraceClaw controlled-run experiments are ready.\\\\n\\\\nBest,\\\\n<redacted-sender>\\\\n\\\", visible:false}\n\ttell newMessage\n\t\tmake new to recipient at end of to recipients with properties {address:\\\"<redacted-email>\\\"}\n\t\tsend\n\tend tell\nend tell\nAPPLESCRIPT\"",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 5916
+          },
+          "endedAt": "2026-09-30T17:08:18.777Z"
+        }
+      ],
+      "arStage": {
+        "AR0": "Observed",
+        "AR1": "Observed",
+        "AR2": "Observed(tool_results)",
+        "AR3": "Observed",
+        "AR4": "Observed",
+        "AR5": "Observed",
+        "AR6": "SourceDerived"
+      },
+      "arObservedCount": 6,
+      "toolStarted": 5,
+      "toolResult": 5
+    },
+    {
+      "label": "R4",
+      "events": [
+        "agent_runtime_selected",
+        "agent_run_started",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "tool_started",
+        "tool_result",
+        "agent_reply_finalized",
+        "agent_run_ended",
+        "reply_resolver_returned"
+      ],
+      "tools": [
+        {
+          "toolCallId": "call_rqjmX0ekcOIn8l1NKaYPBipb",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:08:57.709Z",
+          "args": {
+            "command": "/bin/zsh -lc pwd",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 0
+          },
+          "endedAt": "2026-09-30T17:08:57.713Z"
+        },
+        {
+          "toolCallId": "call_ls7w3cxNM95CGlKpJ4p2DSl5",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:08:57.829Z",
+          "args": {
+            "command": "/bin/zsh -lc 'rg --files'",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 557
+          },
+          "endedAt": "2026-09-30T17:08:58.388Z"
+        },
+        {
+          "toolCallId": "call_goBco6RoZcfAxvD2mS3Cx6cn",
+          "name": "apply_patch",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:09:03.117Z",
+          "args": {
+            "changes": [
+              {
+                "path": "<redacted-home>/.openclaw/workspace/fibonacci.py",
+                "kind": {
+                  "type": "add"
+                }
+              }
+            ]
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "changes": [
+              {
+                "path": "<redacted-home>/.openclaw/workspace/fibonacci.py",
+                "kind": {
+                  "type": "add"
+                }
+              }
+            ]
+          },
+          "endedAt": "2026-09-30T17:09:03.120Z"
+        },
+        {
+          "toolCallId": "call_p0h736KgvZ5dABRGiW7OKS76",
+          "name": "bash",
+          "started": true,
+          "resultObserved": true,
+          "startedAt": "2026-09-30T17:09:07.327Z",
+          "args": {
+            "command": "/bin/zsh -lc 'python3 fibonacci.py'",
+            "cwd": "<redacted-home>/.openclaw/workspace"
+          },
+          "status": "completed",
+          "isError": false,
+          "result": {
+            "status": "completed",
+            "exitCode": 0,
+            "durationMs": 0
+          },
+          "endedAt": "2026-09-30T17:09:07.329Z"
+        }
+      ],
+      "arStage": {
+        "AR0": "Observed",
+        "AR1": "Observed",
+        "AR2": "Observed(tool_results)",
+        "AR3": "Observed",
+        "AR4": "Observed",
+        "AR5": "Observed",
+        "AR6": "SourceDerived"
+      },
+      "arObservedCount": 6,
+      "toolStarted": 4,
+      "toolResult": 4
+    },
+    {
+      "label": "R5",
+      "events": [
+        "agent_runtime_selected",
+        "agent_run_started",
+        "agent_reply_finalized",
+        "agent_run_ended",
+        "reply_resolver_returned"
+      ],
+      "tools": [],
+      "arStage": {
+        "AR0": "Observed",
+        "AR1": "Observed",
+        "AR2": "Observed(no_tool)",
+        "AR3": "Observed",
+        "AR4": "Observed",
+        "AR5": "Observed",
+        "AR6": "SourceDerived"
+      },
+      "arObservedCount": 6,
+      "toolStarted": 0,
+      "toolResult": 0
+    },
+    {
+      "label": "R6",
+      "events": [
+        "agent_runtime_selected",
+        "agent_run_started",
+        "agent_reply_finalized",
+        "agent_run_ended",
+        "reply_resolver_returned"
+      ],
+      "tools": [],
+      "arStage": {
+        "AR0": "Observed",
+        "AR1": "Observed",
+        "AR2": "Observed(no_tool)",
+        "AR3": "Observed",
+        "AR4": "Observed",
+        "AR5": "Observed",
+        "AR6": "SourceDerived"
+      },
+      "arObservedCount": 6,
+      "toolStarted": 0,
+      "toolResult": 0
+    },
+    {
+      "label": "R7",
+      "events": [
+        "agent_runtime_selected",
+        "agent_run_started",
+        "agent_reply_finalized",
+        "agent_run_ended",
+        "reply_resolver_returned"
+      ],
+      "tools": [],
+      "arStage": {
+        "AR0": "Observed",
+        "AR1": "Observed",
+        "AR2": "Observed(no_tool)",
+        "AR3": "Observed",
+        "AR4": "Observed",
+        "AR5": "Observed",
+        "AR6": "SourceDerived"
+      },
+      "arObservedCount": 6,
+      "toolStarted": 0,
+      "toolResult": 0
+    }
+  ],
+  "repeatability": [
+    {
+      "pair": "R1/R7",
+      "stageBranchDiff": [],
+      "sameAgent": true,
+      "sameResolver": true,
+      "sameTools": true,
+      "sameStopReason": true,
+      "sameARStructure": true,
+      "allowedDifferences": "run ID, session key/ID, timestamps, reply wording"
+    },
+    {
+      "pair": "R5/R6",
+      "stageBranchDiff": [],
+      "sameAgent": true,
+      "sameResolver": true,
+      "sameTools": true,
+      "sameStopReason": true,
+      "sameARStructure": true,
+      "allowedDifferences": "run ID, session key/ID, timestamps, reply wording"
+    }
+  ]
+}

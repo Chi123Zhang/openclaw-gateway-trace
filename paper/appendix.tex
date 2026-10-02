@@ -5,9 +5,15 @@
 \section{Gateway Source-Level Trace}
 \label{app:gateway-source-trace}
 
-\providecommand{\pyIIII}[1]{%
-    \hspace*{5.6em}\lstinline{#1}%
-}
+\renewcommand{\py}[1]{\lstinline|#1|}
+\renewcommand{\pyI}[1]{\hspace*{1.4em}\lstinline|#1|}
+\renewcommand{\pyII}[1]{\hspace*{2.8em}\lstinline|#1|}
+\renewcommand{\pyIII}[1]{\hspace*{4.2em}\lstinline|#1|}
+\renewcommand{\pyIIII}[1]{\hspace*{5.6em}\lstinline|#1|}
+\newcommand{\pyt}[1]{{\ttfamily #1}}
+\newcommand{\pytI}[1]{\hspace*{1.4em}{\ttfamily #1}}
+\newcommand{\pytII}[1]{\hspace*{2.8em}{\ttfamily #1}}
+\newcommand{\pytIII}[1]{\hspace*{4.2em}{\ttfamily #1}}
 
 This appendix keeps the detailed source-code and runtime evidence for the
 Gateway G0--G18 path. The main text gives the argument and the compact
@@ -19,18 +25,80 @@ checked against source and observed values.
 \label{app:reading-guide}
 
 The appendix follows one rule: source detail belongs here, not in the main
-paper. Each stage entry records its purpose, source path, Cake2 value, and
-evidence status. The status labels mean the following.
+paper. Each stage entry records its purpose, source path, R1 value, and
+evidence status. The labels used below map to the main-paper observation
+categories as follows.
 
 \begin{itemize}
-    \item \textsc{Observed}: a runtime trace or concrete recorded value
-    directly supports the step.
-    \item \textsc{SourceDerived}: the source code determines the branch,
-    but the current trace does not emit a separate event for that branch.
-    \item \textsc{NotObserved}: the item is important for reproduction,
-    but it was not archived in the current trace and should not be used as
-    a measured result.
+    \item \textsc{Runtime} / \textsc{Native Runtime}: runtime evidence
+    directly supports the step; these map to \textsc{Observed}.
+    \item \textsc{Observed} / \textsc{Observed(no-tool)}: compact summary
+    labels used in AR tables for directly observed runtime outcomes; these
+    map to \textsc{Observed}.
+    \item \textsc{Derived} / \textsc{Source-Derived}: source code and
+    recorded upstream values determine the branch, but the trace does not
+    emit a separate event for that internal decision; these map to
+    \textsc{SourceDerived}.
+    \item \textsc{SourceDerived}: compact summary label equivalent to
+    \textsc{Source-Derived}; this maps to \textsc{SourceDerived}.
+    \item \textsc{Not Recorded}: the item is relevant but is absent from
+    the saved trace; this maps to \textsc{NotObserved}.
+    \item \textsc{Not Reached}: the source branch exists, but R1 did not
+    execute it; this is negative evidence and maps to
+    \textsc{SourceDerived} when justified by observed earlier values.
+    \item \textsc{Not Applicable}: the source branch does not apply to
+    R1's observed inputs; this maps to \textsc{SourceDerived}.
+    \item \textsc{Observability Gap}: the stage outcome is known, but a
+    lower-level predicate, field, or return payload is not emitted; the
+    missing field maps to \textsc{NotObserved}.
 \end{itemize}
+
+All source anchors used for G0--G18 and the post-G18 source mapping
+were mechanically checked against the unmodified upstream OpenClaw
+source at commit \texttt{0790d9f} using \texttt{scripts/check\_anchors.py}.
+This check validates source-anchor fidelity only. It does not
+independently validate runtime evidence or the semantic correctness of
+the experimental claims.
+
+For R1, all Gateway outcomes are observed at the stage-outcome level, but
+rationale visibility remains partial. The table below summarizes the
+field-level gaps that appear later in the per-stage ledger.
+
+\begin{longtable}{
+    @{}
+    >{\raggedright\arraybackslash}p{0.10\linewidth}
+    >{\raggedright\arraybackslash}p{0.30\linewidth}
+    >{\raggedright\arraybackslash}p{0.52\linewidth}
+    @{}
+}
+\textbf{Stage} & \textbf{Observed outcome} & \textbf{Rationale-level gap} \\
+\hline
+G0 & shared-auth state available & concrete token material and device-token candidate source are redacted or not recorded \\
+G1 & shared credential allows the connection & exact credential comparison details and rate-limit internals are not emitted \\
+G2 & final auth passes without device-token fallback & device-signature subpath is source-derived because \texttt{hasDeviceIdentity=False} \\
+G3 & \texttt{chat.send} allowed by \texttt{operator.write} & \texttt{auth\_reason} is not emitted; admin shortcut exclusion is source-derived from scopes \\
+G4 & RPC envelope validates & full raw WebSocket frame and all pre-validation fields are not archived \\
+G5 & message/session fields normalize & intermediate sanitizer object is not emitted in full \\
+G6 & requested Agent resolves to \texttt{main} & absence of every alternate override source is partly source-derived \\
+G7 & Session key resolves & persistent store path, loaded entry object, \texttt{entry.sessionId}, and timing details are not emitted \\
+G8 & Agent/Session validation passes & full validation object and backing Session identity are not emitted \\
+G9 & effective Agent is \texttt{main} & fallback candidate chain is not emitted in full \\
+G10 & send policy allows the turn & exact allow sub-branch and rule rationale are not emitted \\
+G11 & duplicate-run check creates a new dispatch & internal lock/cache state is not emitted \\
+G12 & work is admitted & admission internals, latest Session details, and concrete admitted Session identity are not emitted \\
+G13 & message context is built & full constructed context object is not emitted \\
+G14 & auto-reply dispatch is entered & complete dispatch return payload is not emitted \\
+G15 & runtime context is finalized & full finalized context object is not emitted \\
+G16 & dispatch-from-config normal path continues & complete reply-dispatch return object is not emitted \\
+G17 & Agent re-check passes & fallback attempt chain is not emitted in full \\
+G18 & default resolver is selected & full resolver payload and later Gateway post-return state are not emitted \\
+\hline
+\end{longtable}
+
+Final \texttt{rationale\_visibility} count for G0--G18:
+\textsc{full} \(=0/19\), \textsc{partial} \(=19/19\), and
+\textsc{source-derived} \(=0/19\). The count is stored in
+\seqsplit{artifacts/controlled/rationale-visibility-summary.csv}.
 
 Exact page placement may change after recompilation. Therefore, the main
 paper refers to appendix labels and stage names rather than fixed PDF page
@@ -38,8 +106,8 @@ numbers. This keeps the paper stable when figures, tables, or references
 are edited.
 
 \phantomsection
-\subsection*{Concrete Cake2 Runtime Values and Exact Sources}
-\label{app:cake2-values-sources}
+\subsection*{Concrete R1 Runtime Values and Exact Sources}
+\label{app:r1-values-sources}
 
 This table records the exact source locations for the concrete values
 used in the main text.
@@ -53,20 +121,20 @@ used in the main text.
     @{}
 }
 \textbf{Variable} &
-\textbf{Concrete Cake2 Value} &
+\textbf{Concrete R1 Value} &
 \textbf{Obtained / Observed At} &
 \textbf{Exact Source} \\
 \hline
 
 \texttt{SESSION\_KEY} &
-\seqsplit{agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4} &
+\seqsplit{agent:main:dashboard:trace-82fbff4483c4} &
 \textbf{G5}: extracted as \texttt{rawSessionKey}; observed again in G6/G7 &
 \texttt{chat.ts:3800} \newline G6/G7 runtime trace \\[6pt]
 
 \texttt{SESSION\_ID} &
-\seqsplit{af48dd1c-2e18-4d4d-9b08-432df4352674} &
-\textbf{G7}: pre-existing Session identity; obtained from the loaded persistent \texttt{SessionEntry} &
-\texttt{session-utils.ts:1058, 1064} \newline explicitly read at \texttt{chat.ts:3848--3849} \\[6pt]
+\seqsplit{NOT RECORDED} &
+\textbf{G7/G8}: Gateway Session ID is not emitted; AR-layer Session ID is separate &
+\texttt{session-utils.ts:1058, 1064} \newline possible source read at \texttt{chat.ts:3848--3849} \\[6pt]
 
 \texttt{MESSAGE} &
 "How to make a cake?" &
@@ -74,7 +142,7 @@ Input exists before G3; \textbf{G4}: validated; \textbf{G5}: sanitized into \tex
 \texttt{chat.ts:3714--3739} \newline \texttt{chat.ts:3770,3784} \\[6pt]
 
 \texttt{RUN\_ID} &
-\seqsplit{808b4380-f27b-4c2e-9421-74e043c3badd} &
+\seqsplit{ANON-R1-RUN-ID} &
 Generated before G3 by Control UI; \textbf{G4}: observed in runtime; \textbf{G5}: extracted as \texttt{clientRunId} &
 \texttt{chat-send.ts:266--276} \newline G4 runtime trace \newline \texttt{chat.ts:3802} \\
 \hline
@@ -96,9 +164,10 @@ device-token candidate, invokes the initial shared-credential
 authorization path, performs a shared-auth probe, and returns the
 resulting authentication state. G0 does not necessarily make the final
 connection-authentication decision. For the connection immediately
-preceding Cake2, the shared-auth path is not authorized, but an explicit
-device-token candidate remains available. The returned state is
-therefore passed to G2, where the device token is subsequently accepted.
+preceding R1, the shared-auth path is authorized and no explicit
+device-token candidate is used. The returned state is therefore passed to
+G2, where the shared-token result is accepted and the device-token
+fallback is not reached.
 
 {
 \renewcommand{\arraystretch}{0.95}
@@ -125,7 +194,7 @@ therefore passed to G2, where the device token is subsequently accepted.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\py{connect\_auth\_state = await resolveConnectAuthState(}
+\pyt{connect\_auth\_state = await resolveConnectAuthState(}
 &
 \src{src/gateway/server/ws-connection/message-handler.ts:941--957}
 \\
@@ -266,7 +335,7 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{auth-context.ts:100--109}
 \\[2mm]
 
-\py{Cake2: shared\_auth\_provided = True}
+\py{R1: shared\_auth\_provided = True}
 &
 \src{RUNTIME: G0 resolved event}
 \\[3mm]
@@ -296,12 +365,12 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{auth-context.ts:138--140}
 \\[2mm]
 
-\py{Cake2: hasDeviceIdentity = True}
+\py{R1: hasDeviceIdentity = False}
 &
 \src{RUNTIME: G0 started event}
 \\
 
-\py{Cake2: bootstrap\_token\_candidate = None}
+\py{R1: bootstrap\_token\_candidate = None}
 &
 \src{RUNTIME: hasBootstrapTokenCandidate=False}
 \\[3mm]
@@ -361,17 +430,17 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{auth-context.ts:111--124}
 \\[2mm]
 
-\py{Cake2: device\_token\_candidate exists = True}
+\py{R1: device\_token\_candidate = NOT RECORDED}
 &
-\src{RUNTIME: hasDeviceTokenCandidate=True}
+\src{NOT RECORDED: no R1 runtime field stores the concrete candidate}
 \\
 
-\py{Cake2: device\_token\_source = "explicit-device-token"}
+\py{R1: explicit device-token source = NOT REACHED}
 &
-\src{RUNTIME: G0 resolved event}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\
 
-\py{Cake2: shared-token fallback inside this helper is not reached}
+\py{R1: shared-token fallback inside this helper is not reached}
 &
 \src{DERIVED FROM SOURCE + RUNTIME}
 \\[3mm]
@@ -436,9 +505,9 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{G1 boundary}
 \\[2mm]
 
-\py{Cake2: auth\_result.ok = False}
+\py{R1: auth\_result.ok = True}
 &
-\src{RUNTIME: G1 result="deny"}
+\src{RUNTIME: G1 result="allow"}
 \\[3mm]
 
 % ==============================================================
@@ -496,7 +565,7 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{auth-context.ts:155--166}
 \\[2mm]
 
-\py{Cake2: shared credential exists, so this probe is reached}
+\py{R1: shared credential exists, so this probe is reached}
 &
 \src{DERIVED FROM SOURCE + RUNTIME}
 \\[3mm]
@@ -541,7 +610,7 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{auth-context.ts:170--173}
 \\[2mm]
 
-\py{Cake2: shared\_auth\_ok = False}
+\py{R1: shared\_auth\_ok = True}
 &
 \src{RUNTIME: G0 resolved event}
 \\[3mm]
@@ -618,22 +687,22 @@ therefore passed to G2, where the device token is subsequently accepted.
 \\[3mm]
 
 % ==============================================================
-% CAKE2 CONCRETE OUTPUT
+% R1 CONCRETE OUTPUT
 % ==============================================================
 
 \hline
 
-{\normalfont\bfseries Cake2 concrete G0 output}
+{\normalfont\bfseries R1 concrete G0 output}
 &
 {\normalfont\bfseries Observed / derived state}
 \\[2mm]
 
-\py{auth\_result.ok = False}
+\py{auth\_result.ok = True}
 &
-\src{DERIVED FROM G1 result="deny"}
+\src{DERIVED FROM G1 result="allow"}
 \\
 
-\py{auth\_ok = False}
+\py{auth\_ok = True}
 &
 \src{DERIVED: authOk=authResult.ok}
 \\
@@ -648,7 +717,7 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{RUNTIME: G0 resolved event}
 \\
 
-\py{shared\_auth\_ok = False}
+\py{shared\_auth\_ok = True}
 &
 \src{RUNTIME: G0 resolved event}
 \\
@@ -658,14 +727,14 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{RUNTIME: hasBootstrapTokenCandidate=False}
 \\
 
-\py{device\_token\_candidate = present}
+\py{device\_token\_candidate = NOT RECORDED}
 &
-\src{RUNTIME: hasDeviceTokenCandidate=True}
+\src{NOT RECORDED: no R1 runtime field stores the concrete candidate}
 \\
 
-\py{device\_token\_source = "explicit-device-token"}
+\py{explicit device-token source = NOT REACHED}
 &
-\src{RUNTIME: G0 resolved event}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\[3mm]
 
 % ==============================================================
@@ -699,12 +768,12 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{RUNTIME}
 \\
 
-\py{result = "not\_authorized"}
+\py{result = "authorized"}
 &
 \src{RUNTIME}
 \\
 
-\py{hasDeviceIdentity = True}
+\py{hasDeviceIdentity = False}
 &
 \src{RUNTIME}
 \\
@@ -714,7 +783,7 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{RUNTIME}
 \\
 
-\py{sharedAuthOk = False}
+\py{sharedAuthOk = True}
 &
 \src{RUNTIME}
 \\
@@ -724,14 +793,14 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{RUNTIME}
 \\
 
-\py{hasDeviceTokenCandidate = True}
+\py{hasDeviceTokenCandidate = NOT RECORDED}
 &
-\src{RUNTIME}
+\src{NOT RECORDED: absent from R1 runtime event fields}
 \\
 
-\py{deviceTokenCandidateSource = "explicit-device-token"}
+\py{explicit-device-token source = NOT REACHED}
 &
-\src{RUNTIME}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\[3mm]
 
 % ==============================================================
@@ -750,7 +819,7 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{SOURCE CONTROL FLOW}
 \\
 
-\py{\# The explicit device-token candidate is preserved in}
+\py{\# No explicit device-token candidate is present in R1.}
 &
 \src{auth-context.ts:175--185}
 \\
@@ -760,12 +829,12 @@ therefore passed to G2, where the device token is subsequently accepted.
 \src{G0 -> G2 boundary}
 \\[2mm]
 
-\py{Cake2: G2 authMethod = "device-token"}
+\py{R1: G2 authMethod = "token"}
 &
 \src{RUNTIME: next G2 event}
 \\
 
-\py{Cake2: G2 result = "pass"}
+\py{R1: G2 result = "pass"}
 &
 \src{RUNTIME: next G2 event}
 \\
@@ -904,7 +973,7 @@ Inputs to\\
 \quad\texttt{= handshake auth material}\\[2mm]
 
 \texttt{hasDeviceIdentity}\\
-\quad\texttt{= True}\\[2mm]
+\quad\texttt{= False}\\[2mm]
 
 \texttt{req}\\
 \quad\texttt{= WebSocket upgrade request}\\[2mm]
@@ -917,11 +986,11 @@ Inputs to\\
 
 \texttt{clientIp}\\[3mm]
 
-Cake2 observed state:\\[1mm]
+R1 observed state:\\[1mm]
 
 \texttt{shared credential supplied}\\[1mm]
 
-\texttt{explicit device-token}\\
+\texttt{no device-token}\\
 \texttt{candidate supplied}\\[2mm]
 
 \textit{Raw credential values are}\\
@@ -939,16 +1008,16 @@ Returned\\
 \texttt{ConnectAuthState}:\\[3mm]
 
 \texttt{authResult}\\
-\quad\texttt{ok = False}\\[2mm]
+\quad\texttt{ok = True}\\[2mm]
 
 \texttt{authOk}\\
-\quad\texttt{= False}\\[2mm]
+\quad\texttt{= True}\\[2mm]
 
 \texttt{authMethod}\\
 \quad\texttt{= "token"}\\[2mm]
 
 \texttt{sharedAuthOk}\\
-\quad\texttt{= False}\\[2mm]
+\quad\texttt{= True}\\[2mm]
 
 \texttt{sharedAuthProvided}\\
 \quad\texttt{= True}\\[2mm]
@@ -957,16 +1026,16 @@ Returned\\
 \quad\texttt{= None}\\[2mm]
 
 \texttt{deviceTokenCandidate}\\
-\quad\texttt{= present}\\[2mm]
+\quad\texttt{= NOT RECORDED}\\[2mm]
 
 \texttt{deviceTokenCandidateSource}\\
-\quad\texttt{= "explicit-device-token"}\\[3mm]
+\quad\texttt{= NOT RECORDED}\\[3mm]
 
 Runtime observation:\\
-\texttt{result = "not\_authorized"}\\[3mm]
+\texttt{result = "authorized"}\\[3mm]
 
 Next:\\
-\texttt{device-token candidate}\\
+\texttt{shared-token auth state}\\
 \texttt{continues to G2}
 };
 
@@ -986,7 +1055,7 @@ Next:\\
 The helper normalizes the shared token/password material supplied
 during the connection handshake.\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{sharedAuthProvided = True}\\[3mm]
 
 \textbf{Step 2: Resolve bootstrap-token candidate}\\
@@ -997,8 +1066,8 @@ Cake2:\\
 \quad\texttt{if hasDeviceIdentity else undefined}\\
 \textit{Source: auth-context.ts:138--140}\\[1mm]
 
-Cake2:\\
-\texttt{hasDeviceIdentity = True}\\
+R1:\\
+\texttt{hasDeviceIdentity = False}\\
 \texttt{hasBootstrapTokenCandidate = False}\\
 \texttt{bootstrapTokenCandidate = None}\\[3mm]
 
@@ -1016,10 +1085,11 @@ Inside the helper:\\
 \texttt{else:}\\
 \quad\texttt{try connectAuth?.token as fallback}\\[1mm]
 
-Cake2:\\
-\texttt{explicit device token is present}\\
-\texttt{deviceTokenCandidateSource = "explicit-device-token"}\\
-\texttt{shared-token fallback is not reached}\\[3mm]
+R1:\\
+\texttt{explicit device token is not present}\\
+\texttt{deviceTokenCandidate = NOT RECORDED}\\
+\texttt{explicit-device-token source = NOT REACHED}\\
+\texttt{no concrete device-token candidate is archived}\\[3mm]
 
 \textbf{Step 4: Invoke initial shared-credential authorization}\\
 \texttt{authResult = await}\\
@@ -1038,9 +1108,9 @@ Inputs include:\\
 \textit{This nested authorization call is represented separately}\\
 \textit{as G1 in the Gateway architecture.}\\[1mm]
 
-Cake2:\\
-\texttt{G1 result = "deny"}\\
-\texttt{authResult.ok = False}\\[3mm]
+R1:\\
+\texttt{G1 result = "allow"}\\
+\texttt{authResult.ok = True}\\[3mm]
 
 \textbf{Step 5: Probe shared-auth validity}\\
 Because shared authentication material exists, G0 also evaluates:\\
@@ -1062,8 +1132,8 @@ can independently establish shared authentication.\\[3mm]
 \quad\texttt{and authResult.method == "trusted-proxy"}\\
 \textit{Source: auth-context.ts:170--173}\\[1mm]
 
-Cake2:\\
-\texttt{sharedAuthOk = False}\\[3mm]
+R1:\\
+\texttt{sharedAuthOk = True}\\[3mm]
 
 \textbf{Step 7: Aggregate the ConnectAuthState}\\
 \texttt{return \{}\\
@@ -1078,25 +1148,26 @@ Cake2:\\
 \texttt{\}}\\
 \textit{Source: auth-context.ts:175--185}\\[1mm]
 
-Cake2:\\
-\texttt{authOk = False}\\
+R1:\\
+\texttt{authOk = True}\\
 \texttt{authMethod = "token"}\\
 \texttt{sharedAuthProvided = True}\\
-\texttt{sharedAuthOk = False}\\
-\texttt{deviceTokenCandidate = present}\\
-\texttt{deviceTokenCandidateSource = "explicit-device-token"}\\[3mm]
+\texttt{sharedAuthOk = True}\\
+\texttt{deviceTokenCandidate = NOT RECORDED}\\
+\texttt{explicit-device-token source = NOT REACHED}\\[3mm]
 
 \textbf{Step 8: Preserve the alternative authentication path}\\
-The failed shared-auth result does not by itself terminate the
-connection because the returned \texttt{ConnectAuthState} still contains
-a device-token candidate.\\[1mm]
+Source code can preserve an alternative device-token path when shared
+authentication fails. R1 does not use that path: shared authentication
+succeeds, \texttt{hasDeviceIdentity=False}, and no concrete
+\texttt{deviceTokenCandidate} value is recorded in the R1 trace.\\[1mm]
 
-Cake2 runtime sequence:\\
-\texttt{G0 result = "not\_authorized"}\\
+R1 runtime sequence:\\
+\texttt{G0 result = "authorized"}\\
 $\downarrow$\\
-\texttt{device-token candidate preserved}\\
+\texttt{no device-token candidate preserved for R1}\\
 $\downarrow$\\
-\texttt{G2 authMethod = "device-token"}\\
+\texttt{G2 authMethod = "token"}\\
 $\downarrow$\\
 \texttt{G2 result = "pass"}\\[2mm]
 
@@ -1159,12 +1230,11 @@ authentication, the core path can perform rate-limit checks and then
 validate the supplied shared token against the configured Gateway token.
 G1 returns a \texttt{GatewayAuthResult}; it does not validate the
 device-token candidate and does not establish the final role or scopes.
-For the connection immediately preceding Cake2, TraceClaw records
-\texttt{authMode = "token"} and \texttt{result = "deny"}.
-The exact failure reason is not present in the G1 runtime event.
-Because G0 has already retained an explicit device-token candidate,
-this G1 denial does not terminate the overall connection; the
-alternative credential is evaluated later in G2.
+For the connection immediately preceding R1, TraceClaw records
+\texttt{authMode = "token"} and \texttt{result = "allow"}.
+Because R1's shared token is accepted, no denial reason is expected in
+the successful G1 event and no device-token fallback is needed.
+G2 carries the shared-token authorization forward and finalizes role and scope.
 
 {
 \renewcommand{\arraystretch}{0.95}
@@ -1241,12 +1311,12 @@ alternative credential is evaluated later in G2.
 \src{auth-context.ts:144--153}
 \\[2mm]
 
-\py{Cake2: resolvedAuth.mode = "token"}
+\py{R1: resolvedAuth.mode = "token"}
 &
 \src{RUNTIME: G1 authMode="token"}
 \\
 
-\py{Cake2: sharedConnectAuth exists}
+\py{R1: sharedConnectAuth exists}
 &
 \src{G0 RUNTIME: sharedAuthProvided=True}
 \\[3mm]
@@ -1472,7 +1542,7 @@ alternative credential is evaluated later in G2.
 \src{SOURCE CONTROL FLOW}
 \\
 
-\py{Cake2: exact outer serialization branch is not recorded}
+\py{R1: exact outer serialization branch is not recorded}
 &
 \src{OBSERVABILITY GAP}
 \\[3mm]
@@ -1532,7 +1602,7 @@ alternative credential is evaluated later in G2.
 \src{src/gateway/auth.ts:490--531}
 \\[2mm]
 
-\py{Cake2: auth.mode = "token" -> branch not taken}
+\py{R1: auth.mode = "token" -> branch not taken}
 &
 \src{RUNTIME + SOURCE}
 \\[2mm]
@@ -1547,7 +1617,7 @@ alternative credential is evaluated later in G2.
 \src{src/gateway/auth.ts:533--535}
 \\[2mm]
 
-\py{Cake2: branch not taken}
+\py{R1: branch not taken}
 &
 \src{RUNTIME + SOURCE}
 \\[3mm]
@@ -1587,7 +1657,7 @@ alternative credential is evaluated later in G2.
 \src{src/gateway/auth.ts:538--540}
 \\[2mm]
 
-\py{\# Exact Cake2 rate-limit state is not recorded by the G1 trace.}
+\py{\# Exact R1 rate-limit state is not recorded by the G1 trace.}
 &
 \src{OBSERVABILITY GAP}
 \\[3mm]
@@ -1627,12 +1697,12 @@ alternative credential is evaluated later in G2.
 \src{src/gateway/auth.ts:548--559}
 \\[2mm]
 
-\py{Cake2: sharedConnectAuth exists}
+\py{R1: sharedConnectAuth exists}
 &
 \src{G0 RUNTIME: sharedAuthProvided=True}
 \\
 
-\py{Cake2: Tailscale success path is therefore not used}
+\py{R1: Tailscale success path is therefore not used}
 &
 \src{SOURCE-GROUNDED}
 \\[3mm]
@@ -1687,7 +1757,7 @@ alternative credential is evaluated later in G2.
 \src{src/gateway/auth.ts:563--569}
 \\[2mm]
 
-\py{Cake2: auth.mode = "token"}
+\py{R1: auth.mode = "token"}
 &
 \src{RUNTIME: G1 authMode="token"}
 \\[3mm]
@@ -1752,14 +1822,14 @@ alternative credential is evaluated later in G2.
 \src{src/gateway/auth.ts:410}
 \\[2mm]
 
-\py{Cake2 runtime: G1 result = "deny"}
+\py{R1 runtime: G1 result = "allow"}
 &
 \src{RUNTIME}
 \\
 
-\py{\# Exact native failure reason is not recorded.}
+\py{\# No denial reason is emitted because R1 is allowed.}
 &
-\src{OBSERVABILITY GAP}
+\src{RUNTIME: auth\_result.method = "token"; result="allow"}
 \\[3mm]
 
 % ==============================================================
@@ -1778,19 +1848,19 @@ alternative credential is evaluated later in G2.
 \src{src/gateway/server/ws-connection/auth-context.ts:144}
 \\
 
-\py{Cake2: auth\_result.ok = False}
+\py{R1: auth\_result.ok = True}
 &
-\src{DERIVED FROM G1 result="deny"}
+\src{DERIVED FROM G1 result="allow"}
 \\
 
-\py{Cake2: auth\_result.method = None}
+\py{R1: auth\_result.method = "token"}
 &
-\src{DERIVED: failed GatewayAuthResult has no successful method}
+\src{RUNTIME: successful G1 token result}
 \\
 
-\py{Cake2: auth\_result.reason = unknown}
+\py{R1: auth\_result.reason = NOT APPLICABLE}
 &
-\src{OBSERVABILITY GAP}
+\src{NOT APPLICABLE: R1 is allowed; no denial reason exists}
 \\[2mm]
 
 \py{TraceClaw stage = "G1"}
@@ -1808,7 +1878,7 @@ alternative credential is evaluated later in G2.
 \src{RUNTIME}
 \\
 
-\py{TraceClaw result = "deny"}
+\py{TraceClaw result = "allow"}
 &
 \src{RUNTIME}
 \\[3mm]
@@ -1829,12 +1899,12 @@ alternative credential is evaluated later in G2.
 \src{G1 -> G0 aggregation}
 \\
 
-\py{\# G0 preserves the separate explicit device-token candidate.}
+\py{\# G0 does not preserve a separate device-token candidate for R1.}
 &
 \src{src/gateway/server/ws-connection/auth-context.ts:175--185}
 \\
 
-\py{Cake2: G1 deny -> G0 not\_authorized -> G2 device-token path}
+\py{R1: G1 allow -> G0 authorized -> G2 shared-token path}
 &
 \src{RUNTIME SEQUENCE}
 \\
@@ -1988,7 +2058,7 @@ Inputs to\\
 \texttt{rateLimitScope =}\\
 \texttt{SHARED\_SECRET}\\[3mm]
 
-Cake2:\\
+R1:\\
 \texttt{sharedAuthProvided = True}\\[1mm]
 
 \textit{Raw token value is not}\\
@@ -2005,24 +2075,24 @@ Cake2:\\
 Returned\\
 \texttt{GatewayAuthResult}\\[3mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
-\texttt{ok = False}\\[2mm]
+\texttt{ok = True}\\[2mm]
 
-\texttt{method = undefined}\\[2mm]
+\texttt{method = "token"}\\[2mm]
 
-\texttt{reason = unknown}\\
-\textit{not recorded by G1 trace}\\[3mm]
+\texttt{reason = none}\\
+\textit{no denial reason recorded}\\[3mm]
 
 Runtime observation:\\[1mm]
 
 \texttt{authMode = "token"}\\[2mm]
 
-\texttt{result = "deny"}\\[3mm]
+\texttt{result = "allow"}\\[3mm]
 
 Meaning:\\
-\textit{shared credential did not}\\
-\textit{authorize this connection}\\[3mm]
+\textit{shared credential authorized}\\
+\textit{this connection}\\[3mm]
 
 Next:\\
 \texttt{return to G0 aggregation}
@@ -2064,7 +2134,7 @@ If the Tailscale/rate-limit serialization condition is satisfied,
 the core function directly.\\
 \textit{Source: auth.ts:463--478}\\[1mm]
 
-Cake2:\\
+R1:\\
 \textit{The exact outer serialization branch is not recorded,}\\
 \textit{but both routes enter the same core function.}\\[3mm]
 
@@ -2073,7 +2143,7 @@ The core resolves the effective authorization context again and then
 evaluates the configured authentication mode.\\
 \textit{Source: auth.ts:481--488}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{auth.mode = "token"}\\[3mm]
 
 \textbf{Step 5: Skip unrelated authentication modes}\\
@@ -2083,7 +2153,7 @@ Cake2:\\
 \texttt{auth.mode == "none"}.\\
 \textit{Source: auth.ts:490--535}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{mode = "token" -> both branches are not selected}\\[3mm]
 
 \textbf{Step 6: Apply the shared-secret rate-limit guard}\\
@@ -2091,16 +2161,16 @@ Cake2:\\
 \texttt{if rateLimitResult exists: return it}\\
 \textit{Source: auth.ts:537--540}\\[1mm]
 
-Cake2:\\
-\textit{The G1 trace does not record whether this guard itself}\\
-\textit{produced the denial or execution continued further.}\\[3mm]
+R1:\\
+\textit{The G1 trace does not record whether this guard was checked;}\\
+\textit{the observed stage outcome is allow.}\\[3mm]
 
 \textbf{Step 7: Exclude the optional Tailscale success path}\\
 The Tailscale branch requires:\\
 \texttt{not hasExplicitSharedSecretAuth(connectAuth)}.\\
 \textit{Source: auth.ts:542--560}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{sharedConnectAuth exists}\\
 \texttt{sharedAuthProvided = True}\\
 \texttt{-> Tailscale success is not the observed G1 result}\\[3mm]
@@ -2123,24 +2193,24 @@ or, on success:\\
 \texttt{\{ok: true, method: "token"\}}\\
 \textit{Source: auth.ts:389--411}\\[1mm]
 
-Cake2 runtime:\\
-\texttt{G1 result = "deny"}\\
-\texttt{authResult.ok = False}\\
-\textit{The exact native failure reason is not recorded.}\\[3mm]
+R1 runtime:\\
+\texttt{G1 result = "allow"}\\
+\texttt{authResult.ok = True}\\
+\textit{No denial reason is emitted for the observed allow result.}\\[3mm]
 
 \textbf{Step 10: Return the G1 decision to G0}\\
 The resulting \texttt{GatewayAuthResult} becomes G0's
 \texttt{authResult}. G0 then combines it with the independently
 resolved bootstrap/device-token candidates.\\[1mm]
 
-Cake2:\\
-\texttt{G1 = deny}\\
+R1:\\
+\texttt{G1 = allow}\\
 $\downarrow$\\
-\texttt{G0 result = "not\_authorized"}\\
+\texttt{G0 result = "authorized"}\\
 $\downarrow$\\
-\texttt{explicit device-token candidate remains}\\
+\texttt{no explicit device-token candidate is present}\\
 $\downarrow$\\
-\texttt{G2 later succeeds through the device-token path}
+\texttt{G2 later succeeds through the shared-token path}
 };
 
 % ==============================================================
@@ -2197,11 +2267,11 @@ succeeds, the surrounding WebSocket connection handler revalidates
 Gateway-auth generation, checks device pairing and approved role/scope
 access, constructs the authenticated Gateway client, and sends the
 \texttt{hello-ok} response. For the WebSocket connection carrying
-Cake2, the shared-auth path from G1 was denied, but the explicit
-device-token candidate retained by G0 is successfully verified in G2.
+R1, the shared-auth path from G1 succeeds and the explicit
+shared-token authorization is carried into G2.
 The resulting connection uses
-\texttt{authMethod = "device-token"}, role
-\texttt{"operator"}, and the five authenticated operator scopes.
+\texttt{authMethod = "token"}, role
+\texttt{"operator"}, and scope \texttt{operator.write}.
 TraceClaw records \texttt{result = "pass"}.
 
 {
@@ -2264,12 +2334,12 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1038--1136}
 \\[2mm]
 
-\py{Cake2: hasDeviceIdentity = True}
+\py{R1: hasDeviceIdentity = False}
 &
 \src{RUNTIME: G0/G2}
 \\
 
-\py{Cake2: missing-device rejection is not taken}
+\py{R1: missing-device rejection is not taken}
 &
 \src{DERIVED FROM CONTINUOUS EXECUTION}
 \\[3mm]
@@ -2314,9 +2384,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1137--1213}
 \\[2mm]
 
-\py{Cake2: all device-identity checks pass}
+\py{R1: device-identity checks are not applicable}
 &
-\src{DERIVED: execution reaches resolveConnectAuthDecision}
+\src{SOURCE-DERIVED: hasDeviceIdentity=False; signature path is not used}
 \\[3mm]
 
 % ==============================================================
@@ -2340,7 +2410,7 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1215 onward}
 \\
 
-\pyI{hasDeviceIdentity=True,}
+\pyI{hasDeviceIdentity=has\_device\_identity,}
 &
 \src{message-handler.ts:1215 onward}
 \\
@@ -2391,19 +2461,19 @@ TraceClaw records \texttt{result = "pass"}.
 \\[3mm]
 
 % ==============================================================
-% CAKE2 INPUT STATE
+% R1 INPUT STATE
 % ==============================================================
 
 \hline
 
-{\normalfont\bfseries Cake2 input state}
+{\normalfont\bfseries R1 input state}
 &
 {\normalfont\bfseries Runtime / upstream evidence}
 \\[2mm]
 
-\py{state.authOk = False}
+\py{state.authOk = True}
 &
-\src{G0: result="not\_authorized"}
+\src{G0: result="authorized"}
 \\
 
 \py{state.authMethod = "token"}
@@ -2411,7 +2481,7 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0 runtime}
 \\
 
-\py{state.sharedAuthOk = False}
+\py{state.sharedAuthOk = True}
 &
 \src{G0 runtime}
 \\
@@ -2426,19 +2496,29 @@ TraceClaw records \texttt{result = "pass"}.
 \src{G0: hasBootstrapTokenCandidate=False}
 \\
 
-\py{state.deviceTokenCandidate = present}
+\py{state.deviceTokenCandidate = NOT RECORDED}
 &
-\src{G0: hasDeviceTokenCandidate=True}
+\src{NOT RECORDED: no concrete candidate value is archived}
 \\
 
-\py{state.deviceTokenCandidateSource = "explicit-device-token"}
+\py{state.deviceTokenCandidateSource = NOT REACHED}
 &
-\src{G0 runtime}
+\src{SOURCE-DERIVED: explicit-device-token branch not taken}
 \\
 
-\py{hasDeviceIdentity = True}
+\py{hasDeviceIdentity = False}
 &
 \src{G0/G2 runtime}
+\\
+
+\py{deviceId = NOT APPLICABLE}
+&
+\src{SOURCE-DERIVED: hasDeviceIdentity=False}
+\\
+
+\py{publicKey = NOT APPLICABLE}
+&
+\src{SOURCE-DERIVED: hasDeviceIdentity=False}
 \\
 
 \py{role = "operator"}
@@ -2447,26 +2527,6 @@ TraceClaw records \texttt{result = "pass"}.
 \\
 
 \py{scopes = [}
-&
-\src{G2 runtime}
-\\
-
-\pyI{"operator.admin",}
-&
-\src{G2 runtime}
-\\
-
-\pyI{"operator.approvals",}
-&
-\src{G2 runtime}
-\\
-
-\pyI{"operator.pairing",}
-&
-\src{G2 runtime}
-\\
-
-\pyI{"operator.read",}
 &
 \src{G2 runtime}
 \\
@@ -2517,12 +2577,12 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:188--207}
 \\[2mm]
 
-\py{Cake2: bootstrapTokenCandidate = None}
+\py{R1: bootstrapTokenCandidate = None}
 &
 \src{G0 runtime}
 \\
 
-\py{Cake2: direct core path is taken}
+\py{R1: direct core path is taken}
 &
 \src{DERIVED FROM SOURCE}
 \\[3mm]
@@ -2557,12 +2617,12 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:208 onward}
 \\[2mm]
 
-\py{Cake2: auth\_ok = False}
+\py{R1: auth\_ok = True}
 &
 \src{UPSTREAM G0}
 \\
 
-\py{Cake2: auth\_method = "token"}
+\py{R1: auth\_method = "token"}
 &
 \src{UPSTREAM G0}
 \\[3mm]
@@ -2612,12 +2672,12 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:208 onward}
 \\[2mm]
 
-\py{Cake2: bootstrapTokenCandidate = None}
+\py{R1: bootstrapTokenCandidate = None}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: bootstrap-token branch is not taken}
+\py{R1: bootstrap-token branch is not taken}
 &
 \src{DERIVED FROM SOURCE}
 \\[3mm]
@@ -2662,22 +2722,22 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:208 onward}
 \\[2mm]
 
-\py{Cake2: hasDeviceIdentity = True}
+\py{R1: hasDeviceIdentity = False}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: auth\_ok = False}
+\py{R1: auth\_ok = True}
 &
 \src{G0 runtime}
 \\
 
-\py{Cake2: device token candidate exists}
+\py{R1: device token candidate = NOT RECORDED}
 &
-\src{G0 runtime}
+\src{NOT RECORDED: no concrete candidate value is archived}
 \\
 
-\py{Cake2: continue into device-token verification}
+\py{R1: device-token verification is not reached}
 &
 \src{DERIVED FROM SOURCE}
 \\[3mm]
@@ -2712,12 +2772,12 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:208 onward}
 \\[2mm]
 
-\py{Cake2: rate-limit guard does not terminate the request}
+\py{R1: rate-limit guard does not terminate the request}
 &
-\src{DERIVED: final device-token success}
+\src{DERIVED: shared-token success; device-token branch not reached}
 \\
 
-\py{Cake2: exact limiter presence is not recorded}
+\py{R1: exact limiter presence is not recorded}
 &
 \src{OBSERVABILITY GAP}
 \\[3mm]
@@ -2777,17 +2837,17 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts:208 onward}
 \\[2mm]
 
-\py{Cake2: token\_check.ok = True}
+\py{R1: token\_check.ok = NOT APPLICABLE}
 &
-\src{DERIVED FROM authMethod="device-token" + result="pass"}
+\src{DERIVED: device-token verification branch is not reached}
 \\
 
-\py{Cake2: auth\_ok = True}
+\py{R1: auth\_ok = True}
 &
 \src{RUNTIME / SOURCE}
 \\
 
-\py{Cake2: auth\_method = "device-token"}
+\py{R1: auth\_method = "token"}
 &
 \src{RUNTIME}
 \\[3mm]
@@ -2838,17 +2898,17 @@ TraceClaw records \texttt{result = "pass"}.
 \src{auth-context.ts}
 \\[2mm]
 
-\py{Cake2: authOk = True}
+\py{R1: authOk = True}
 &
 \src{RUNTIME / SOURCE}
 \\
 
-\py{Cake2: authMethod = "device-token"}
+\py{R1: authMethod = "token"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: device-token issuer generation = unknown}
+\py{R1: device-token issuer generation = NOT RECORDED / not applicable}
 &
 \src{OBSERVABILITY GAP}
 \\[3mm]
@@ -2888,7 +2948,7 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1215 onward}
 \\[2mm]
 
-\py{Cake2: auth\_ok = True -> reject branch not taken}
+\py{R1: auth\_ok = True -> reject branch not taken}
 &
 \src{RUNTIME}
 \\[3mm]
@@ -2918,7 +2978,7 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1286 onward}
 \\[2mm]
 
-\py{Cake2: no generation-mismatch close occurs}
+\py{R1: no generation-mismatch close occurs}
 &
 \src{DERIVED FROM CONTINUED HANDSHAKE}
 \\[3mm]
@@ -2958,17 +3018,17 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:1335--1757}
 \\[2mm]
 
-\py{Cake2: final role = "operator"}
+\py{R1: final role = "operator"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: final scopes = five requested operator scopes}
+\py{R1: final scopes = [operator.write]}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: exact pairing sub-branch is not directly traced}
+\py{R1: exact pairing sub-branch is not directly traced}
 &
 \src{OBSERVABILITY GAP}
 \\[3mm]
@@ -2979,7 +3039,7 @@ TraceClaw records \texttt{result = "pass"}.
 
 \hline
 
-{\normalfont\bfseries Step 11: Maintain / issue device-token state}
+{\normalfont\bfseries Step 11: Device-token maintenance branch is not used by R1}
 &
 \\[2mm]
 
@@ -3058,9 +3118,9 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:2056--2065}
 \\[2mm]
 
-\py{Cake2: isDeviceTokenAuth = True}
+\py{R1: isDeviceTokenAuth = False}
 &
-\src{DERIVED FROM authMethod}
+\src{SOURCE-DERIVED: shared-token path; device-token fallback not reached}
 \\[3mm]
 
 % ==============================================================
@@ -3088,12 +3148,12 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:2169--2204}
 \\[2mm]
 
-\py{Cake2: role = "operator"}
+\py{R1: role = "operator"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: scopes = five authenticated operator scopes}
+\py{R1: scopes = [operator.write]}
 &
 \src{RUNTIME}
 \\[3mm]
@@ -3123,32 +3183,32 @@ TraceClaw records \texttt{result = "pass"}.
 \src{message-handler.ts:2237--2273}
 \\[2mm]
 
-\py{Cake2: stage = "G2"}
+\py{R1: stage = "G2"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: event = "connection\_identity\_finalized"}
+\py{R1: event = "connection\_identity\_finalized"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: result = "pass"}
+\py{R1: result = "pass"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: authMethod = "device-token"}
+\py{R1: authMethod = "token"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: role = "operator"}
+\py{R1: role = "operator"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: clientMode = "webchat"}
+\py{R1: clientMode = "webchat"}
 &
 \src{RUNTIME}
 \\
@@ -3289,25 +3349,25 @@ Inputs to\\
 
 \texttt{state = ConnectAuthState}\\[1mm]
 
-Cake2 state:\\
-\texttt{authOk = False}\\
+R1 state:\\
+\texttt{authOk = True}\\
 \texttt{authMethod = "token"}\\
-\texttt{sharedAuthOk = False}\\
+\texttt{sharedAuthOk = True}\\
 \texttt{sharedAuthProvided = True}\\[2mm]
 
 \texttt{bootstrapTokenCandidate}\\
 \quad\texttt{= None}\\[2mm]
 
 \texttt{deviceTokenCandidate}\\
-\quad\texttt{= present}\\[1mm]
+\quad\texttt{= NOT APPLICABLE / not used}\\[1mm]
 
 \texttt{deviceTokenCandidateSource}\\
-\quad\texttt{= "explicit-device-token"}\\[3mm]
+\quad\texttt{= NOT REACHED}\\[3mm]
 
-\texttt{hasDeviceIdentity = True}\\[2mm]
+\texttt{hasDeviceIdentity = False}\\[2mm]
 
-\texttt{deviceId = present}\\
-\texttt{publicKey = present}\\[2mm]
+\texttt{deviceId = NOT APPLICABLE}\\
+\texttt{publicKey = NOT APPLICABLE}\\[2mm]
 
 \texttt{role = "operator"}\\[2mm]
 
@@ -3331,12 +3391,12 @@ Cake2 state:\\
 Returned\\
 \texttt{ConnectAuthDecision}:\\[3mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{authOk = True}\\[2mm]
 
 \texttt{authMethod =}\\
-\quad\texttt{"device-token"}\\[2mm]
+\quad\texttt{"token"}\\[2mm]
 
 \texttt{authResult =}\\
 \quad\texttt{carried auth-result state}\\[2mm]
@@ -3350,8 +3410,7 @@ Finalized connection state:\\[2mm]
 \texttt{role = "operator"}\\[1mm]
 
 \texttt{scopes =}\\
-\texttt{[admin, approvals,}\\
-\texttt{ pairing, read, write]}\\[1mm]
+\texttt{[operator.write]}\\[1mm]
 
 \texttt{clientMode = "webchat"}\\[2mm]
 
@@ -3372,8 +3431,8 @@ without a device identity.\\
 \texttt{evaluateMissingDeviceIdentity(...)}\\
 \textit{Source: message-handler.ts:1038--1136}\\[1mm]
 
-Cake2:\\
-\texttt{hasDeviceIdentity = True}\\
+R1:\\
+\texttt{hasDeviceIdentity = False}\\
 \texttt{-> missing-device rejection is not taken}\\[3mm]
 
 \textbf{Step 2: Validate device identity and signed handshake data}\\
@@ -3385,8 +3444,9 @@ The Gateway derives the device ID from the public key and checks:\\
 \texttt{public key can be normalized}\\
 \textit{Source: message-handler.ts:1137--1213}\\[1mm]
 
-Cake2:\\
-\texttt{all checks pass -> final auth decision is reached}\\[3mm]
+R1:\\
+\texttt{hasDeviceIdentity = False}\\
+\texttt{device-identity checks are NOT APPLICABLE}\\[3mm]
 
 \textbf{Step 3: Enter the final authentication decision}\\
 \texttt{resolveConnectAuthDecision(...)} receives the G0 authentication
@@ -3395,16 +3455,16 @@ rate-limiter state, and token-verification callbacks.\\
 \textit{Source: message-handler.ts:1215 onward;}\\
 \textit{auth-context.ts:188 onward}\\[1mm]
 
-Cake2 input:\\
-\texttt{authOk = False}\\
+R1 input:\\
+\texttt{authOk = True}\\
 \texttt{bootstrapTokenCandidate = None}\\
-\texttt{deviceTokenCandidate = present}\\[3mm]
+\texttt{deviceTokenCandidate = NOT RECORDED}\\[3mm]
 
 \textbf{Step 4: Skip bootstrap-token authentication}\\
 The bootstrap-token path is evaluated only when a bootstrap token,
 device ID, public key, and device identity are all available.\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{bootstrapTokenCandidate = None}\\
 \texttt{-> bootstrap-token branch is not taken}\\[3mm]
 
@@ -3413,20 +3473,20 @@ The function returns early if authentication has already succeeded,
 there is no device identity, there is no device ID, or no device-token
 candidate exists.\\[1mm]
 
-Cake2:\\
-\texttt{authOk = False}\\
-\texttt{hasDeviceIdentity = True}\\
-\texttt{deviceId exists}\\
-\texttt{deviceTokenCandidate exists}\\
-\texttt{-> continue to device-token verification}\\[3mm]
+R1:\\
+\texttt{authOk = True}\\
+\texttt{hasDeviceIdentity = False}\\
+\texttt{deviceId = NOT APPLICABLE}\\
+\texttt{deviceTokenCandidate = NOT RECORDED}\\
+\texttt{-> device-token verification is not reached}\\[3mm]
 
 \textbf{Step 6: Apply the device-token rate-limit guard}\\
 If a rate limiter is configured, the Gateway checks the device-token
 authentication scope before verifying the token. A denied rate-limit
 check would stop authentication.\\[1mm]
 
-Cake2:\\
-\texttt{rate-limit guard does not terminate the connection}\\
+R1:\\
+\texttt{device-token rate-limit guard is not reached}\\
 \textit{Exact limiter presence is not recorded by TraceClaw.}\\[3mm]
 
 \textbf{Step 7: Verify the explicit device token}\\
@@ -3438,13 +3498,14 @@ On success:\\
 \texttt{authOk = True}\\
 \texttt{authMethod = "device-token"}\\[1mm]
 
-Cake2:\\
-\texttt{tokenCheck.ok = True}\\
-\texttt{authOk = True}\\
-\texttt{authMethod = "device-token"}\\[1mm]
+R1:\\
+\texttt{branch status = NOT REACHED}\\
+\texttt{tokenCheck.ok = NOT RECORDED / NOT APPLICABLE}\\
+\texttt{device-token success is not attributed to R1}\\[1mm]
 
-\textit{This path is source-determined by the observed}\\
-\textit{G2 device-token success result.}\\[3mm]
+\textit{R1 records sharedAuthProvided=True, sharedAuthOk=True,}\\
+\textit{and hasDeviceIdentity=False; authMethod="token" therefore}\\
+\textit{must not be read as proof of device-token authentication.}\\[3mm]
 
 \textbf{Step 8: Return the final ConnectAuthDecision}\\
 The function returns:\\
@@ -3453,9 +3514,9 @@ The function returns:\\
 \texttt{authMethod}\\
 \texttt{deviceTokenSharedGatewaySessionGeneration}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{authOk = True}\\
-\texttt{authMethod = "device-token"}\\
+\texttt{authMethod = "token"}\\
 \texttt{issuer generation = not directly observed}\\[3mm]
 
 \textbf{Step 9: Accept the authentication decision}\\
@@ -3463,7 +3524,7 @@ The outer WebSocket handler copies the returned authentication state.
 If \texttt{authOk} is false, it rejects the connection; otherwise the
 handshake advances to the authenticated state.\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{authOk = True -> reject branch not taken}\\[3mm]
 
 \textbf{Step 10: Revalidate authentication generation}\\
@@ -3471,7 +3532,7 @@ For connection modes linked to shared Gateway authentication, the
 Gateway checks whether the credential generation has changed while the
 handshake was in progress. A stale generation closes the connection.\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{no generation-mismatch close occurs}\\[3mm]
 
 \textbf{Step 11: Validate device pairing, role, and scopes}\\
@@ -3480,15 +3541,14 @@ device is allowed to use the requested role and scopes. Missing or
 upgraded access can trigger the pairing / approval path.\\
 \textit{Source: message-handler.ts:1335--1757}\\[1mm]
 
-Cake2 finalized access:\\
+R1 finalized access:\\
 \texttt{role = "operator"}\\
-\texttt{scopes = [operator.admin, operator.approvals,}\\
-\texttt{operator.pairing, operator.read, operator.write]}\\[1mm]
+\texttt{scopes = [operator.write]}\\
 
 \textit{The exact internal pairing sub-branch is not directly}\\
 \textit{identified by the G2 runtime event.}\\[3mm]
 
-\textbf{Step 12: Maintain the approved device-token state}\\
+\textbf{Step 12: Device-token state maintenance is not used by R1}\\
 For a server-approved device baseline, the Gateway may call
 \texttt{ensureDeviceToken(...)} using the finalized device ID,
 role, and scopes.\\
@@ -3496,33 +3556,35 @@ role, and scopes.\\
 
 \textbf{Step 13: Register the authenticated Gateway client}\\
 The Gateway constructs the authenticated \texttt{GatewayWsClient},
-records whether the connection used device-token authentication,
+records whether the connection used device-token authentication; R1 does not use it,
 registers it with \texttt{setClient(...)}, and marks the handshake
 as connected.\\
 \textit{Source: message-handler.ts:2056--2065}\\[1mm]
 
-Cake2:\\
-\texttt{isDeviceTokenAuth = True}\\[3mm]
+R1:\\
+\texttt{isDeviceTokenAuth = False}\\
+\texttt{SOURCE-DERIVED from shared-token path /}\\
+\texttt{not-reached device-token fallback}\\[3mm]
 
 \textbf{Step 14: Build and send the authenticated hello response}\\
 The \texttt{hello-ok} payload includes the finalized role,
-authenticated scopes, server capabilities, and device-token information
+authenticated scopes and server capabilities; device-token information is not applicable to R1
 when applicable. The response is sent and the handshake advances to
 the ready state.\\
 \textit{Source: message-handler.ts:2169--2204, 2237--2273}\\[1mm]
 
-Cake2 runtime:\\
+R1 runtime:\\
 \texttt{event = "connection\_identity\_finalized"}\\
 \texttt{result = "pass"}\\
 \texttt{authMode = "token"}\\
-\texttt{authMethod = "device-token"}\\
+\texttt{authMethod = "token"}\\
 \texttt{role = "operator"}\\
 \texttt{clientMode = "webchat"}\\
-\texttt{scopes = five authenticated operator scopes}\\[3mm]
+\texttt{scopes = [operator.write]}\\[3mm]
 
 \textbf{G2 conclusion:}\\
-\textit{The WebSocket connection carrying Cake2 is now fully}\\
-\textit{authenticated and ready. The next concrete Cake2 RPC step}\\
+\textit{The WebSocket connection carrying R1 is now fully}\\
+\textit{authenticated and ready. The next concrete R1 RPC step}\\
 \textit{is G3 method authorization for \texttt{chat.send}.}
 };
 
@@ -3567,10 +3629,11 @@ This step performs method-level authorization after the Gateway connection
 has been authenticated. It determines whether the authenticated client may
 invoke \texttt{chat.send} from its connection role and scopes. It does not
 validate the \texttt{chat.send} request body or inspect the semantic content
-of the user message. In Cake2, the authenticated client has role
-\texttt{operator} and includes the \texttt{operator.admin} scope, so the
-administrator shortcut returns success before the normal
-\texttt{operator.write} required-scope check is reached.
+of the user message. In R1, the authenticated client has role
+\texttt{operator} and includes the \texttt{operator.write} scope. The
+administrator shortcut is not taken because \texttt{operator.admin} is
+absent, so the ordinary \texttt{operator.write} required-scope check is
+reached.
 
 \vspace{2mm}
 
@@ -3642,7 +3705,7 @@ if auth\_error is not None:
 
 \hspace*{1.4em}return
 &
-\path{src/gateway/server-methods.ts:737}
+\path{src/gateway/server-methods.ts:735--738}
 \\[2mm]
 
 % ==============================================================
@@ -3924,10 +3987,10 @@ SOURCE SHAPE:
 \\[3mm]
 
 % ==============================================================
-% Cake2 concrete execution
+% R1 concrete execution
 % ==============================================================
 
-{\normalfont\bfseries Cake2 concrete execution}
+{\normalfont\bfseries R1 concrete execution}
 &
 {\normalfont\bfseries\color{black} Observed / derived state}
 \\[2mm]
@@ -3956,14 +4019,6 @@ RUNTIME: G3 input
 
 scopes = [
 \newline
-\hspace*{1.4em}"operator.admin",
-\newline
-\hspace*{1.4em}"operator.approvals",
-\newline
-\hspace*{1.4em}"operator.pairing",
-\newline
-\hspace*{1.4em}"operator.read",
-\newline
 \hspace*{1.4em}"operator.write"
 \newline
 ]
@@ -3984,38 +4039,37 @@ DERIVED:
 role != "node"
 \\[2mm]
 
-admin\_scope\_present = True
+admin\_scope\_present = False
 &
 DERIVED:
-"operator.admin" is present
+"operator.admin" is not present
 in the observed scopes
 \\[2mm]
 
-admin\_shortcut\_taken = True
+admin\_shortcut\_taken = False
 &
 DERIVED:
-lines 288--290 execute
+condition at lines 288--290 is false
 \\[2mm]
 
-operator\_write\_check\_reached = False
+operator\_write\_check\_reached = True
 &
 DERIVED:
-return at line 289 occurs
-before line 291
+execution continues past line 290
 \\[2mm]
 
-registered\_scope\_lookup\_reached = False
+registered\_scope\_lookup\_reached = True
 &
 DERIVED:
 method\_registry.getScope(method)
-at line 291 is not executed
+at line 291 is reached
 \\[2mm]
 
 auth\_error = None
 &
 DERIVED:
 authorizeGatewayMethod returns null
-on the admin shortcut
+on the ordinary operator.write check
 \\[2mm]
 
 auth\_result = "allow"
@@ -4024,10 +4078,10 @@ RUNTIME:
 G3 TraceClaw event
 \\[2mm]
 
-auth\_reason = "admin\_scope"
+auth\_reason = NOT RECORDED
 &
-RUNTIME:
-G3 TraceClaw event
+NOT RECORDED:
+R1 G3 runtime event has result only
 \\[2mm]
 
 \bottomrule
@@ -4039,15 +4093,15 @@ G3 TraceClaw event
 % G3
 % ==============================================================
 
-\subsection*{G3: Method Authorization}
+\subsection*{G3: Method Authorization Flow Diagram}
 
 \textbf{Purpose:}
 This step performs method-level authorization for the authenticated
 Gateway client. It checks whether the current operator is allowed to
-invoke \texttt{chat.send}. In Cake2, the authenticated connection
-contains \texttt{operator.admin}, so the administrator shortcut is
-taken and the normal \texttt{operator.write} scope-checking branch is
-not reached.
+invoke \texttt{chat.send}. In R1, the authenticated connection
+contains \texttt{operator.write}; the administrator shortcut is not
+taken, so the normal \texttt{operator.write} scope-checking branch is
+reached.
 
 \begin{center}
 
@@ -4138,8 +4192,10 @@ Executed helper functions:\\[1mm]
 $\downarrow$\\
 \texttt{isRoleAuthorizedForMethod(...)}\\[3mm]
 
-Then inline authorization branch:\\
-\texttt{scopes.includes(ADMIN\_SCOPE)}\\
+Then inline authorization branches:\\
+\texttt{admin shortcut check}\\
+$\downarrow$\\
+\texttt{required-scope check}\\
 $\downarrow$\\
 \texttt{return null}
 };
@@ -4155,13 +4211,7 @@ $\downarrow$\\
 
 \texttt{client:}\\
 \quad\texttt{role = "operator"}\\
-\quad\texttt{scopes = [}\\
-\qquad\texttt{"operator.admin",}\\
-\qquad\texttt{"operator.approvals",}\\
-\qquad\texttt{"operator.pairing",}\\
-\qquad\texttt{"operator.read",}\\
-\qquad\texttt{"operator.write"}\\
-\quad\texttt{]}\\[2mm]
+\quad\texttt{scopes = ["operator.write"]}\\[2mm]
 
 \texttt{params = chat.send params}\\[1mm]
 
@@ -4180,16 +4230,16 @@ $\downarrow$\\
 \texttt{auth\_result = "allow"}\\[1mm]
 
 \texttt{auth\_reason =}\\
-\quad\texttt{"admin\_scope"}\\[1mm]
+\quad\texttt{NOT RECORDED}\\[1mm]
 
 \texttt{admin\_scope\_present}\\
-\quad\texttt{= True}\\[1mm]
+\quad\texttt{= False}\\[1mm]
 
 \texttt{admin\_shortcut\_taken}\\
-\quad\texttt{= True}\\[1mm]
+\quad\texttt{= False}\\[1mm]
 
 \texttt{operator\_write\_check}\\
-\quad\texttt{\_reached = False}
+\quad\texttt{\_reached = True}
 };
 
 % ==============================================================
@@ -4204,7 +4254,7 @@ $\downarrow$\\
 \quad\texttt{return None}\\
 \textit{Source: lines 270--272}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{client.connect exists -> continue}\\[3mm]
 
 \textbf{Step 2: Check health-method shortcut}\\
@@ -4212,7 +4262,7 @@ Cake2:\\
 \quad\texttt{return None}\\
 \textit{Source: lines 273--275}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{method = "chat.send" -> continue}\\[3mm]
 
 \textbf{Step 3: Resolve role}\\
@@ -4221,7 +4271,7 @@ Cake2:\\
 \texttt{if role is invalid: reject request}\\
 \textit{Source: lines 276--280}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{role = "operator"}\\[3mm]
 
 \textbf{Step 4: Check role authorization}\\
@@ -4230,7 +4280,7 @@ Cake2:\\
 \quad\texttt{reject request}\\
 \textit{Source: lines 281--284}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{operator is authorized for chat.send -> continue}\\[3mm]
 
 \textbf{Step 5: Check node shortcut}\\
@@ -4238,7 +4288,7 @@ Cake2:\\
 \quad\texttt{return None}\\
 \textit{Source: lines 285--287}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{role != "node" -> continue}\\[3mm]
 
 \textbf{Step 6: Check admin shortcut}\\
@@ -4246,11 +4296,10 @@ Cake2:\\
 \quad\texttt{return None}\\
 \textit{Source: lines 288--290}\\[1mm]
 
-Cake2:\\
-\texttt{"operator.admin" is present}\\
-\texttt{-> admin shortcut taken}\\
-\texttt{-> auth\_error = None}\\
-\texttt{-> authorization succeeds}\\[3mm]
+R1:\\
+\texttt{"operator.admin" is not present}\\
+\texttt{-> admin shortcut not taken}\\
+\texttt{-> continue to required-scope check}\\[3mm]
 
 \textbf{Step 7: Perform required-scope authorization}\\
 \texttt{registered\_scope = methodRegistry.getScope(method)}\\
@@ -4263,7 +4312,7 @@ Cake2:\\
 For \texttt{chat.send}:\\
 \texttt{registered\_scope = "operator.write"}\\[1mm]
 
-\textbf{Cake2: Step 7 is not reached because Step 6 returns early.}
+\textbf{R1: Step 7 is reached because the admin shortcut is not taken.}
 };
 
 % ==============================================================
@@ -4470,27 +4519,27 @@ provenance or routing fields when the caller lacks administrator scope.
 
 \hline
 
-\py{Cake2: schema_valid = True}
+\py{R1: schema_valid = True}
 &
 \src{DERIVED from successful validation path}
 \\
 
-\py{Cake2: has_privileged_fields = False}
+\py{R1: has_privileged_fields = False}
 &
 \src{RUNTIME: G4 TraceClaw event}
 \\
 
-\py{Cake2: has_explicit_origin = False}
+\py{R1: has_explicit_origin = False}
 &
 \src{RUNTIME: G4 TraceClaw event}
 \\
 
-\py{Cake2: suppress_command = False}
+\py{R1: suppress_command = False}
 &
 \src{DERIVED: chat.ts:3740}
 \\
 
-\py{Cake2: result = "pass"}
+\py{R1: result = "pass"}
 &
 \src{RUNTIME: G4 TraceClaw event}
 \\
@@ -4499,17 +4548,16 @@ provenance or routing fields when the caller lacks administrator scope.
 
 \textit{Strict note:}
 \texttt{sessionId} is optional in the RPC schema and is conditionally
-included by the Control UI. The Cake2 Session identity
-\texttt{af48dd1c-2e18-4d4d-9b08-432df4352674} is known from the runtime
-SessionEntry, but the historical raw WebSocket frame was not archived.
-Therefore this table does not claim that the field was unconditionally
-present in the original G4 RPC payload.
+included by the Control UI. The R1 G4 RPC payload does not archive a
+Gateway Session identifier, and this appendix does not fill it from a
+different layer. Therefore this table does not claim that the field was
+unconditionally present in the original G4 RPC payload.
 
 % ==============================================================
 % G4
 % ==============================================================
 
-\subsection*{G4: \texttt{chat.send} Request Validation}
+\subsection*{G4: \texttt{chat.send} Request Validation Flow Diagram}
 
 \textbf{Purpose:}
 This step validates the incoming \texttt{chat.send} RPC envelope before
@@ -4517,7 +4565,7 @@ its contents are processed further. It validates the request against
 \texttt{ChatSendParamsSchema}, resolves Control UI reconnect-resume
 metadata, normalizes any explicitly supplied originating route, and
 rejects protected provenance or routing fields when the caller lacks
-administrator scope. For Cake2, the request conforms to the schema,
+administrator scope. For R1, the request conforms to the schema,
 contains no privileged metadata or explicit origin, and therefore
 passes G4 without rejection.
 
@@ -4603,7 +4651,7 @@ $\downarrow$\\[1mm]
 
 \texttt{normalizeExplicitChatSendOrigin(\{...\})}\\[3mm]
 
-Cake2:\\
+R1:\\
 \texttt{hasGatewayAdminScope(...)}\\
 \textit{not called due to short-circuit}
 };
@@ -4645,15 +4693,14 @@ Control UI request construction:\\
 
 \quad\texttt{sessionKey =}\\
 \quad\texttt{"agent:main:dashboard:}\\
-\quad\texttt{f73617ed-3b69-4864-}\\
-\quad\texttt{bb5d-d5ff8d1c39c4"}\\[1mm]
+\quad\texttt{trace-82fbff4483c4}\\
+\quad\texttt{"}\\[1mm]
 
 \quad\texttt{message =}\\
 \quad\texttt{"How to make a cake?"}\\[1mm]
 
 \quad\texttt{idempotencyKey =}\\
-\quad\texttt{"808b4380-f27b-4c2e-}\\
-\quad\texttt{9421-74e043c3badd"}\\[1mm]
+\quad\texttt{"ANON-R1-RUN-ID"}\\[1mm]
 
 \quad\texttt{deliver = false}\\
 \quad\texttt{attachments = []}\\
@@ -4742,7 +4789,7 @@ Control UI request construction:\\
 \quad\quad\texttt{reject request}\\
 \textit{Source: chat.ts:3751--3769}\\[3mm]
 
-\textbf{Cake2: all validation gates pass.}
+\textbf{R1: all validation gates pass.}
 };
 
 % ==============================================================
@@ -4781,11 +4828,10 @@ Control UI request construction:\\
 
 \textit{Strict note:}
 \texttt{sessionId} is optional in \texttt{ChatSendParamsSchema} and is
-conditionally included by the Control UI. The Cake2 persistent Session
-identity is known from the later \texttt{SessionEntry}, but the original
-historical WebSocket frame was not archived. Therefore, G4 does not
-claim that \texttt{sessionId} was definitely present in the concrete
-Cake2 request payload.
+conditionally included by the Control UI. The R1 G4 payload does not
+record a Gateway \texttt{sessionId}, and the later AR-layer Session ID
+must not be used to fill that Gateway-stage field. Therefore, G4 marks
+\texttt{sessionId} as \texttt{NOT RECORDED}.
 
 % ==============================================================
 % G5
@@ -4915,42 +4961,42 @@ routing stages.
 
 \hline
 
-\py{Cake2: inbound_message = "How to make a cake?"}
+\py{R1: inbound_message = "How to make a cake?"}
 &
 \src{RUNTIME + chat.ts:3784}
 \\
 
-\py{Cake2: message_length = 19}
+\py{R1: message_length = 19}
 &
 \src{RUNTIME: G5 TraceClaw event}
 \\
 
-\py{Cake2: message_changed_by_sanitization = False}
+\py{R1: message_changed_by_sanitization = False}
 &
 \src{RUNTIME: G5 TraceClaw event}
 \\
 
-\py{Cake2: stop_command = False}
+\py{R1: stop_command = False}
 &
 \src{DERIVED: chat.ts:3787}
 \\
 
-\py{Cake2: turn_kind = "main"}
+\py{R1: turn_kind = "main"}
 &
 \src{DERIVED: chat.ts:3788--3789}
 \\
 
-\py{Cake2: attachments = []}
+\py{R1: attachments = []}
 &
 \src{DERIVED: chat.ts:3790}
 \\
 
-\py{Cake2: raw_session_key = SESSION_KEY}
+\py{R1: raw_session_key = SESSION_KEY}
 &
 \src{chat.ts:3800}
 \\
 
-\py{Cake2: client_run_id = RUN_ID}
+\py{R1: client_run_id = RUN_ID}
 &
 \src{chat.ts:3802}
 \\
@@ -4961,7 +5007,7 @@ routing stages.
 % G5
 % ==============================================================
 
-\subsection*{G5: Message Sanitization and Classification}
+\subsection*{G5: Message Sanitization and Classification Flow Diagram}
 
 \textbf{Purpose:}
 This step converts the validated \texttt{chat.send} request into the
@@ -4970,7 +5016,7 @@ It sanitizes the message text, validates optional system provenance
 metadata, detects control requests such as \texttt{/stop} and
 \texttt{/btw}, normalizes attachments, rejects an empty message with no
 attachments, and extracts the existing Session key, optional Agent
-override, and per-request run identifier. For Cake2, the message
+override, and per-request run identifier. For R1, the message
 \texttt{"How to make a cake?"} is unchanged by sanitization, is classified
 as a normal \texttt{main} turn, contains no attachments, and proceeds
 with the existing Session key and run ID.
@@ -5123,14 +5169,13 @@ Message sanitizer implementation:\\
 
 \texttt{p.sessionKey =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[1mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[1mm]
 
 \texttt{p.agentId = undefined}\\[1mm]
 
 \texttt{p.idempotencyKey =}\\
-\texttt{"808b4380-f27b-4c2e-}\\
-\texttt{9421-74e043c3badd"}\\[2mm]
+\texttt{"ANON-R1-RUN-ID"}\\[2mm]
 
 \texttt{suppress\_command = False}\\
 \textit{from G4}
@@ -5167,7 +5212,7 @@ Message sanitizer implementation:\\
 \texttt{agent\_id\_override = None}\\[1mm]
 
 \texttt{client\_run\_id =}\\
-\texttt{808b4380-...}\\[1mm]
+\texttt{ANON-R1-RUN-ID}\\[1mm]
 
 \texttt{pending\_chat\_send\_key =}\\
 \texttt{dedupe key for run ID}\\[1mm]
@@ -5188,7 +5233,7 @@ Message sanitizer implementation:\\
 \textit{Source: chat.ts:3770--3778}\\
 \textit{Helper: chat-input-sanitize.ts:16--24}\\[1mm]
 
-Cake2:
+R1:
 \texttt{message remains "How to make a cake?"}\\[3mm]
 
 \textbf{Step 2: Validate optional system receipt}\\
@@ -5213,7 +5258,7 @@ Cake2:
 \quad\texttt{else "main"}\\
 \textit{Source: chat.ts:3787--3789}\\[1mm]
 
-Cake2:
+R1:
 \texttt{stop\_command = False, turn\_kind = "main"}\\[3mm]
 
 \textbf{Step 5: Normalize attachments}\\
@@ -5221,7 +5266,7 @@ Cake2:
 \quad\texttt{normalizeRpcAttachmentsToChatAttachments(p.attachments)}\\
 \textit{Source: chat.ts:3790}\\[1mm]
 
-Cake2:
+R1:
 \texttt{normalized\_attachments = []}\\[3mm]
 
 \textbf{Step 6: Reject empty request}\\
@@ -5230,7 +5275,7 @@ Cake2:
 \quad\texttt{reject "message or attachment required"}\\
 \textit{Source: chat.ts:3791--3799}\\[1mm]
 
-Cake2:
+R1:
 \texttt{raw\_message is non-empty -> pass}\\[3mm]
 
 \textbf{Step 7: Extract routing and run identifiers}\\
@@ -5290,7 +5335,7 @@ This step determines whether the current request itself explicitly
 selects an Agent. An explicit \texttt{agentId} takes precedence. If no
 explicit Agent is supplied, the session key is parsed, but the parsed
 Agent is returned at this stage only when the session resolves to the
-special \texttt{global} store. For Cake2, the Dashboard session is not
+special \texttt{global} store. For R1, the Dashboard session is not
 a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \begin{longtable}{
@@ -5338,7 +5383,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \py{        return None}
 &
-\src{src/gateway/server-methods/chat.ts:735}
+\src{src/gateway/server-methods/chat.ts:734--736}
 \\
 
 \py{    parsed = parseAgentSessionKey(params.requestedSessionKey.strip())}
@@ -5353,7 +5398,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \py{        return None}
 &
-\src{src/gateway/server-methods/chat.ts:742}
+\src{src/gateway/server-methods/chat.ts:738--742}
 \\
 
 \py{    store_key = resolveSessionStoreKey(cfg=params.cfg,}
@@ -5373,7 +5418,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \py{        return None}
 &
-\src{src/gateway/server-methods/chat.ts:742}
+\src{src/gateway/server-methods/chat.ts:738--742}
 \\
 
 \py{    return normalizeAgentId(parsed.agentId)}
@@ -5393,32 +5438,32 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 
 \hline
 
-\py{Cake2: explicit_agent_id = None}
+\py{R1: explicit_agent_id = None}
 &
 \src{DERIVED: chat.ts:730--733}
 \\
 
-\py{Cake2: parsed.agentId = "main"}
+\py{R1: parsed.agentId = "main"}
 &
 \src{DERIVED from parser call at chat.ts:737}
 \\
 
-\py{Cake2: parsed.rest = "dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4"}
+\py{R1: parsed.rest = "dashboard:trace-82fbff4483c4"}
 &
 \src{DERIVED from parser call at chat.ts:737}
 \\
 
-\py{Cake2: store_key != "global"}
+\py{R1: store_key != "global"}
 &
 \src{DERIVED: chat.ts:738--742}
 \\
 
-\py{Cake2: requested_agent_id = None}
+\py{R1: requested_agent_id = None}
 &
-\src{chat.ts:742}
+\src{chat.ts:738--742}
 \\
 
-\py{Cake2: session_load_options = None}
+\py{R1: session_load_options = None}
 &
 \src{chat.ts:3809}
 \\
@@ -5429,7 +5474,7 @@ a global-store request, so \texttt{requestedAgentId} remains undefined.
 % G6
 % ==============================================================
 
-\subsection*{G6: Requested Agent Resolution}
+\subsection*{G6: Requested Agent Resolution Flow Diagram}
 
 \textbf{Purpose:}
 This step determines whether the current request explicitly selects an
@@ -5437,7 +5482,7 @@ Agent for the subsequent Session lookup. An explicit \texttt{agentId}
 takes precedence. If no explicit Agent is supplied, the Session key is
 parsed and its embedded Agent identifier is considered only when the
 request resolves to the special \texttt{global} Session store. For
-Cake2, no explicit Agent override is supplied. Although the Dashboard
+R1, no explicit Agent override is supplied. Although the Dashboard
 Session key contains the Agent identifier \texttt{main}, it does not
 resolve to the \texttt{global} store at this stage. Therefore,
 \texttt{requestedAgentId} remains undefined and no Agent-specific
@@ -5539,7 +5584,7 @@ $\downarrow$\\[1mm]
 
 \texttt{return undefined}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{normalizeAgentId(...)}\\
 \textit{not called on the executed path}
 };
@@ -5572,8 +5617,8 @@ From G5:\\[1mm]
 
 \texttt{raw\_session\_key =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{agent\_id\_override}\\
 \quad\texttt{= None}\\[2mm]
@@ -5583,7 +5628,7 @@ From runtime context:\\[1mm]
 \texttt{runtime\_config =}\\
 \texttt{context.getRuntimeConfig()}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{runtime\_config is available}
 };
 
@@ -5620,7 +5665,7 @@ Meaning:\\
 \quad\texttt{normalizeOptionalText(params.agentId)}\\
 \textit{Source: chat.ts:730}\\[1mm]
 
-Cake2:
+R1:
 \texttt{explicit\_agent\_id = None}\\[3mm]
 
 \textbf{Step 2: Prefer explicit Agent when present}\\
@@ -5628,7 +5673,7 @@ Cake2:
 \quad\texttt{return normalizeAgentId(explicit\_agent\_id)}\\
 \textit{Source: chat.ts:731--733}\\[1mm]
 
-Cake2:
+R1:
 \texttt{branch not taken}\\[3mm]
 
 \textbf{Step 3: Require runtime configuration}\\
@@ -5636,7 +5681,7 @@ Cake2:
 \quad\texttt{return None}\\
 \textit{Source: chat.ts:734--736}\\[1mm]
 
-Cake2:
+R1:
 \texttt{cfg is available -> continue}\\[3mm]
 
 \textbf{Step 4: Parse Agent-qualified Session key}\\
@@ -5644,9 +5689,9 @@ Cake2:
 \quad\texttt{params.requestedSessionKey.strip())}\\
 \textit{Source: chat.ts:737}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{parsed.agentId = "main"}\\
-\texttt{parsed.rest = "dashboard:f73617ed-..."}\\[3mm]
+\texttt{parsed.rest = "dashboard:trace-82fbff4483c4-..."}\\[3mm]
 
 \textbf{Step 5: Resolve Session-store key}\\
 \texttt{store\_key = resolveSessionStoreKey(}\\
@@ -5654,7 +5699,7 @@ Cake2:\\
 \quad\texttt{sessionKey=params.requestedSessionKey)}\\
 \textit{Source: chat.ts:738--741}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{store\_key != "global"}\\[3mm]
 
 \textbf{Step 6: Require the special global store}\\
@@ -5664,7 +5709,7 @@ Cake2:\\
 \quad\quad\texttt{return None}\\
 \textit{Source: chat.ts:738--742}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{store\_key != "global" -> return None}\\
 \texttt{requested\_agent\_id = None}\\[3mm]
 
@@ -5672,7 +5717,7 @@ Cake2:\\
 \texttt{return normalizeAgentId(parsed.agentId)}\\
 \textit{Source: chat.ts:744}\\[1mm]
 
-\textbf{Cake2: Step 7 is not reached.}\\[3mm]
+\textbf{R1: Step 7 is not reached.}\\[3mm]
 
 \textbf{Step 8: Build Session-load options}\\
 \texttt{session\_load\_options =}\\
@@ -5680,7 +5725,7 @@ Cake2:\\
 \quad\texttt{if requested\_agent\_id else None}\\
 \textit{Source: chat.ts:3809}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{requested\_agent\_id = None}\\
 \texttt{session\_load\_options = None}
 };
@@ -5726,12 +5771,13 @@ Cake2:\\
 \subsection*{G7: Session Resolution and Store Lookup}
 
 \textbf{Purpose:}
-This step resolves the persistent \texttt{SessionEntry} associated with
-the supplied session key. The Gateway measures the session-resolution
-operation, invokes \texttt{loadSessionEntry()}, resolves the appropriate
-session store, searches the candidate store keys for the freshest
-matching entry, and returns the canonical key and persistent session
-record.
+This step resolves the supplied session key. The Gateway measures the
+session-resolution operation, invokes \texttt{loadSessionEntry()},
+resolves the appropriate session store, searches the candidate store keys,
+and returns the canonical key plus any loaded session record. R1 directly
+records the canonical Session key and the G7 \texttt{resolved} outcome.
+It does not directly record the store path, the loaded \texttt{entry}
+object, or \texttt{entry.sessionId}.
 
 \begin{longtable}{
     @{}
@@ -5746,12 +5792,12 @@ record.
 \\
 \hline
 
-\py{session_load_started_at_ms = performance.now()}
+\pyt{session\_load\_started\_at\_ms = performance.now()}
 &
 \src{src/gateway/server-methods/chat.ts:3810}
 \\
 
-\py{session_load_result = measureDiagnosticsTimelineSpanSync(}
+\pyt{session\_load\_result = measureDiagnosticsTimelineSpanSync(}
 &
 \src{src/gateway/server-methods/chat.ts:3811--3822}
 \\
@@ -5773,7 +5819,7 @@ record.
 
 \py{)}
 &
-\src{src/gateway/server-methods/chat.ts:3822}
+\src{src/gateway/server-methods/chat.ts:3811--3822}
 \\
 
 \py{session_load_ms = roundedChatSendTimingMs(}
@@ -5786,27 +5832,27 @@ record.
 \src{src/gateway/server-methods/chat.ts:3823}
 \\
 
-\py{cfg = session_load_result.cfg}
+\pyt{cfg = session\_load\_result.cfg}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{store_path = session_load_result.storePath}
+\pyt{store\_path = session\_load\_result.storePath}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{entry = session_load_result.entry}
+\pyt{entry = session\_load\_result.entry}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{session_key = session_load_result.canonicalKey}
+\pyt{session\_key = session\_load\_result.canonicalKey}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
 
-\py{legacy_key = session_load_result.legacyKey}
+\pyt{legacy\_key = session\_load\_result.legacyKey}
 &
 \src{src/gateway/server-methods/chat.ts:3824}
 \\
@@ -5875,7 +5921,7 @@ record.
 
 \py{        cfg=cfg,}
 &
-\src{src/gateway/session-utils.ts:1061}
+\src{src/gateway/session-utils.ts:1060--1068}
 \\
 
 \py{        storePath=store_path,}
@@ -5910,39 +5956,39 @@ record.
 
 \hline
 
-\py{Cake2: canonical_session_key = SESSION_KEY}
+\py{R1: canonical_session_key = SESSION_KEY}
 &
 \src{RUNTIME; session-utils.ts:1065}
 \\
 
-\py{Cake2: store_agent_id = "main"}
+\py{R1: store_agent_id = "main"}
 &
 \src{DERIVED: session-utils.ts:1542--1592}
 \\
 
-\py{Cake2: store_path = "/Users/mac/.openclaw/agents/main/sessions/sessions.json"}
+\py{R1: store_path = NOT RECORDED}
 &
-\src{RUNTIME; session-utils.ts:1056,1062}
+\src{NOT RECORDED in R1 trace; source computes target.storePath}
 \\
 
-\py{Cake2: store_keys = [SESSION_KEY]}
+\py{R1: store_keys = [SESSION_KEY]}
 &
 \src{RUNTIME; session-utils.ts:1066}
 \\
 
-\py{Cake2: entry_exists = True}
+\py{R1: entry_exists = NOT RECORDED}
 &
-\src{RUNTIME; session-utils.ts:1064}
+\src{NOT RECORDED; usable session state is source-derived from continued control flow}
 \\
 
-\py{Cake2: session_id = entry.sessionId}
+\py{R1: session_id = entry.sessionId}
 &
-\src{entry returned at session-utils.ts:1064}
+\src{SOURCE-DERIVED read site; concrete value not emitted}
 \\
 
-\py{Cake2: session_id = "af48dd1c-2e18-4d4d-9b08-432df4352674"}
+\py{R1: session_id = "NOT RECORDED"}
 &
-\src{RUNTIME: Cake2 SessionEntry}
+\src{NOT RECORDED in Gateway trace}
 \\
 
 \py{backing_session_id = entry.sessionId or requested_session_id}
@@ -5950,14 +5996,14 @@ record.
 \src{src/gateway/server-methods/chat.ts:3848--3849}
 \\
 
-\py{Cake2: legacy_key = None}
+\py{R1: legacy_key = None}
 &
 \src{session-utils.ts:1059,1067}
 \\
 
-\py{Cake2: session_load_ms = 4.572}
+\py{R1: session_load_ms = NOT RECORDED}
 &
-\src{RUNTIME; timing source: chat.ts:3823}
+\src{NOT RECORDED in R1 trace; timing source exists in code}
 \\
 
 \end{longtable}
@@ -5966,20 +6012,17 @@ record.
 % G7
 % ==============================================================
 
-\subsection*{G7: Session Resolution and Store Lookup}
+\subsection*{G7: Session Resolution and Store Lookup Flow Diagram}
 
 \textbf{Purpose:}
-This step resolves the persistent \texttt{SessionEntry} associated with
-the supplied Session key. The Gateway invokes \texttt{loadSessionEntry()}
-inside a diagnostics and timing wrapper. The function obtains the current
-runtime configuration, canonicalizes the supplied key, resolves the
-appropriate Agent-owned Session store, searches the candidate store keys
-for the freshest matching entry, and returns the persistent Session record
-together with the canonical and legacy key information. For Cake2, the
-Session resolves to the \texttt{main} Agent store, the canonical key is
-unchanged, the matching entry exists with Session ID
-\texttt{af48dd1c-2e18-4d4d-9b08-432df4352674}, and the measured
-Session-load duration is \texttt{4.572 ms}.
+This step resolves the supplied Session key. The Gateway invokes
+\texttt{loadSessionEntry()} inside a diagnostics and timing wrapper. The
+function obtains the current runtime configuration, canonicalizes the
+supplied key, resolves the appropriate Agent-owned Session store, and
+searches candidate store keys. For R1, the trace records that G7 resolves
+and that the canonical key remains unchanged. It does not directly record
+the store path, the loaded \texttt{entry} object, \texttt{entry.sessionId},
+or the measured Session-load duration.
 
 \begin{center}
 
@@ -6118,8 +6161,8 @@ From G6:\\[1mm]
 
 \texttt{raw\_session\_key =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[3mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[3mm]
 
 \texttt{session\_load\_options}\\
 \quad\texttt{= None}\\[3mm]
@@ -6144,23 +6187,19 @@ Passed to\\
 
 \texttt{session\_key =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{store\_path =}\\
-\texttt{/Users/mac/.openclaw/}\\
-\texttt{agents/main/sessions/}\\
-\texttt{sessions.json}\\[2mm]
+\texttt{NOT RECORDED}\\[2mm]
 
 \texttt{entry.sessionId =}\\
-\texttt{"af48dd1c-2e18-}\\
-\texttt{4d4d-9b08-}\\
-\texttt{432df4352674"}\\[2mm]
+\texttt{"NOT RECORDED"}\\[2mm]
 
 \texttt{legacy\_key = None}\\[2mm]
 
 \texttt{session\_load\_ms}\\
-\quad\texttt{= 4.572}
+\quad\texttt{= NOT RECORDED}
 };
 
 % ==============================================================
@@ -6191,8 +6230,8 @@ Passed to\\
 \texttt{key = normalizeOptionalString(sessionKey) or ""}\\
 \textit{Source: session-utils.ts:1049}\\[1mm]
 
-Cake2:\\
-\texttt{key = "agent:main:dashboard:f73617ed-..."}\\[3mm]
+R1:\\
+\texttt{key = "agent:main:dashboard:trace-82fbff4483c4-..."}\\[3mm]
 
 \textbf{Step 5: Resolve Agent-owned Session store}\\
 \texttt{target =}\\
@@ -6202,7 +6241,7 @@ Cake2:\\
 \quad\quad\texttt{opts=opts)}\\
 \textit{Source: session-utils.ts:1050--1055}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{storeAgentId = "main"}\\
 \texttt{canonicalKey = raw\_session\_key}\\
 \texttt{storeKeys = [raw\_session\_key]}\\[3mm]
@@ -6212,10 +6251,9 @@ Cake2:\\
 \texttt{store = target.store}\\
 \textit{Source: session-utils.ts:1056--1057}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{store\_path =}\\
-\texttt{"/Users/mac/.openclaw/agents/main/sessions/}\\
-\texttt{sessions.json"}\\[3mm]
+\texttt{"NOT RECORDED"}\\[3mm]
 
 \textbf{Step 7: Find freshest matching SessionEntry}\\
 \texttt{freshest\_match =}\\
@@ -6224,10 +6262,12 @@ Cake2:\\
 \textit{Source: session-utils.ts:1058}\\
 \textit{Helper: session-utils.ts:1071--1086}\\[1mm]
 
-Cake2:\\
-\texttt{entryExists = True}\\
+R1:\\
+\texttt{entryExists = NOT RECORDED}\\
 \texttt{entry.sessionId =}\\
-\texttt{"af48dd1c-2e18-4d4d-9b08-432df4352674"}\\[3mm]
+\texttt{"NOT RECORDED"}\\
+\textit{Continuation through G8/G12 is source-derived evidence that
+usable session state existed, not a direct runtime dump of the entry.}\\[3mm]
 
 \textbf{Step 8: Determine legacy Session key}\\
 \texttt{legacy\_key = freshest\_match.key}\\
@@ -6235,7 +6275,7 @@ Cake2:\\
 \quad\texttt{else None}\\
 \textit{Source: session-utils.ts:1059}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{legacy\_key = None}\\[3mm]
 
 \textbf{Step 9: Return resolved Session state}\\
@@ -6248,8 +6288,8 @@ Cake2:\\
 \quad\texttt{performance.now() - session\_load\_started\_at\_ms)}\\
 \textit{Source: chat.ts:3823}\\[1mm]
 
-Cake2:\\
-\texttt{session\_load\_ms = 4.572}\\[3mm]
+R1:\\
+\texttt{session\_load\_ms = NOT RECORDED}\\[3mm]
 
 \textbf{Step 11: Unpack values for subsequent Gateway stages}\\
 \texttt{cfg = session\_load\_result.cfg}\\
@@ -6299,13 +6339,13 @@ Cake2:\\
 \textbf{Purpose:}
 
 This step validates whether an explicitly requested Agent is compatible
-with the current Session routing, captures the persistent backing Session
-identity, and rejects Sessions whose owning Agent has been removed from
-the current configuration. For Cake2, no explicit Agent override was
-supplied, so Agent-selection validation succeeds immediately. The
-existing \texttt{SessionEntry} supplies the backing Session identity,
-and the request continues without triggering the deleted-Agent rejection
-branch. Therefore, G8 passes and execution proceeds to G9.
+with the current Session routing, computes a backing Session identity
+when one is available, and rejects Sessions whose owning Agent has been
+removed from the current configuration. For R1, no explicit Agent
+override was supplied, so Agent-selection validation succeeds
+immediately. The trace records the G8 \texttt{pass} outcome. It does not
+directly emit the loaded \texttt{SessionEntry} or the concrete backing
+Session ID, so those fields remain \texttt{NOT RECORDED}.
 
 {
 \renewcommand{\arraystretch}{0.95}
@@ -6327,14 +6367,14 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 % G8.1 -- Explicit Agent / Session Compatibility Validation
 % ==============================================================
 
-\py{selected_agent = validateChatSelectedAgent(}
+\pyt{selected\_agent = validateChatSelectedAgent(}
 &
 \src{src/gateway/server-methods/chat.ts:3839--3847}
 \\
 
 \pyI{cfg=cfg,}
 &
-\src{src/gateway/server-methods/chat.ts:3840}
+\src{src/gateway/server-methods/chat.ts:3839--3843}
 \\
 
 \pyI{requestedSessionKey=raw_session_key,}
@@ -6352,29 +6392,29 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 \src{src/gateway/server-methods/chat.ts:3839--3843}
 \\
 
-\py{if not selected_agent.ok:}
+\pyt{if not selected\_agent.ok:}
 &
 \src{src/gateway/server-methods/chat.ts:3844--3847}
 \\
 
-\pyI{return invalid_request(selected_agent.error)}
+\pytI{return invalid\_request(selected\_agent.error)}
 &
 \src{src/gateway/server-methods/chat.ts:3845--3846}
 \\
 
 \hline
 
-\py{def validateChatSelectedAgent(params):}
+\pyt{def validateChatSelectedAgent(params):}
 &
 \src{src/gateway/server-methods/chat.ts:690--723}
 \\
 
-\pyI{agent_id = normalizeAgentId(params.agentId) if params.agentId else None}
+\pytI{agent\_id = normalizeAgentId(params.agentId) if params.agentId else None}
 &
 \src{src/gateway/server-methods/chat.ts:695}
 \\
 
-\pyI{if agent_id is None:}
+\pytI{if agent\_id is None:}
 &
 \src{src/gateway/server-methods/chat.ts:696--698}
 \\
@@ -6384,7 +6424,7 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 \src{src/gateway/server-methods/chat.ts:697}
 \\
 
-\pyI{if agent_id not in listAgentIds(params.cfg):}
+\pytI{if agent\_id not in listAgentIds(params.cfg):}
 &
 \src{src/gateway/server-methods/chat.ts:699--701}
 \\
@@ -6394,17 +6434,17 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 \src{src/gateway/server-methods/chat.ts:700}
 \\
 
-\pyI{requested_session_key = params.requestedSessionKey.strip()}
+\pytI{requested\_session\_key = params.requestedSessionKey.strip()}
 &
 \src{src/gateway/server-methods/chat.ts:702}
 \\
 
-\pyI{parsed = parseAgentSessionKey(requested_session_key)}
+\pytI{parsed = parseAgentSessionKey(requested\_session\_key)}
 &
 \src{src/gateway/server-methods/chat.ts:703}
 \\
 
-\pyI{if parsed and normalizeAgentId(parsed.agentId) != agent_id:}
+\pytI{if parsed and normalizeAgentId(parsed.agentId) != agent\_id:}
 &
 \src{src/gateway/server-methods/chat.ts:704--710}
 \\
@@ -6414,27 +6454,27 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 \src{src/gateway/server-methods/chat.ts:705--709}
 \\
 
-\pyI{if requested_session_key.lower() == "global":}
+\pytI{if requested\_session\_key.lower() == "global":}
 &
 \src{src/gateway/server-methods/chat.ts:711--713}
 \\
 
 \hspace*{2.8em}\lstinline|return {"ok": True, "agentId": agent_id}|
 &
-\src{src/gateway/server-methods/chat.ts:712}
+\src{src/gateway/server-methods/chat.ts:710--712}
 \\
 
-\pyI{if resolveSessionStoreKey(cfg=params.cfg, sessionKey=requested_session_key) == "global":}
+\pytI{if resolveSessionStoreKey(cfg=params.cfg, sessionKey=requested\_session\_key) == "global":}
 &
 \src{src/gateway/server-methods/chat.ts:714--716}
 \\
 
 \hspace*{2.8em}\lstinline|return {"ok": True, "agentId": agent_id}|
 &
-\src{src/gateway/server-methods/chat.ts:715}
+\src{src/gateway/server-methods/chat.ts:713--715}
 \\
 
-\pyI{if parsed is None or normalizeAgentId(parsed.agentId) != agent_id:}
+\pytI{if parsed is None or normalizeAgentId(parsed.agentId) != agent\_id:}
 &
 \src{src/gateway/server-methods/chat.ts:717--721}
 \\
@@ -6455,12 +6495,12 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 
 \hline
 
-\py{requested_session_id = normalizeOptionalText(p.sessionId)}
+\pyt{requested\_session\_id = normalizeOptionalText(p.sessionId)}
 &
 \src{src/gateway/server-methods/chat.ts:3848}
 \\
 
-\py{backing_session_id = entry.sessionId if entry is not None else requested_session_id}
+\pyt{backing\_session\_id = entry.sessionId if entry is not None else requested\_session\_id}
 &
 \src{src/gateway/server-methods/chat.ts:3849}
 \\
@@ -6471,7 +6511,7 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 
 \hline
 
-\py{deleted_agent_id = resolveDeletedAgentIdFromSessionKey(}
+\pyt{deleted\_agent\_id = resolveDeletedAgentIdFromSessionKey(}
 &
 \src{src/gateway/server-methods/chat.ts:3850--3852}
 \\
@@ -6481,7 +6521,7 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 \src{src/gateway/server-methods/chat.ts:3850}
 \\
 
-\pyI{session_key,}
+\pytI{session\_key,}
 &
 \src{src/gateway/server-methods/chat.ts:3850}
 \\
@@ -6491,7 +6531,7 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 \src{src/gateway/server-methods/chat.ts:3850}
 \\
 
-\pyI{acpMetadataSessionKey=(legacy_key or session_key),}
+\pytI{acpMetadataSessionKey=(legacy\_key or session\_key),}
 &
 \src{src/gateway/server-methods/chat.ts:3851}
 \\
@@ -6501,73 +6541,73 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 \src{src/gateway/server-methods/chat.ts:3850--3852}
 \\
 
-\py{if deleted_agent_id is not None:}
+\pyt{if deleted\_agent\_id is not None:}
 &
 \src{src/gateway/server-methods/chat.ts:3853--3863}
 \\
 
-\pyI{return invalid_request("Agent no longer exists in configuration")}
+\pytI{return invalid\_request("Agent no longer exists in configuration")}
 &
 \src{src/gateway/server-methods/chat.ts:3854--3861}
 \\
 
 % ==============================================================
-% Cake2 Concrete Execution
+% R1 Concrete Execution
 % ==============================================================
 
 \hline
 
-\py{Cake2: requested_agent_id = None}
+\pyt{R1: requested\_agent\_id = None}
 &
 \src{RUNTIME: output carried from G6}
 \\
 
-\py{Cake2: agent_id = None}
+\pyt{R1: agent\_id = None}
 &
 \src{DERIVED: src/gateway/server-methods/chat.ts:695}
 \\
 
-\lstinline|Cake2: selected_agent = {"ok": True}|
+\lstinline|R1: selected_agent = {"ok": True}|
 &
 \src{DERIVED: src/gateway/server-methods/chat.ts:696--698}
 \\
 
-\py{Cake2: later mismatch checks are not reached}
+\pyt{R1: later mismatch checks are not reached}
 &
 \src{DERIVED: early return at chat.ts:697}
 \\
 
-\py{Cake2: requested_session_id = unknown}
+\pyt{R1: requested\_session\_id = unknown}
 &
 \src{OBSERVABILITY GAP: original raw RPC frame not archived}
 \\
 
-\py{Cake2: entry.sessionId =}
+\pyt{R1: entry.sessionId =}
 &
-\src{RUNTIME: persistent SessionEntry obtained at G7}
+\src{NOT RECORDED in R1 Gateway trace}
 \\
 
-\pyI{"af48dd1c-2e18-4d4d-9b08-432df4352674"}
+\pytI{"NOT RECORDED"}
 &
-\src{RUNTIME: G7 SessionEntry identity}
+\src{NOT RECORDED in R1 trace}
 \\
 
-\py{Cake2: backing_session_id =}
+\pyt{R1: backing\_session\_id =}
 &
-\src{DERIVED: chat.ts:3849 + G7 entry.sessionId}
+\src{SOURCE-DERIVED read site; concrete value not emitted}
 \\
 
-\pyI{"af48dd1c-2e18-4d4d-9b08-432df4352674"}
+\pytI{"NOT RECORDED"}
 &
-\src{DERIVED: entry exists, so left side of ?? is selected}
+\src{NOT RECORDED; do not substitute AR-layer sessionId}
 \\
 
-\py{Cake2: deleted_agent_id = None}
+\pyt{R1: deleted\_agent\_id = None}
 &
 \src{DERIVED FROM SUCCESSFUL CONTROL FLOW: chat.ts:3853--3863}
 \\
 
-\py{Cake2: result = "pass"}
+\pyt{R1: result = "pass"}
 &
 \src{RUNTIME: G8 TraceClaw event}
 \\
@@ -6579,17 +6619,17 @@ branch. Therefore, G8 passes and execution proceeds to G9.
 % G8
 % ==============================================================
 
-\subsection*{G8: Agent / Session Consistency Validation}
+\subsection*{G8: Agent / Session Consistency Validation Flow Diagram}
 
 \textbf{Purpose:}
 This step validates whether an explicitly requested Agent is compatible
-with the current Session routing, captures the persistent backing Session
-identity, and rejects Sessions whose owning Agent has been removed from
-the current configuration. For Cake2, no explicit Agent override was
-supplied, so Agent-selection validation succeeds immediately. The
-existing \texttt{SessionEntry} obtained in G7 supplies the backing
-Session identity, and the request does not trigger the deleted-Agent
-rejection branch. Therefore, G8 passes and execution proceeds to G9.
+with the current Session routing, computes a backing Session identity
+when one is available, and rejects Sessions whose owning Agent has been
+removed from the current configuration. For R1, no explicit Agent
+override was supplied, so Agent-selection validation succeeds
+immediately. The concrete backing Session ID is not emitted in the
+Gateway trace. Therefore, G8 passes and execution proceeds to G9, while
+the backing-identity details remain a rationale-level gap.
 
 \begin{center}
 
@@ -6668,7 +6708,7 @@ Executed functions\\
 \texttt{\})}\\
 $\downarrow$\\[1mm]
 
-Cake2 early return:\\
+R1 early return:\\
 \texttt{return \{ok: true\}}\\[3mm]
 
 \texttt{normalizeOptionalText(}\\
@@ -6736,15 +6776,15 @@ From G7:\\[1mm]
 
 \texttt{raw\_session\_key =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{session\_key =}\\
 \texttt{canonical Session key}\\[2mm]
 
 \texttt{entry.sessionId =}\\
-\texttt{"af48dd1c-2e18-4d4d-}\\
-\texttt{9b08-432df4352674"}\\[2mm]
+\texttt{"NOT RECORDED}\\
+\texttt{"}\\[2mm]
 
 \texttt{legacy\_key = None}\\[3mm]
 
@@ -6769,9 +6809,7 @@ From validated request:\\[1mm]
 \quad\texttt{= undefined}\\[3mm]
 
 \texttt{backing\_session\_id =}\\
-\texttt{"af48dd1c-2e18-}\\
-\texttt{4d4d-9b08-}\\
-\texttt{432df4352674"}\\[3mm]
+\texttt{"NOT RECORDED"}\\[3mm]
 
 \texttt{consistency\_check}\\
 \quad\texttt{= pass}
@@ -6796,7 +6834,7 @@ From validated request:\\[1mm]
 \quad\texttt{return invalid request}\\
 \textit{Source: chat.ts:3844--3847}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{selected\_agent.ok = True}\\[3mm]
 
 \textbf{Step 3: Normalize explicit Agent identifier}\\
@@ -6805,7 +6843,7 @@ Inside \texttt{validateChatSelectedAgent(...)}:\\
 \quad\texttt{if params.agentId else None}\\
 \textit{Source: chat.ts:695}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{agent\_id = None}\\[3mm]
 
 \textbf{Step 4: Take no-Agent early-success branch}\\
@@ -6813,7 +6851,7 @@ Cake2:\\
 \quad\texttt{return \{ok: true\}}\\
 \textit{Source: chat.ts:696--698}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{branch taken -> selected\_agent = \{ok: true\}}\\[1mm]
 
 The later explicit Agent/session-key mismatch checks at\\
@@ -6824,7 +6862,7 @@ The later explicit Agent/session-key mismatch checks at\\
 \quad\texttt{normalizeOptionalText(p.sessionId)}\\
 \textit{Source: chat.ts:3848}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{requested\_session\_id = unknown}\\
 \textit{The original raw RPC frame was not archived.}\\[3mm]
 
@@ -6834,10 +6872,10 @@ Cake2:\\
 \quad\texttt{else requested\_session\_id}\\
 \textit{Source: chat.ts:3849}\\[1mm]
 
-Cake2:\\
-\texttt{entry exists -> entry.sessionId is selected}\\
+R1:\\
+\texttt{selected side = NOT RECORDED}\\
 \texttt{backing\_session\_id =}\\
-\texttt{"af48dd1c-2e18-4d4d-9b08-432df4352674"}\\[3mm]
+\texttt{"NOT RECORDED"}\\[3mm]
 
 \textbf{Step 7: Check whether the owning Agent was deleted}\\
 \texttt{deleted\_agent\_id =}\\
@@ -6852,7 +6890,7 @@ Cake2:\\
 \quad\texttt{return invalid request}\\
 \textit{Source: chat.ts:3853--3863}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{deleted\_agent\_id = None}\\
 \texttt{consistency\_check = pass}\\[1mm]
 
@@ -6895,15 +6933,14 @@ Cake2:\\
 \end{center}
 
 \textit{Strict note:}
-The exact historical Cake2 value of \texttt{p.sessionId} is not
+The exact historical R1 value of \texttt{p.sessionId} is not
 independently observable because the original raw RPC frame was not
-archived. However, G7 established an existing \texttt{SessionEntry}
-with Session ID
-\texttt{af48dd1c-2e18-4d4d-9b08-432df4352674}. Since the source at
-\texttt{chat.ts:3849} selects \texttt{entry.sessionId} before the
-optional requested Session ID, the Cake2
-\texttt{backingSessionId} is deterministically derived as that same
-persistent Session ID.
+archived. G7 also does not emit the loaded \texttt{entry} object or
+\texttt{entry.sessionId}. The source at \texttt{chat.ts:3849} shows where
+a backing identity would be selected, but R1 does not record which
+operand supplied it. The R1 \texttt{backingSessionId} is therefore
+\texttt{NOT RECORDED}; the AR-layer Session ID must not be used to fill
+this Gateway field.
 
 % ==============================================================
 % G9
@@ -6918,7 +6955,7 @@ The Gateway invokes \texttt{resolveSessionAgentId()} with the canonical
 Session key, current runtime configuration, and any Agent identifier
 validated by G8. The underlying resolver applies the precedence
 explicit Agent $\rightarrow$ Session-key Agent $\rightarrow$ fallback
-Agent $\rightarrow$ default Agent. For Cake2, no explicit Agent survives
+Agent $\rightarrow$ default Agent. For R1, no explicit Agent survives
 G8, while the canonical Session key encodes \texttt{main}. Therefore,
 the Session-key Agent branch determines the effective Agent as
 \texttt{main}. The semantic content of
@@ -7088,62 +7125,62 @@ the Session-key Agent branch determines the effective Agent as
 \\
 
 % ==============================================================
-% Cake2 Concrete Execution
+% R1 Concrete Execution
 % ==============================================================
 
 \hline
 
-\py{Cake2: session_key =}
+\py{R1: session_key =}
 &
 \src{RUNTIME: canonical Session key carried from G7}
 \\
 
-\pyI{"agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4"}
+\pyI{"agent:main:dashboard:trace-82fbff4483c4"}
 &
 \src{RUNTIME: G7 canonical Session key}
 \\
 
-\py{Cake2: selected_agent.agentId = None}
+\py{R1: selected_agent.agentId = None}
 &
 \src{DERIVED: G8 returns \{ok: true\} without agentId}
 \\
 
-\py{Cake2: explicit_agent_id = None}
+\py{R1: explicit_agent_id = None}
 &
 \src{DERIVED: agent-scope.ts:310--311}
 \\
 
-\py{Cake2: fallback_agent_id = None}
+\py{R1: fallback_agent_id = None}
 &
 \src{DERIVED: fallbackAgentId is not supplied at chat.ts:3864--3868}
 \\
 
-\py{Cake2: parsed.agentId = "main"}
+\py{R1: parsed.agentId = "main"}
 &
 \src{DERIVED: agent-scope.ts:314--316 + canonical Session key}
 \\
 
-\py{Cake2: Session-key Agent branch is selected}
+\py{R1: Session-key Agent branch is selected}
 &
 \src{DERIVED: agent-scope.ts:317--319}
 \\
 
-\py{Cake2: fallback Agent branch is not selected}
+\py{R1: fallback Agent branch is not selected}
 &
 \src{DERIVED: agent-scope.ts:317--319}
 \\
 
-\py{Cake2: default Agent branch is not selected}
+\py{R1: default Agent branch is not selected}
 &
 \src{DERIVED: agent-scope.ts:317--319}
 \\
 
-\py{Cake2: agent_id = "main"}
+\py{R1: agent_id = "main"}
 &
 \src{RUNTIME: G9 TraceClaw event}
 \\
 
-\py{Cake2: result = "resolved"}
+\py{R1: result = "resolved"}
 &
 \src{RUNTIME: G9 TraceClaw event}
 \\
@@ -7155,7 +7192,7 @@ the Session-key Agent branch determines the effective Agent as
 % G9
 % ==============================================================
 
-\subsection*{G9: Effective Agent Resolution}
+\subsection*{G9: Effective Agent Resolution Flow Diagram}
 
 \textbf{Purpose:}
 This step resolves the effective Gateway-side Agent after the
@@ -7164,7 +7201,7 @@ calls \texttt{resolveSessionAgentId()} using the canonical Session key,
 the current runtime configuration, and the optional Agent identifier
 returned by G8. The underlying resolver applies the precedence
 explicit Agent $\rightarrow$ Session-key Agent $\rightarrow$ fallback
-Agent $\rightarrow$ default Agent. For Cake2, no explicit Agent is
+Agent $\rightarrow$ default Agent. For R1, no explicit Agent is
 supplied, while the canonical Session key encodes \texttt{main}.
 Therefore, the Session-key Agent branch is selected and the effective
 Agent is resolved as \texttt{main}.
@@ -7305,8 +7342,8 @@ From G7:\\[1mm]
 
 \texttt{session\_key =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[3mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[3mm]
 
 \texttt{cfg = runtime config}\\[3mm]
 
@@ -7352,7 +7389,7 @@ Not supplied:\\[1mm]
 \quad\texttt{resolveDefaultAgentId(params.config or \{\})}\\
 \textit{Source: agent-scope.ts:309}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{default Agent is computed but not selected}\\[3mm]
 
 \textbf{Step 2: Normalize explicit Agent override}\\
@@ -7363,7 +7400,7 @@ Cake2:\\
 \quad\texttt{if explicit\_agent\_raw else None}\\
 \textit{Source: agent-scope.ts:310--311}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{selected\_agent.agentId = undefined}\\
 \texttt{-> explicit\_agent\_id = None}\\[3mm]
 
@@ -7376,7 +7413,7 @@ Cake2:\\
 \quad\texttt{if fallback\_agent\_raw else None}\\
 \textit{Source: agent-scope.ts:312--313}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{fallbackAgentId is not supplied}\\
 \texttt{-> fallback\_agent\_id = None}\\[3mm]
 
@@ -7386,7 +7423,7 @@ Cake2:\\
 \quad\texttt{normalizeLowercaseStringOrEmpty(session\_key)}\\
 \textit{Source: agent-scope.ts:314--315}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{normalized Session key still identifies}\\
 \texttt{agent:main:dashboard:...}\\[3mm]
 
@@ -7395,7 +7432,7 @@ Cake2:\\
 \quad\texttt{normalized\_session\_key)}\\
 \textit{Source: agent-scope.ts:316}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{parsed.agentId = "main"}\\[3mm]
 
 \textbf{Step 6: Apply effective-Agent precedence}\\
@@ -7412,7 +7449,7 @@ Precedence:\\
 \quad$\rightarrow$ \texttt{fallback Agent}\\
 \quad$\rightarrow$ \texttt{default Agent}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{explicit Agent = None}\\
 \texttt{Session-key Agent = "main"}\\
 \texttt{-> Session-key Agent is selected}\\
@@ -7425,7 +7462,7 @@ Cake2:\\
 \quad\texttt{returns "main"}\\
 \textit{Source: agent-scope.ts:320, 323--330}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{agent\_id = "main"}\\
 \texttt{TraceClaw result = "resolved"}
 };
@@ -7478,7 +7515,7 @@ resolved SessionEntry, canonical Session key, and Session channel /
 chat-type metadata. The policy resolver first honors a SessionEntry
 override, then evaluates the configured Session send policy, including
 ambiguous-key protection and rule matching. A matching deny decision
-terminates the request immediately. For Cake2, the observed policy
+terminates the request immediately. For R1, the observed policy
 decision is \texttt{allow}, so the deny gate is not taken and execution
 continues toward G11. The runtime trace does not identify which internal
 allow-producing branch generated the final decision.
@@ -7510,12 +7547,12 @@ allow-producing branch generated the final decision.
 
 \pyI{cfg=cfg,}
 &
-\src{src/gateway/server-methods/chat.ts:3892}
+\src{src/gateway/server-methods/chat.ts:3891--3896}
 \\
 
 \pyI{entry=entry,}
 &
-\src{src/gateway/server-methods/chat.ts:3893}
+\src{src/gateway/server-methods/chat.ts:3891--3896}
 \\
 
 \pyI{sessionKey=session_key,}
@@ -7751,42 +7788,42 @@ allow-producing branch generated the final decision.
 \\
 
 % ==============================================================
-% Cake2 Concrete Execution
+% R1 Concrete Execution
 % ==============================================================
 
 \hline
 
-\py{Cake2: session_key =}
+\py{R1: session_key =}
 &
 \src{RUNTIME: canonical Session key carried from G7}
 \\
 
-\pyI{"agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4"}
+\pyI{"agent:main:dashboard:trace-82fbff4483c4"}
 &
 \src{RUNTIME: G7 canonical Session key}
 \\
 
-\py{Cake2: entry = resolved SessionEntry}
+\py{R1: entry = NOT RECORDED}
 &
-\src{RUNTIME: G7 persistent SessionEntry}
+\src{NOT RECORDED; continued control flow is source-derived evidence only}
 \\
 
-\py{Cake2: send_policy = "allow"}
+\py{R1: send_policy = "allow"}
 &
 \src{RUNTIME: G10 TraceClaw event}
 \\
 
-\py{Cake2: deny_gate_taken = False}
+\py{R1: deny_gate_taken = False}
 &
 \src{DERIVED: sendPolicy != "deny" at chat.ts:3898}
 \\
 
-\py{Cake2: result = "allow"}
+\py{R1: result = "allow"}
 &
 \src{RUNTIME: G10 TraceClaw event}
 \\
 
-\py{Cake2: exact internal allow branch = unknown}
+\py{R1: exact internal allow branch = unknown}
 &
 \src{OBSERVABILITY GAP: G10 event records final decision only}
 \\
@@ -7798,7 +7835,7 @@ allow-producing branch generated the final decision.
 % G10
 % ==============================================================
 
-\subsection*{G10: Session Send-Policy Evaluation}
+\subsection*{G10: Session Send-Policy Evaluation Flow Diagram}
 
 \textbf{Purpose:}
 This step determines whether the resolved Session is permitted to
@@ -7806,7 +7843,7 @@ continue through the \texttt{chat.send} path. The Gateway evaluates
 the Session send policy using the current configuration, resolved
 SessionEntry, canonical Session key, and Session channel / chat-type
 metadata. A \texttt{deny} result immediately terminates the request.
-For Cake2, the runtime-observed policy result is \texttt{allow}, so
+For R1, the runtime-observed policy result is \texttt{allow}, so
 the deny gate is not taken and execution continues to G11. The
 available trace does not identify which internal allow-producing
 branch generated the final decision.
@@ -7895,7 +7932,7 @@ Guaranteed executed helper:\\
 \texttt{)}\\[3mm]
 
 \textit{The exact subsequent allow-producing}\\
-\textit{branch is not observable for Cake2.}\\
+\textit{branch is not observable for R1.}\\
 \textit{See INTERNAL STEPS for the complete}\\
 \textit{source control flow.}
 };
@@ -7930,8 +7967,8 @@ From G7:\\[1mm]
 
 \texttt{session\_key =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[3mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[3mm]
 
 From SessionEntry:\\[1mm]
 
@@ -8025,7 +8062,7 @@ Possible result:\\
 \texttt{return fallback or "allow"}\\
 \textit{Source: send-policy.ts:157--158}\\[2mm]
 
-\textbf{Cake2 observed execution:}\\
+\textbf{R1 observed execution:}\\
 \texttt{send\_policy = "allow"}\\
 \texttt{deny\_gate\_taken = False}\\
 \texttt{result = "allow"}\\[1mm]
@@ -8084,7 +8121,7 @@ run ID and short-circuits when an existing state is found. Only a
 request that passes all existing-run guards is allowed to proceed as
 a new dispatch. Before entering Session lifecycle admission, the
 Gateway also checks whether Session routing has changed and whether
-the resolved Session is permitted to start new work. For Cake2,
+the resolved Session is permitted to start new work. For R1,
 TraceClaw records \texttt{dedupeDecision = "new\_dispatch"} and
 \texttt{result = "pass"}, so no existing-run short-circuit handles
 the request and execution continues toward G12.
@@ -8136,7 +8173,7 @@ the request and execution continues toward G12.
 
 \pyI{return}
 &
-\src{src/gateway/server-methods/chat.ts:3942}
+\src{src/gateway/server-methods/chat.ts:3938--3942}
 \\
 
 % ==============================================================
@@ -8326,57 +8363,57 @@ the request and execution continues toward G12.
 \\
 
 % ==============================================================
-% Cake2
+% R1
 % ==============================================================
 
 \hline
 
-\py{Cake2: client\_run\_id =}
+\py{R1: client\_run\_id =}
 &
 \src{RUNTIME: carried from G5}
 \\
 
-\pyI{"808b4380-f27b-4c2e-9421-74e043c3badd"}
+\pyI{"ANON-R1-RUN-ID"}
 &
-\src{RUNTIME: Cake2 run ID}
+\src{RUNTIME: R1 run ID}
 \\
 
-\py{Cake2: completed cached result = None}
+\py{R1: completed cached result = None}
 &
 \src{DERIVED: completed-result short circuit not taken}
 \\
 
-\py{Cake2: previous abort marker = None}
+\py{R1: previous abort marker = None}
 &
 \src{DERIVED: previously-aborted branch not taken}
 \\
 
-\py{Cake2: pending run = None}
+\py{R1: pending run = None}
 &
 \src{DERIVED: pending in-flight branch not taken}
 \\
 
-\py{Cake2: active existing run = None}
+\py{R1: active existing run = None}
 &
 \src{DERIVED: active in-flight branch not taken}
 \\
 
-\py{Cake2: queued existing run = False}
+\py{R1: queued existing run = False}
 &
 \src{DERIVED: queued in-flight branch not taken}
 \\
 
-\py{Cake2: dedupe\_decision = "new\_dispatch"}
+\py{R1: dedupe\_decision = "new\_dispatch"}
 &
 \src{RUNTIME: G11 TraceClaw event}
 \\
 
-\py{Cake2: result = "pass"}
+\py{R1: result = "pass"}
 &
 \src{RUNTIME: G11 TraceClaw event}
 \\
 
-\py{Cake2: continue toward lifecycle admission}
+\py{R1: continue toward lifecycle admission}
 &
 \src{DERIVED: no G11 short circuit}
 \\
@@ -8388,7 +8425,7 @@ the request and execution continues toward G12.
 % G11
 % ==============================================================
 
-\subsection*{G11: Idempotency and Existing-Run Guard}
+\subsection*{G11: Idempotency and Existing-Run Guard Flow Diagram}
 
 \textbf{Purpose:}
 This step determines whether the incoming \texttt{chat.send} request
@@ -8397,7 +8434,7 @@ The Gateway checks completed, aborted, pending, active, and queued run
 state using the request run ID. Any existing state short-circuits the
 request. A request that survives these guards is treated as a new
 dispatch and is additionally checked for Session-routing consistency
-and Session work eligibility before lifecycle admission. For Cake2,
+and Session work eligibility before lifecycle admission. For R1,
 TraceClaw records \texttt{dedupeDecision = "new\_dispatch"} and
 \texttt{result = "pass"}, so execution continues toward G12.
 
@@ -8465,7 +8502,7 @@ Main handler:\\
 \texttt{chat.send handler(\{...\})}\\[3mm]
 
 Executed guard operations\\
-\textit{(Cake2 path, in source order):}\\[2mm]
+\textit{(R1 path, in source order):}\\[2mm]
 
 \texttt{context.dedupe.get(}\\
 \quad\texttt{"chat:" + clientRunId}\\
@@ -8542,9 +8579,7 @@ Pending-run key created earlier at:\\
 From G5:\\[1mm]
 
 \texttt{client\_run\_id =}\\
-\texttt{"808b4380-f27b-}\\
-\texttt{4c2e-9421-}\\
-\texttt{74e043c3badd"}\\[2mm]
+\texttt{"ANON-R1-RUN-ID"}\\[2mm]
 
 \texttt{pending\_chat\_send\_key =}\\
 \texttt{dedupe key for run ID}\\[3mm]
@@ -8558,8 +8593,8 @@ From G7:\\[1mm]
 
 \texttt{session\_key =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[3mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[3mm]
 
 Gateway run-state registries:\\[1mm]
 
@@ -8609,7 +8644,7 @@ Derived control state:\\[1mm]
 \quad\texttt{return}\\
 \textit{Source: chat.ts:3936--3942}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{no completed cached result -> continue}\\[3mm]
 
 \textbf{Step 2: Check previously aborted run}\\
@@ -8622,7 +8657,7 @@ Cake2:\\
 \quad\texttt{return}\\
 \textit{Source: chat.ts:3944--3965}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{no previous abort marker -> continue}\\[3mm]
 
 \textbf{Step 3: Check pre-registered pending run}\\
@@ -8635,7 +8670,7 @@ Cake2:\\
 \quad\texttt{return}\\
 \textit{Source: chat.ts:3967--3978}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{no pending run -> continue}\\[3mm]
 
 \textbf{Step 4: Check active run}\\
@@ -8646,7 +8681,7 @@ Cake2:\\
 \quad\texttt{return}\\
 \textit{Source: chat.ts:3980--3987}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{no active existing run -> continue}\\[3mm]
 
 \textbf{Step 5: Check queued run}\\
@@ -8655,7 +8690,7 @@ Cake2:\\
 \quad\texttt{return}\\
 \textit{Source: chat.ts:3988--3994}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{no queued existing run -> new-dispatch path}\\[3mm]
 
 \textbf{Step 6: Check Session-routing consistency for new dispatch}\\
@@ -8664,7 +8699,7 @@ Cake2:\\
 \quad\texttt{return}\\
 \textit{Source: chat.ts:3995--4000}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{routing-change rejection is not taken}\\[3mm]
 
 \textbf{Step 7: Check whether Session may start new work}\\
@@ -8675,11 +8710,11 @@ Cake2:\\
 \quad\texttt{return}\\
 \textit{Source: chat.ts:4001--4005}\\[1mm]
 
-Cake2:\\
+R1:\\
 \texttt{archived-Session rejection is not taken}\\[3mm]
 
 \textbf{Step 8: Classify request as a new dispatch}\\
-Cake2 runtime observation:\\
+R1 runtime observation:\\
 \texttt{dedupeDecision = "new\_dispatch"}\\
 \texttt{result = "pass"}\\
 \texttt{-> continue toward G12 lifecycle admission}
@@ -8726,17 +8761,17 @@ Cake2 runtime observation:\\
 \subsection*{G12: Session Work Admission and Revalidation}
 
 \textbf{Purpose:}
-This step converts the new-dispatch candidate from G11 into an
-admitted Session-scoped run. The Gateway first captures the current
-Agent lifecycle generation and creates a temporary pending reservation.
-It then invokes \texttt{beginSessionWorkAdmission(...)} using the
-resolved Session store and Session identities. While acquiring the
+This step converts the new-dispatch candidate from G11 into an admitted
+Session-scoped run. The Gateway first captures the current Agent
+lifecycle generation and creates a temporary pending reservation. It then
+invokes \texttt{beginSessionWorkAdmission(...)} using the resolved
+Session key and any available backing identity. While acquiring the
 admission lease, the Gateway revalidates reservation ownership,
-lifecycle generation, reservation expiry, the latest Session state,
-routing consistency, backing Session identity, and archival status.
-If these checks succeed, an active chat AbortController is registered
-and the run is admitted. Post-admission race checks are then performed
-before the Agent run context is claimed. For Cake2, TraceClaw records
+lifecycle generation, reservation expiry, latest Session state, routing
+consistency, backing Session identity when present, and archival status.
+If these checks succeed, an active chat AbortController is registered and
+the run is admitted. Post-admission race checks are then performed before
+the Agent run context is claimed. For R1, TraceClaw records
 \texttt{admissionDecision = "admitted"},
 \texttt{result = "pass"}, and
 \texttt{reason = "latest\_session\_revalidated"}.
@@ -9030,12 +9065,12 @@ before the Agent run context is claimed. For Cake2, TraceClaw records
 
 \pyI{admitted\_session\_id =}
 &
-\src{src/gateway/server-methods/chat.ts:4137}
+\src{src/gateway/server-methods/chat.ts:4134--4138}
 \\
 
 \pyII{latest\_entry.sessionId or backing\_session\_id or client\_run\_id}
 &
-\src{src/gateway/server-methods/chat.ts:4137}
+\src{src/gateway/server-methods/chat.ts:4134--4138}
 \\
 
 % ==============================================================
@@ -9152,67 +9187,67 @@ before the Agent run context is claimed. For Cake2, TraceClaw records
 \\
 
 % ==============================================================
-% Cake2 concrete state
+% R1 concrete state
 % ==============================================================
 
 \hline
 
-\py{Cake2: client\_run\_id =}
+\py{R1: client\_run\_id =}
 &
 \src{RUNTIME}
 \\
 
-\pyI{"808b4380-f27b-4c2e-9421-74e043c3badd"}
+\pyI{"ANON-R1-RUN-ID"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: session\_key =}
+\py{R1: session\_key =}
 &
 \src{RUNTIME}
 \\
 
-\pyI{"agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4"}
+\pyI{"agent:main:dashboard:trace-82fbff4483c4"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: backing\_session\_id =}
+\py{R1: backing\_session\_id =}
 &
-\src{PERSISTED SESSION STATE}
+\src{NOT RECORDED in Gateway trace}
 \\
 
-\pyI{"af48dd1c-2e18-4d4d-9b08-432df4352674"}
+\pyI{"NOT RECORDED"}
 &
-\src{PERSISTED SESSION STATE}
+\src{NOT RECORDED; do not substitute AR-layer sessionId}
 \\
 
-\py{Cake2: admitted\_session\_id = backing\_session\_id}
+\py{R1: admitted\_session\_id = NOT RECORDED}
 &
-\src{DERIVED: latest Session identity remains unchanged}
+\src{NOT RECORDED; source can fall back to client_run_id}
 \\
 
-\py{Cake2: reservation\_superseded = False}
+\py{R1: reservation\_superseded = False}
 &
 \src{DERIVED: G12 successful admission path}
 \\
 
-\py{Cake2: active\_run\_abort exists and is registered}
+\py{R1: active\_run\_abort exists and is registered}
 &
 \src{DERIVED: post-admission guards passed}
 \\
 
-\py{Cake2: admission\_decision = "admitted"}
+\py{R1: admission\_decision = "admitted"}
 &
 \src{RUNTIME: G12 TraceClaw event}
 \\
 
-\py{Cake2: result = "pass"}
+\py{R1: result = "pass"}
 &
 \src{RUNTIME: G12 TraceClaw event}
 \\
 
-\py{Cake2: reason = "latest\_session\_revalidated"}
+\py{R1: reason = "latest\_session\_revalidated"}
 &
 \src{RUNTIME: G12 TraceClaw event}
 \\
@@ -9224,7 +9259,7 @@ before the Agent run context is claimed. For Cake2, TraceClaw records
 % G12
 % ==============================================================
 
-\subsection*{G12: Session Work Admission and Revalidation}
+\subsection*{G12: Session Work Admission and Revalidation Flow Diagram}
 
 \textbf{Purpose:}
 This step converts the new-dispatch candidate into an admitted
@@ -9232,7 +9267,7 @@ Session-scoped run. The Gateway creates a temporary run reservation,
 acquires a Session work-admission lease, revalidates the latest
 Session and lifecycle state, registers the active run AbortController,
 performs post-admission race checks, and finally claims the Agent run
-context. For Cake2, the latest Session remains consistent with the
+context. For R1, the latest Session remains consistent with the
 previously resolved Session and TraceClaw records
 \texttt{admissionDecision = "admitted"},
 \texttt{result = "pass"}, and
@@ -9420,24 +9455,20 @@ From G11:\\
 \texttt{new dispatch candidate}\\[3mm]
 
 \texttt{clientRunId =}\\
-\texttt{"808b4380-f27b-}\\
-\texttt{4c2e-9421-}\\
-\texttt{74e043c3badd"}\\[3mm]
+\texttt{"ANON-R1-RUN-ID"}\\[3mm]
 
 From G7 / G8:\\
 \texttt{sessionKey =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{backingSessionId =}\\
-\texttt{"af48dd1c-2e18-4d4d-}\\
-\texttt{9b08-432df4352674"}\\[2mm]
+\texttt{"NOT RECORDED}\\
+\texttt{"}\\[2mm]
 
 \texttt{storePath =}\\
-\texttt{/Users/mac/.openclaw/}\\
-\texttt{agents/main/sessions/}\\
-\texttt{sessions.json}\\[3mm]
+\texttt{NOT RECORDED}\\[3mm]
 
 Additional state:\\
 \texttt{entry}\\
@@ -9457,8 +9488,8 @@ Additional state:\\
 Native / derived control state:\\[1mm]
 
 \texttt{admittedSessionId =}\\
-\texttt{"af48dd1c-2e18-4d4d-}\\
-\texttt{9b08-432df4352674"}\\[2mm]
+\texttt{"NOT RECORDED}\\
+\texttt{"}\\[2mm]
 
 \texttt{activeRunAbort exists}\\
 \texttt{and is registered}\\[2mm]
@@ -9534,9 +9565,9 @@ Reject if \texttt{latestEntry.sessionId != backingSessionId}.\\
 Re-run \texttt{resolveSessionWorkStartError(...)}.\\
 \textit{Source: chat.ts:4118--4138}\\[2mm]
 
-Cake2:\\
-\texttt{latest Session remains the same}\\
-\texttt{sessionId = "af48dd1c-2e18-4d4d-9b08-432df4352674"}\\[3mm]
+R1:\\
+\texttt{revalidation passes; reason = latest\_session\_revalidated}\\
+\texttt{sessionId = "NOT RECORDED"}\\[3mm]
 
 \textbf{Step 8: Register the admitted active run}\\
 \texttt{admittedRunAbort = registerChatAbortController(...)}\\
@@ -9559,7 +9590,7 @@ Any failure short-circuits instead of creating duplicate work.\\
 \texttt{\})}\\
 \textit{Source: chat.ts:4240--4244}\\[2mm]
 
-Cake2 runtime:\\
+R1 runtime:\\
 \texttt{admissionDecision = "admitted"}\\
 \texttt{result = "pass"}\\
 \texttt{reason = "latest\_session\_revalidated"}
@@ -9609,9 +9640,9 @@ message channel, command-turn state, run identity, and Gateway client
 scopes. Optional staged-media fields are added only when media
 offloads exist, and managed-media fields are merged immediately before
 dispatch. G13 does not perform a new Session lookup, Agent selection,
-send-policy decision, or model invocation. For Cake2, TraceClaw records
+send-policy decision, or model invocation. For R1, TraceClaw records
 \texttt{event = "runtime\_context\_constructed"},
-\texttt{AgentId = "main"}, five operator scopes, and
+\texttt{AgentId = "main"}, scope \texttt{operator.write}, and
 \texttt{result = "constructed"}.
 
 {
@@ -9642,42 +9673,42 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 \py{trimmed\_message = parsed\_message.trim()}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4321}
+\src{chat.ts:4475}
 \\
 
 \py{command\_body = parsed\_message}
 &
-\src{chat.ts:4322}
+\src{chat.ts:4476}
 \\
 
 \py{command\_source =}
 &
-\src{chat.ts:4323--4324}
+\src{chat.ts:4477--4478}
 \\
 
 \pyI{"text" if not suppress\_command\_interpretation}
 &
-\src{chat.ts:4323--4324}
+\src{chat.ts:4477--4478}
 \\
 
 \pyII{and trimmed\_message.startswith("/") else None}
 &
-\src{chat.ts:4323--4324}
+\src{chat.ts:4477--4478}
 \\
 
 \py{message\_for\_agent =}
 &
-\src{chat.ts:4325--4327}
+\src{chat.ts:4479--4481}
 \\
 
 \pyI{system\_provenance\_receipt + parsed\_message}
 &
-\src{chat.ts:4325--4327}
+\src{chat.ts:4479--4481}
 \\
 
 \pyI{if system\_provenance\_receipt else parsed\_message}
 &
-\src{chat.ts:4325--4327}
+\src{chat.ts:4479--4481}
 \\
 
 % ==============================================================
@@ -9693,27 +9724,27 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 
 \py{queued\_followup\_owner\_device\_id = normalizeOptionalText(...)}
 &
-\src{chat.ts:4328}
+\src{chat.ts:4482}
 \\
 
 \py{queued\_followup\_owner\_conn\_id = normalizeOptionalText(...)}
 &
-\src{chat.ts:4329}
+\src{chat.ts:4483}
 \\
 
 \py{queued\_followup\_owner\_key = device or connection owner}
 &
-\src{chat.ts:4330--4334}
+\src{chat.ts:4484--4488}
 \\
 
 \py{originating\_channel, originating\_to, account\_id,}
 &
-\src{chat.ts:4335--4341}
+\src{chat.ts:4489--4495}
 \\
 
 \pyI{message\_thread\_id, explicit\_deliver\_route = originating\_route}
 &
-\src{chat.ts:4335--4341}
+\src{chat.ts:4489--4495}
 \\
 
 % ==============================================================
@@ -9730,87 +9761,87 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 \py{ctx = MsgContext(}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4349--4391}
+\src{chat.ts:4503--4545}
 \\
 
 \pyI{Body=message\_for\_agent,}
 &
-\src{chat.ts:4350}
+\src{chat.ts:4504}
 \\
 
 \pyI{BodyForAgent=message\_for\_agent,}
 &
-\src{chat.ts:4351}
+\src{chat.ts:4505}
 \\
 
 \pyI{BodyForCommands=command\_body,}
 &
-\src{chat.ts:4352}
+\src{chat.ts:4506}
 \\
 
 \pyI{RawBody=parsed\_message,}
 &
-\src{chat.ts:4353}
+\src{chat.ts:4507}
 \\
 
 \pyI{CommandBody=command\_body,}
 &
-\src{chat.ts:4354}
+\src{chat.ts:4508}
 \\
 
 \pyI{InputProvenance=system\_input\_provenance,}
 &
-\src{chat.ts:4355}
+\src{chat.ts:4509}
 \\
 
 \pyI{SessionKey=session\_key,}
 &
-\src{chat.ts:4356}
+\src{chat.ts:4510}
 \\
 
 \pyI{AgentId=agent\_id,}
 &
-\src{chat.ts:4357}
+\src{chat.ts:4511}
 \\
 
 \pyI{Provider=INTERNAL\_MESSAGE\_CHANNEL,}
 &
-\src{chat.ts:4358}
+\src{chat.ts:4512}
 \\
 
 \pyI{Surface=INTERNAL\_MESSAGE\_CHANNEL,}
 &
-\src{chat.ts:4359}
+\src{chat.ts:4513}
 \\
 
 \pyI{OriginatingChannel=originating\_channel,}
 &
-\src{chat.ts:4360}
+\src{chat.ts:4514}
 \\
 
 \pyI{OriginatingTo=originating\_to,}
 &
-\src{chat.ts:4361}
+\src{chat.ts:4515}
 \\
 
 \pyI{ExplicitDeliverRoute=explicit\_deliver\_route,}
 &
-\src{chat.ts:4362}
+\src{chat.ts:4516}
 \\
 
 \pyI{AccountId=account\_id,}
 &
-\src{chat.ts:4363}
+\src{chat.ts:4517}
 \\
 
 \pyI{MessageThreadId=message\_thread\_id,}
 &
-\src{chat.ts:4364}
+\src{chat.ts:4518}
 \\
 
 \pyI{ChatType="direct",}
 &
-\src{chat.ts:4365}
+\src{chat.ts:4519}
 \\
 
 % ==============================================================
@@ -9826,37 +9857,37 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 
 \pyI{CommandSource=command\_source if command\_source exists,}
 &
-\src{chat.ts:4366}
+\src{chat.ts:4520}
 \\
 
 \pyI{CommandAuthorized=not suppress\_command\_interpretation,}
 &
-\src{chat.ts:4367}
+\src{chat.ts:4521}
 \\
 
 \pyI{CommandTurn=(}
 &
-\src{chat.ts:4368--4380}
+\src{chat.ts:4522--4534}
 \\
 
 \pyII{TextSlashTurn(source=command\_source, authorized=True)}
 &
-\src{chat.ts:4368--4374}
+\src{chat.ts:4522--4528}
 \\
 
 \pyII{if command\_source else}
 &
-\src{chat.ts:4368--4380}
+\src{chat.ts:4522--4534}
 \\
 
 \pyII{NormalTurn(source="message", authorized=False)}
 &
-\src{chat.ts:4375--4380}
+\src{chat.ts:4529--4534}
 \\
 
 \pyI{),}
 &
-\src{chat.ts:4368--4380}
+\src{chat.ts:4522--4534}
 \\
 
 % ==============================================================
@@ -9872,32 +9903,32 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 
 \pyI{MessageSid=client\_run\_id,}
 &
-\src{chat.ts:4381}
+\src{chat.ts:4535}
 \\
 
 \pyI{ApprovalReviewerDeviceId=queued\_followup\_owner\_device\_id,}
 &
-\src{chat.ts:4382}
+\src{chat.ts:4536}
 \\
 
 \pyI{if not isOperatorUiClient(client\_info):}
 &
-\src{chat.ts:4383--4389}
+\src{chat.ts:4537--4543}
 \\
 
 \pyII{attach SenderId / SenderName / SenderUsername}
 &
-\src{chat.ts:4383--4389}
+\src{chat.ts:4537--4543}
 \\
 
 \pyI{GatewayClientScopes=client.connect.scopes or [],}
 &
-\src{chat.ts:4390}
+\src{chat.ts:4544}
 \\
 
 \py{)}
 &
-\src{chat.ts:4391}
+\src{chat.ts:4503--4545}
 \\
 
 % ==============================================================
@@ -9914,37 +9945,37 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 \py{if len(media\_path\_offload\_paths) > 0:}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4394--4405}
+\src{chat.ts:4548--4559}
 \\
 
 \pyI{ctx.MediaPath = media\_path\_offload\_paths[0]}
 &
-\src{chat.ts:4400}
+\src{chat.ts:4554}
 \\
 
 \pyI{ctx.MediaPaths = media\_path\_offload\_paths}
 &
-\src{chat.ts:4401}
+\src{chat.ts:4555}
 \\
 
 \pyI{ctx.MediaType = media\_path\_offload\_types[0]}
 &
-\src{chat.ts:4402}
+\src{chat.ts:4556}
 \\
 
 \pyI{ctx.MediaTypes = media\_path\_offload\_types}
 &
-\src{chat.ts:4403}
+\src{chat.ts:4557}
 \\
 
 \pyI{ctx.MediaWorkspaceDir = media\_path\_offload\_workspace\_dir}
 &
-\src{chat.ts:4404}
+\src{chat.ts:4558}
 \\
 
 \pyI{ctx.MediaStaged = True}
 &
-\src{chat.ts:4405}
+\src{chat.ts:4559}
 \\
 
 % ==============================================================
@@ -9973,17 +10004,17 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 \py{applyChatSendManagedMediaFields(}
 &
 \src{src/gateway/server-methods/}\newline
-\src{chat.ts:4637}
+\src{chat.ts:4793}
 \\
 
 \pyI{ctx, await plugin\_bound\_media\_fields\_promise}
 &
-\src{chat.ts:4637}
+\src{chat.ts:4793}
 \\
 
 \py{)}
 &
-\src{chat.ts:4637}
+\src{chat.ts:4793}
 \\
 
 % ==============================================================
@@ -10004,77 +10035,77 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 \\
 
 % ==============================================================
-% Cake2 concrete state
+% R1 concrete state
 % ==============================================================
 
 \hline
 
-{\normalfont\bfseries Cake2 concrete state}
+{\normalfont\bfseries R1 concrete state}
 &
 {\normalfont\bfseries Evidence}
 \\[2mm]
 
-\py{Cake2: parsed\_message = "How to make a cake?"}
+\py{R1: parsed\_message = "How to make a cake?"}
 &
 \src{RUNTIME / SOURCE-DERIVED}
 \\
 
-\py{Cake2: message\_for\_agent = "How to make a cake?"}
+\py{R1: message\_for\_agent = "How to make a cake?"}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: command\_source = None}
+\py{R1: command\_source = None}
 &
 \src{SOURCE-DERIVED: non-slash message}
 \\
 
-\py{Cake2: session\_key =}
+\py{R1: session\_key =}
 &
 \src{RUNTIME}
 \\
 
-\pyI{"agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4"}
+\pyI{"agent:main:dashboard:trace-82fbff4483c4"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: agent\_id = "main"}
+\py{R1: agent\_id = "main"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: client\_run\_id =}
+\py{R1: client\_run\_id =}
 &
 \src{RUNTIME}
 \\
 
-\pyI{"808b4380-f27b-4c2e-9421-74e043c3badd"}
+\pyI{"ANON-R1-RUN-ID"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: ChatType = "direct"}
+\py{R1: ChatType = "direct"}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: CommandTurn.kind = "normal"}
+\py{R1: CommandTurn.kind = "normal"}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: CommandTurn.authorized = False}
+\py{R1: CommandTurn.authorized = False}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: GatewayClientScopes = five operator scopes}
+\py{R1: GatewayClientScopes = [operator.write]}
 &
 \src{RUNTIME: G13 TraceClaw event}
 \\
 
-\py{Cake2: result = "constructed"}
+\py{R1: result = "constructed"}
 &
 \src{RUNTIME: G13 TraceClaw event}
 \\
@@ -10094,14 +10125,14 @@ send-policy decision, or model invocation. For Cake2, TraceClaw records
 % G13
 % ==============================================================
 
-\subsection*{G13: Runtime Message Context Construction}
+\subsection*{G13: Runtime Message Context Construction Flow Diagram}
 
 \textbf{Purpose:}
 This step packages the prepared message, canonical Session identity,
 effective Agent identity, routing metadata, command state, run identity,
 authenticated client scopes, and optional media metadata into the
 \texttt{MsgContext} consumed by the downstream G14 dispatch path.
-For Cake2, the resulting context retains
+For R1, the resulting context retains
 \texttt{"How to make a cake?"}, the existing canonical Session key,
 and \texttt{AgentId = "main"}. TraceClaw records the runtime context
 as successfully constructed.
@@ -10205,19 +10236,19 @@ $\downarrow$\\[3mm]
 
 Message / command preparation:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4321--4328}\\[1mm]
+\texttt{chat.ts:4475--4482}\\[1mm]
 
 Originating-route extraction:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4335--4341}\\[1mm]
+\texttt{chat.ts:4489--4495}\\[1mm]
 
 Core \texttt{MsgContext} construction:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4349--4391}\\[1mm]
+\texttt{chat.ts:4503--4545}\\[1mm]
 
 Conditional staged-media fields:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4394--4405}\\[1mm]
+\texttt{chat.ts:4548--4559}\\[1mm]
 
 Managed-media helper:\\
 \texttt{src/gateway/server-methods/}\\
@@ -10225,7 +10256,7 @@ Managed-media helper:\\
 
 Final managed-media merge:\\
 \texttt{src/gateway/server-methods/}\\
-\texttt{chat.ts:4637}\\[1mm]
+\texttt{chat.ts:4793}\\[1mm]
 
 G14 dispatch boundary:\\
 \texttt{src/gateway/server-methods/}\\
@@ -10253,17 +10284,15 @@ Resolved Session / Agent:\\[1mm]
 
 \texttt{sessionKey =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{agentId = "main"}\\[3mm]
 
 Run identity:\\[1mm]
 
 \texttt{clientRunId =}\\
-\texttt{"808b4380-f27b-}\\
-\texttt{4c2e-9421-}\\
-\texttt{74e043c3badd"}\\[3mm]
+\texttt{"ANON-R1-RUN-ID"}\\[3mm]
 
 Other prepared state:\\[1mm]
 
@@ -10282,7 +10311,7 @@ Other prepared state:\\[1mm]
 
 \texttt{O\_13: ctx: MsgContext}\\[3mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{Body =}\\
 \texttt{"How to make a cake?"}\\[2mm]
@@ -10329,9 +10358,9 @@ Trim the parsed message and preserve the original message as the
 command-facing body. A \texttt{commandSource} is assigned only when
 command interpretation is enabled and the trimmed message begins with
 \texttt{/}.\\
-\textit{Source: chat.ts:4321--4324}\\[2mm]
+\textit{Source: chat.ts:4475--4478}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{parsedMessage = "How to make a cake?"}\\
 $\rightarrow$
 \texttt{commandBody = "How to make a cake?"}\\
@@ -10342,9 +10371,9 @@ $\rightarrow$
 Construct \texttt{messageForAgent}. If a system-provenance receipt is
 present, prepend it to the parsed message; otherwise preserve the
 original message text.\\
-\textit{Source: chat.ts:4325--4328}\\[2mm]
+\textit{Source: chat.ts:4479--4481}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{messageForAgent = "How to make a cake?"}\\[3mm]
 
 \textbf{Step 3: Extract originating routing metadata}\\
@@ -10352,15 +10381,15 @@ Project the already-resolved routing state into the fields required by
 the runtime context, including \texttt{originatingChannel},
 \texttt{originatingTo}, \texttt{accountId},
 \texttt{messageThreadId}, and \texttt{explicitDeliverRoute}.\\
-\textit{Source: chat.ts:4335--4341}\\[3mm]
+\textit{Source: chat.ts:4489--4495}\\[3mm]
 
 \textbf{Step 4: Construct the core \texttt{MsgContext}}\\
 Create \texttt{ctx: MsgContext} and populate the prepared message,
 input provenance, canonical Session identity, effective Agent identity,
 internal Provider / Surface, routing metadata, and direct-chat state.\\
-\textit{Source: chat.ts:4349--4365}\\[2mm]
+\textit{Source: chat.ts:4503--4519}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{Body = "How to make a cake?"}\\
 \texttt{BodyForAgent = "How to make a cake?"}\\
 \texttt{BodyForCommands = "How to make a cake?"}\\
@@ -10375,9 +10404,9 @@ Cake2:\\
 Set the context-level command-interpretation state and classify the
 current message as either a text slash-command turn or an ordinary
 message turn.\\
-\textit{Source: chat.ts:4366--4380}\\[2mm]
+\textit{Source: chat.ts:4520--4534}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{CommandAuthorized = true}\\
 \texttt{CommandTurn.kind = "normal"}\\
 \texttt{CommandTurn.source = "message"}\\
@@ -10392,26 +10421,22 @@ Bind the current client run to the message through
 \texttt{MessageSid}. For non-Operator-UI callers, sender identity may
 also be attached. Finally propagate the authenticated Gateway client
 scopes into the context.\\
-\textit{Source: chat.ts:4381--4391}\\[2mm]
+\textit{Source: chat.ts:4535--4545}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{MessageSid =}\\
-\texttt{"808b4380-f27b-4c2e-9421-74e043c3badd"}\\[1mm]
+\texttt{"ANON-R1-RUN-ID"}\\[1mm]
 
 \texttt{GatewayClientScopes =}\\
-\texttt{[operator.admin,}\\
-\texttt{\ operator.approvals,}\\
-\texttt{\ operator.pairing,}\\
-\texttt{\ operator.read,}\\
-\texttt{\ operator.write]}\\[3mm]
+\texttt{[operator.write]}\\[3mm]
 
 \textbf{Step 7: Attach staged media when present}\\
 If staged media paths exist, extend the same \texttt{MsgContext} with
 \texttt{MediaPath}, \texttt{MediaPaths}, media types,
 \texttt{MediaWorkspaceDir}, and the \texttt{MediaStaged} marker.\\
-\textit{Source: chat.ts:4394--4405}\\[2mm]
+\textit{Source: chat.ts:4548--4559}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{hasAttachments = false}\\
 $\rightarrow$ no staged-media fields are added.\\[3mm]
 
@@ -10421,7 +10446,7 @@ fields into the already-constructed \texttt{MsgContext}. This keeps
 managed media on the same context object that is later passed into G14.\\
 \textit{Source: chat.ts:1482--1515, 4637}\\[2mm]
 
-Cake2:\\
+R1:\\
 No managed-media state changes the context.\\[3mm]
 
 \textbf{Step 9: Hand the completed context to G14}\\
@@ -10443,7 +10468,7 @@ I_{14}.\texttt{ctx}
 }
 \]
 
-Cake2 TraceClaw:\\
+R1 TraceClaw:\\
 \texttt{event = "runtime\_context\_constructed"}\\
 \texttt{agentId = "main"}\\
 \texttt{result = "constructed"}\\[3mm]
@@ -10504,7 +10529,7 @@ diagnostics, installs reply-payload delivery hooks, and invokes G16
 through \texttt{dispatchReplyFromConfig(...)}. When downstream dispatch
 returns, G14 reconciles the result with dispatcher cancellation and
 failure counts. G15 and G16 are nested operations inside G14 rather
-than independent parallel stages. For Cake2, the native Gateway
+than independent parallel stages. For R1, the native Gateway
 diagnostic span records the same run ID and canonical Session key,
 \texttt{AgentId = "main"}, \texttt{provider = "openai"},
 \texttt{model = "gpt-5.5"}, and \texttt{hasAttachments = false}.
@@ -10642,22 +10667,22 @@ diagnostic span records the same run ID and canonical Session key,
 \py{def applyRuntimeToolsAllow(reply\_options, tools\_allow):}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:66--77}
+\src{dispatch.ts:69--80}
 \\
 
 \pyI{if tools\_allow is None:}
 &
-\src{dispatch.ts:70--72}
+\src{dispatch.ts:69--80}
 \\
 
 \pyII{return reply\_options}
 &
-\src{dispatch.ts:70--72}
+\src{dispatch.ts:69--80}
 \\
 
 \pyI{return reply\_options with toolsAllow=tools\_allow}
 &
-\src{dispatch.ts:73--76}
+\src{dispatch.ts:69--80}
 \\
 
 % ==============================================================
@@ -10811,23 +10836,23 @@ diagnostic span records the same run ID and canonical Session key,
 \pyI{installReplyPayloadSendingBeforeDeliver(}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:552--561}
+\src{dispatch.ts:528--583}
 \\
 
 \pyII{params.dispatcher, finalized, reply\_payload\_run\_state}
 &
-\src{dispatch.ts:552--561}
+\src{dispatch.ts:528--583}
 \\
 
 \pyI{)}
 &
-\src{dispatch.ts:552--561}
+\src{dispatch.ts:528--583}
 \\
 
 \py{def installReplyPayloadSendingBeforeDeliver(...):}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:410--422}
+\src{dispatch.ts:424--438}
 \\
 
 % ==============================================================
@@ -10921,32 +10946,32 @@ diagnostic span records the same run ID and canonical Session key,
 \py{def finalizeDispatchResult(result, dispatcher):}
 &
 \src{src/auto-reply/}\newline
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:488--524}
 \\
 
 \pyI{cancelled\_counts = dispatcher.getCancelledCounts()}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:488--524}
 \\
 
 \pyI{failed\_counts = dispatcher.getFailedCounts()}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:488--524}
 \\
 
 \pyI{if no cancelled or failed counts: return result}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:488--524}
 \\
 
 \pyI{reconcile tool / block / final counts}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:488--524}
 \\
 
 \pyI{return reconciled result}
 &
-\src{dispatch.ts:488--583}
+\src{dispatch.ts:488--524}
 \\
 
 \py{return finalizeDispatchResult(result, params.dispatcher)}
@@ -10956,57 +10981,57 @@ diagnostic span records the same run ID and canonical Session key,
 \\
 
 % ==============================================================
-% Cake2 concrete state
+% R1 concrete state
 % ==============================================================
 
 \hline
 
-{\normalfont\bfseries Cake2 concrete state}
+{\normalfont\bfseries R1 concrete state}
 &
 {\normalfont\bfseries Evidence}
 \\[2mm]
 
-\py{Cake2: run\_id =}
+\py{R1: run\_id =}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\pyI{"808b4380-f27b-4c2e-9421-74e043c3badd"}
+\pyI{"ANON-R1-RUN-ID"}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\py{Cake2: session\_key =}
+\py{R1: session\_key =}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\pyI{"agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4"}
+\pyI{"agent:main:dashboard:trace-82fbff4483c4"}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\py{Cake2: agent\_id = "main"}
+\py{R1: agent\_id = "main"}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\py{Cake2: provider = "openai"}
+\py{R1: provider = "openai"}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\py{Cake2: model = "gpt-5.5"}
+\py{R1: model = "gpt-5.5"}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\py{Cake2: has\_attachments = False}
+\py{R1: has\_attachments = False}
 &
 \src{NATIVE RUNTIME}
 \\
 
-\py{Cake2: native span = "gateway.chat\_send.dispatch\_inbound"}
+\py{R1: native span = "gateway.chat\_send.dispatch\_inbound"}
 &
 \src{NATIVE RUNTIME}
 \\
@@ -11018,7 +11043,7 @@ diagnostic span records the same run ID and canonical Session key,
 % G14
 % ==============================================================
 
-\subsection*{G14: Inbound Message Dispatch}
+\subsection*{G14: Inbound Message Dispatch Flow Diagram}
 
 \textbf{Purpose:}
 This step receives the \texttt{MsgContext} prepared by G13 and sends it
@@ -11125,10 +11150,10 @@ Main G14 implementation:\\
 \texttt{src/auto-reply/dispatch.ts:528--583}\\[1mm]
 
 Runtime tool restriction:\\
-\texttt{src/auto-reply/dispatch.ts:69 onward}\\[1mm]
+\texttt{src/auto-reply/dispatch.ts:528--583}\\[1mm]
 
 Reply-run state binding:\\
-\texttt{src/auto-reply/dispatch.ts:410--422}\\[1mm]
+\texttt{src/auto-reply/dispatch.ts:528--583}\\[1mm]
 
 G15 call:\\
 \texttt{src/auto-reply/dispatch.ts:544--551}\\[1mm]
@@ -11140,7 +11165,7 @@ G16 call:\\
 \texttt{src/auto-reply/dispatch.ts:562--582}\\[1mm]
 
 Final result reconciliation:\\
-\texttt{src/auto-reply/dispatch.ts:488 onward;}\\
+\texttt{src/auto-reply/dispatch.ts:528--583;}\\
 \texttt{return at 583}
 };
 
@@ -11154,15 +11179,15 @@ Final result reconciliation:\\
 From G13:\\
 \texttt{ctx: MsgContext}\\[3mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{Body =}\\
 \texttt{"How to make a cake?"}\\[2mm]
 
 \texttt{SessionKey =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{AgentId = "main"}\\[3mm]
 
@@ -11220,7 +11245,7 @@ The Gateway passes the completed \texttt{MsgContext} into
 dispatcher state, and reply options.\\
 \textit{Source: chat.ts:4788--4797; dispatch.ts:528--583}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{Body = "How to make a cake?"}\\
 \texttt{AgentId = "main"}\\[3mm]
 
@@ -11228,7 +11253,7 @@ Cake2:\\
 Apply an optional runtime \texttt{toolsAllow} restriction, initialize
 the reply-payload run state when needed, and bind it to the downstream
 reply options.\\
-\textit{Source: dispatch.ts:69 onward; 410--422}\\[3mm]
+\textit{Source: dispatch.ts:69--80; 410--422}\\[3mm]
 
 \textbf{Step 3: Finalize the inbound context through G15}\\
 Call \texttt{finalizeInboundContext(params.ctx)} to convert the incoming
@@ -11265,7 +11290,7 @@ After G16 returns, G14 removes cancelled or failed queued payloads from
 the public counts, updates \texttt{queuedFinal}, and includes
 \texttt{failedCounts} only when failures are present. The normalized
 result is then returned as \texttt{DispatchInboundResult}.\\
-\textit{Source: dispatch.ts:488 onward; return at 583}\\[3mm]
+\textit{Source: dispatch.ts:488--524; return call at 583}\\[3mm]
 
 \texttt{G16 result}\\
 \quad$\downarrow$\\
@@ -11332,7 +11357,7 @@ turn state, and aligns media-type metadata when media is present.
 G15 does not perform a new Session lookup, Agent selection, model
 selection, memory retrieval, skill loading, tool execution, or model
 inference. Its output is a \texttt{FinalizedMsgContext} consumed by
-G16. For Cake2, the ordinary direct text message and the previously
+G16. For R1, the ordinary direct text message and the previously
 resolved Session / Agent identity remain stable through this
 deterministic normalization path.
 
@@ -11619,57 +11644,57 @@ deterministic normalization path.
 \\
 
 % ==============================================================
-% Cake2 concrete state
+% R1 concrete state
 % ==============================================================
 
 \hline
 
-{\normalfont\bfseries Cake2 concrete state}
+{\normalfont\bfseries R1 concrete state}
 &
 {\normalfont\bfseries Evidence}
 \\[2mm]
 
-\py{Cake2 G15 input Body = "How to make a cake?"}
+\py{R1 G15 input Body = "How to make a cake?"}
 &
 \src{G13 RUNTIME + SOURCE}
 \\
 
-\py{Cake2 G15 input BodyForAgent = "How to make a cake?"}
+\py{R1 G15 input BodyForAgent = "How to make a cake?"}
 &
 \src{G13 SOURCE-DERIVED}
 \\
 
-\py{Cake2 G15 input BodyForCommands = "How to make a cake?"}
+\py{R1 G15 input BodyForCommands = "How to make a cake?"}
 &
 \src{G13 SOURCE-DERIVED}
 \\
 
-\py{Cake2: SessionKey remains the canonical Session key}
+\py{R1: SessionKey remains the canonical Session key}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: AgentId remains "main"}
+\py{R1: AgentId remains "main"}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: ChatType remains "direct"}
+\py{R1: ChatType remains "direct"}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: command turn remains an ordinary message turn}
+\py{R1: command turn remains an ordinary message turn}
 &
 \src{SOURCE-DERIVED}
 \\
 
-\py{Cake2: no media-type alignment is required}
+\py{R1: no media-type alignment is required}
 &
 \src{SOURCE-DERIVED: no attachments}
 \\
 
-\py{Cake2: no separate G15-specific TraceClaw event asserted}
+\py{R1: no separate G15-specific TraceClaw event asserted}
 &
 \src{OBSERVATION BOUNDARY}
 \\
@@ -11681,7 +11706,7 @@ deterministic normalization path.
 % G15
 % ==============================================================
 
-\subsection*{G15: Inbound Context Finalization}
+\subsection*{G15: Inbound Context Finalization Flow Diagram}
 
 \textbf{Purpose:}
 This step finalizes the inbound \texttt{MsgContext} before reply
@@ -11824,7 +11849,7 @@ From G14:\\
 
 \texttt{MsgContext}\\[3mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{Body =}\\
 \texttt{"How to make a cake?"}\\[2mm]
@@ -11837,8 +11862,8 @@ Cake2:\\[1mm]
 
 \texttt{SessionKey =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{AgentId = "main"}\\[2mm]
 
@@ -11859,7 +11884,7 @@ Cake2:\\[1mm]
 \texttt{finalized:}\\
 \texttt{FinalizedMsgContext}\\[3mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{Body =}\\
 \texttt{"How to make a cake?"}\\[2mm]
@@ -11897,7 +11922,7 @@ G14 passes \texttt{params.ctx} into
 prepared earlier in the Gateway path.\\
 \textit{Source: dispatch.ts:544--551}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{Body = "How to make a cake?"}\\
 \texttt{AgentId = "main"}\\[3mm]
 
@@ -11912,7 +11937,7 @@ system-tag content. Then normalize \texttt{ChatType} into the form used
 by the downstream reply pipeline.\\
 \textit{Source: inbound-context.ts:83--102}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{"How to make a cake?"} remains unchanged.\\
 \texttt{ChatType = "direct"} remains \texttt{"direct"}.\\[3mm]
 
@@ -11922,7 +11947,7 @@ Resolve the final \texttt{BodyForAgent} and
 processing.\\
 \textit{Source: inbound-context.ts:104--123}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{BodyForAgent = "How to make a cake?"}\\
 \texttt{BodyForCommands = "How to make a cake?"}\\[3mm]
 
@@ -11931,7 +11956,7 @@ Resolve the conversation label and normalize command authorization and
 \texttt{CommandTurn} state before reply dispatch.\\
 \textit{Source: inbound-context.ts:125--143}\\[2mm]
 
-Cake2 remains an ordinary message turn:\\
+R1 remains an ordinary message turn:\\
 \texttt{CommandTurn.kind = "normal"}\\[3mm]
 
 \textbf{Step 6: Align media metadata}\\
@@ -11940,7 +11965,7 @@ used downstream. If no media exists, no additional media alignment is
 needed.\\
 \textit{Source: inbound-context.ts:145--173}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{hasAttachments = false}\\
 $\rightarrow$ no media changes.\\[3mm]
 
@@ -12031,14 +12056,14 @@ changes, processes final reply payloads, performs delivery and dedupe
 bookkeeping, completes the diagnostic lifecycle and reply operation,
 and returns a \texttt{DispatchFromConfigResult}.
 
-For Cake2, there is no separate G16-specific TraceClaw result event.
+For R1, there is no separate G16-specific TraceClaw result event.
 However, the same execution produces the G17 event
 \texttt{effective\_agent\_reresolved} with
 \texttt{agentId = "main"} and
 \texttt{downstreamAgentId = "main"}, followed by the G18 event
 \texttt{reply\_resolver\_selected} with
 \texttt{resolverSource = "default\_getReplyFromConfig"}. These runtime
-observations show that Cake2 traverses the normal G16 path through
+observations show that R1 traverses the normal G16 path through
 effective-Agent re-resolution and reaches the default reply-resolver
 boundary.
 
@@ -12067,28 +12092,28 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\py{async def dispatchReplyFromConfig(params):}
+\pyt{async def dispatchReplyFromConfig(params):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1215--4080}
+\src{dispatch-from-config.ts:1215--1228}
 \\
 
-\pyI{ctx, cfg, dispatcher = params.ctx, params.cfg, params.dispatcher}
+\pytI{ctx, cfg, dispatcher = params.ctx, params.cfg, params.dispatcher}
 &
 \src{dispatch-from-config.ts:1215--1220}
 \\
 
-\pyI{if params.replyOptions.abortSignal.aborted:}
+\pytI{if params.replyOptions.abortSignal.aborted:}
 &
 \src{dispatch-from-config.ts:1221--1228}
 \\
 
-\pyII{return \{"queuedFinal": False,}
+\pytII{return \{"queuedFinal": False,}
 &
 \src{dispatch-from-config.ts:1221--1228}
 \\
 
-\pyIII{"counts": dispatcher.getQueuedCounts()\}}
+\pytIII{"counts": dispatcher.getQueuedCounts()\}}
 &
 \src{dispatch-from-config.ts:1221--1228}
 \\
@@ -12104,61 +12129,61 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{diagnostics\_enabled = isDiagnosticsEnabled(cfg)}
+\pytI{diagnostics\_enabled = isDiagnosticsEnabled(cfg)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1178}
+\src{dispatch-from-config.ts:1225}
 \\
 
-\pyI{channel = normalize(ctx.Surface or ctx.Provider)}
+\pytI{channel = normalize(ctx.Surface or ctx.Provider)}
 &
-\src{dispatch-from-config.ts:1179}
+\src{dispatch-from-config.ts:1226}
 \\
 
-\pyI{chat\_id = ctx.To or ctx.From}
+\pytI{chat\_id = ctx.To or ctx.From}
 &
-\src{dispatch-from-config.ts:1180}
+\src{dispatch-from-config.ts:1227}
 \\
 
-\pyI{message\_id = ctx.MessageSid or fallback message IDs}
+\pytI{message\_id = ctx.MessageSid or fallback message IDs}
 &
-\src{dispatch-from-config.ts:1181}
+\src{dispatch-from-config.ts:1228}
 \\
 
-\pyI{session\_key = ctx.SessionKey or ctx.CommandTargetSessionKey}
+\pytI{session\_key = ctx.SessionKey or ctx.CommandTargetSessionKey}
 &
-\src{dispatch-from-config.ts:1182--1183}
+\src{dispatch-from-config.ts:1229--1230}
 \\
 
-\pyI{initial\_session = resolveSessionStoreLookup(ctx, cfg)}
+\pytI{initial\_session = resolveSessionStoreLookup(ctx, cfg)}
 &
-\src{dispatch-from-config.ts:1186}
+\src{dispatch-from-config.ts:1233}
 \\
 
-\py{def resolveSessionStoreLookup(ctx, cfg):}
+\pyt{def resolveSessionStoreLookup(ctx, cfg):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:426--456}
+\src{dispatch-from-config.ts:441--470}
 \\
 
-\pyI{target = resolveCommandTurnTargetSessionKey(ctx)}
+\pytI{target = resolveCommandTurnTargetSessionKey(ctx)}
 &
-\src{dispatch-from-config.ts:435--436}
+\src{dispatch-from-config.ts:450}
 \\
 
-\pyI{agent\_id = resolveSessionAgentId(...)}
+\pytI{agent\_id = resolveSessionAgentId(...)}
 &
-\src{dispatch-from-config.ts:440}
+\src{dispatch-from-config.ts:455}
 \\
 
 \pyI{store\_path = resolveStorePath(...)}
 &
-\src{dispatch-from-config.ts:441}
+\src{dispatch-from-config.ts:456}
 \\
 
 \pyI{store = loadSessionStore(store\_path)}
 &
-\src{dispatch-from-config.ts:442--449}
+\src{dispatch-from-config.ts:458}
 \\
 
 % ==============================================================
@@ -12175,37 +12200,37 @@ boundary.
 \pyI{lifecycle\_session\_id =}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1195--1198}
+\src{dispatch-from-config.ts:1242--1257}
 \\
 
 \pyII{initial\_session.entry.sessionId}
 &
-\src{dispatch-from-config.ts:1195--1198}
+\src{dispatch-from-config.ts:1242--1257}
 \\
 
 \pyII{if initial\_session.sessionKey == session\_key else None}
 &
-\src{dispatch-from-config.ts:1195--1198}
+\src{dispatch-from-config.ts:1242--1257}
 \\
 
 \pyI{message\_lifecycle = createDiagnosticMessageLifecycle(...)}
 &
-\src{dispatch-from-config.ts:1199--1210}
+\src{dispatch-from-config.ts:1246--1257}
 \\
 
 \pyI{trace\_attributes = \{surface, hasSessionKey, hasRunId\}}
 &
-\src{dispatch-from-config.ts:1211--1215}
+\src{dispatch-from-config.ts:1258--1262}
 \\
 
 \pyI{traceReplyPhase(name, run) =}
 &
-\src{dispatch-from-config.ts:1216--1226}
+\src{dispatch-from-config.ts:1215--1228}
 \\
 
 \pyII{measureDiagnosticsTimelineSpan(name, run, phase="agent-turn")}
 &
-\src{dispatch-from-config.ts:1219--1226}
+\src{dispatch-from-config.ts:1215--1228}
 \\
 
 % ==============================================================
@@ -12222,44 +12247,44 @@ boundary.
 \pyI{bound\_acp\_session = resolveBoundAcpDispatchSessionKey(}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1289}
+\src{dispatch-from-config.ts:1341}
 \\
 
 \pyII{ctx=ctx, cfg=cfg}
 &
-\src{dispatch-from-config.ts:1289}
+\src{dispatch-from-config.ts:1341}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:1289}
+\src{dispatch-from-config.ts:1341}
 \\
 
 \py{def resolveBoundAcpDispatchSessionKey(params):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:457--485}
+\src{dispatch-from-config.ts:1341--1351}
 \\
 
 \pyI{acp\_dispatch\_session\_key =}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1290--1291}
+\src{dispatch-from-config.ts:1341--1348}
 \\
 
 \pyII{bound\_acp\_session or initial\_session.sessionKey or session\_key}
 &
-\src{dispatch-from-config.ts:1290--1291}
+\src{dispatch-from-config.ts:1341--1348}
 \\
 
 \pyI{dispatch\_operation\_session\_key =}
 &
-\src{dispatch-from-config.ts:1295--1296}
+\src{dispatch-from-config.ts:1347--1348}
 \\
 
 \pyII{initial\_session.sessionKey or session\_key or acp\_dispatch\_session\_key}
 &
-\src{dispatch-from-config.ts:1295--1296}
+\src{dispatch-from-config.ts:1347--1348}
 \\
 
 % ==============================================================
@@ -12301,15 +12326,15 @@ boundary.
 
 \pyI{session\_agent\_cfg = resolveAgentConfig(cfg, session\_agent\_id)}
 &
-\src{dispatch-from-config.ts:1375}
+\src{dispatch-from-config.ts:1422--1427}
 \\
 
-\py{Cake2: session\_agent\_id = "main"}
+\py{R1: session\_agent\_id = "main"}
 &
 \src{TRACECLAW RUNTIME: G17}
 \\
 
-\py{Cake2: downstream\_agent\_id = "main"}
+\py{R1: downstream\_agent\_id = "main"}
 &
 \src{TRACECLAW RUNTIME: G17}
 \\
@@ -12328,27 +12353,27 @@ boundary.
 \pyI{verbose\_progress = createShouldEmitVerboseProgress(...)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1376--1389}
+\src{dispatch-from-config.ts:1428--1439}
 \\
 
 \pyI{reply\_route = resolveEffectiveReplyRoute(}
 &
-\src{dispatch-from-config.ts:1390}
+\src{dispatch-from-config.ts:1442}
 \\
 
 \pyII{ctx=ctx, entry=session\_store\_entry.entry}
 &
-\src{dispatch-from-config.ts:1390}
+\src{dispatch-from-config.ts:1442}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:1390}
+\src{dispatch-from-config.ts:1442}
 \\
 
 \pyI{route\_thread\_id = resolveRoutedDeliveryThreadId(...)}
 &
-\src{dispatch-from-config.ts:1395--1401}
+\src{dispatch-from-config.ts:1447--1450}
 \\
 
 % ==============================================================
@@ -12365,28 +12390,28 @@ boundary.
 \py{async def runWithDispatchLifecycleAdmission(run):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1469--1476}
+\src{dispatch-from-config.ts:1521--1528}
 \\
 
 \pyI{if dispatch\_reply\_operation:}
 &
-\src{dispatch-from-config.ts:1470--1472}
+\src{dispatch-from-config.ts:1522--1524}
 \\
 
 \pyII{return runWithReplyOperationLifecycleAdmission(...)}
 &
-\src{dispatch-from-config.ts:1470--1472}
+\src{dispatch-from-config.ts:1522--1524}
 \\
 
 \pyI{else use pre-dispatch lifecycle admission or run directly}
 &
-\src{dispatch-from-config.ts:1473--1475}
+\src{dispatch-from-config.ts:1525--1527}
 \\
 
 \py{async def ensureDispatchReplyOperation(phase):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1481 onward}
+\src{dispatch-from-config.ts:1533--1623}
 \\
 
 % ==============================================================
@@ -12403,47 +12428,47 @@ boundary.
 \pyI{should\_recover\_stale\_visible\_operation = ...}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1541--1546}
+\src{dispatch-from-config.ts:1593--1598}
 \\
 
 \pyI{recovery = requestStuckDiagnosticSessionRecovery(...)}
 &
-\src{dispatch-from-config.ts:1547--1556}
+\src{dispatch-from-config.ts:1599--1608}
 \\
 
 \pyI{admission = await admitReplyTurn(}
 &
-\src{dispatch-from-config.ts:1557--1571}
+\src{dispatch-from-config.ts:1609--1623}
 \\
 
 \pyII{sessionKey=dispatch\_operation\_session\_key,}
 &
-\src{dispatch-from-config.ts:1558}
+\src{dispatch-from-config.ts:1610}
 \\
 
 \pyII{sessionId=operation\_session\_id,}
 &
-\src{dispatch-from-config.ts:1559}
+\src{dispatch-from-config.ts:1611}
 \\
 
 \pyII{expectedSessionId=resolveOperationExpectedSessionId(),}
 &
-\src{dispatch-from-config.ts:1560}
+\src{dispatch-from-config.ts:1612}
 \\
 
 \pyII{kind=reply\_turn\_kind,}
 &
-\src{dispatch-from-config.ts:1563}
+\src{dispatch-from-config.ts:1615}
 \\
 
 \pyII{upstreamAbortSignal=params.replyOptions.abortSignal}
 &
-\src{dispatch-from-config.ts:1566}
+\src{dispatch-from-config.ts:1618}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:1557--1571}
+\src{dispatch-from-config.ts:1609--1623}
 \\
 
 % ==============================================================
@@ -12460,37 +12485,37 @@ boundary.
 \pyI{ensure\_runtime\_plugins = await traceReplyPhase(}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1825--1827}
+\src{dispatch-from-config.ts:1877--1879}
 \\
 
 \pyII{"reply.load\_runtime\_plugins", loadRuntimePlugins}
 &
-\src{dispatch-from-config.ts:1825--1827}
+\src{dispatch-from-config.ts:1877--1879}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:1825--1827}
+\src{dispatch-from-config.ts:1877--1879}
 \\
 
 \pyI{await traceReplyPhase("reply.ensure\_runtime\_plugins", ...)}
 &
-\src{dispatch-from-config.ts:1828--1830}
+\src{dispatch-from-config.ts:1880--1882}
 \\
 
 \pyI{hook\_runner = getGlobalHookRunner()}
 &
-\src{dispatch-from-config.ts:1831}
+\src{dispatch-from-config.ts:1883}
 \\
 
 \pyI{hook\_context, inbound\_claim\_context, inbound\_claim\_event =}
 &
-\src{dispatch-from-config.ts:1832--1853}
+\src{dispatch-from-config.ts:1889--1904}
 \\
 
 \pyII{buildHookState(ctx)}
 &
-\src{dispatch-from-config.ts:1838--1853}
+\src{dispatch-from-config.ts:1889--1904}
 \\
 
 % ==============================================================
@@ -12507,30 +12532,30 @@ boundary.
 \py{async def prepareHookMediaMetadata():}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1856--1877}
+\src{dispatch-from-config.ts:1916--1928}
 \\
 
 \pyI{staged = await traceReplyPhase(}
 &
-\src{dispatch-from-config.ts:1864--1872}
+\src{dispatch-from-config.ts:1916--1924}
 \\
 
 \pyII{"reply.stage\_remote\_media\_for\_dispatch",}
 &
-\src{dispatch-from-config.ts:1864--1872}
+\src{dispatch-from-config.ts:1916--1924}
 \\
 
 \pyII{stageRemoteInboundMediaIfNeeded(...)}
 &
-\src{dispatch-from-config.ts:1865--1871}
+\src{dispatch-from-config.ts:1917--1923}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:1864--1872}
+\src{dispatch-from-config.ts:1916--1924}
 \\
 
-\py{Cake2: no attachments}
+\py{R1: no attachments}
 &
 \src{NATIVE RUNTIME / SOURCE-DERIVED}
 \\
@@ -12549,42 +12574,42 @@ boundary.
 \pyI{normalize Provider / Surface / reply route}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:1919--1944}
+\src{dispatch-from-config.ts:1998--2014}
 \\
 
 \pyI{route\_decision = resolveReplyRoutingDecision(}
 &
-\src{dispatch-from-config.ts:1950--1958}
+\src{dispatch-from-config.ts:2003--2011}
 \\
 
 \pyII{provider=ctx.Provider,}
 &
-\src{dispatch-from-config.ts:1951}
+\src{dispatch-from-config.ts:2004}
 \\
 
 \pyII{surface=ctx.Surface,}
 &
-\src{dispatch-from-config.ts:1952}
+\src{dispatch-from-config.ts:2005}
 \\
 
 \pyII{originatingChannel=reply\_route.channel,}
 &
-\src{dispatch-from-config.ts:1954}
+\src{dispatch-from-config.ts:2007}
 \\
 
 \pyII{originatingTo=reply\_route.to}
 &
-\src{dispatch-from-config.ts:1955}
+\src{dispatch-from-config.ts:2008}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:1950--1958}
+\src{dispatch-from-config.ts:2003--2011}
 \\
 
 \pyI{delivery\_channel = originating channel if routed else current surface}
 &
-\src{dispatch-from-config.ts:1959--1965}
+\src{dispatch-from-config.ts:2012--2014}
 \\
 
 % ==============================================================
@@ -12601,37 +12626,37 @@ boundary.
 \pyI{send\_policy = resolveSendPolicy(}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2125--2137}
+\src{dispatch-from-config.ts:2184--2196}
 \\
 
 \pyII{cfg=cfg,}
 &
-\src{dispatch-from-config.ts:2126}
+\src{dispatch-from-config.ts:2184--2196}
 \\
 
 \pyII{entry=session\_store\_entry.entry,}
 &
-\src{dispatch-from-config.ts:2127}
+\src{dispatch-from-config.ts:2186}
 \\
 
 \pyII{sessionKey=session\_store\_entry.sessionKey or session\_key,}
 &
-\src{dispatch-from-config.ts:2128}
+\src{dispatch-from-config.ts:2187}
 \\
 
 \pyII{channel=effective delivery channel,}
 &
-\src{dispatch-from-config.ts:2129--2135}
+\src{dispatch-from-config.ts:2188--2194}
 \\
 
 \pyII{chatType=session\_store\_entry.entry.chatType}
 &
-\src{dispatch-from-config.ts:2136}
+\src{dispatch-from-config.ts:2195}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:2125--2137}
+\src{dispatch-from-config.ts:2184--2196}
 \\
 
 % ==============================================================
@@ -12648,54 +12673,54 @@ boundary.
 \pyI{tool\_policy = resolveEffectiveToolPolicy(}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2147--2151}
+\src{dispatch-from-config.ts:2206--2210}
 \\
 
 \pyII{config=cfg,}
 &
-\src{dispatch-from-config.ts:2148}
+\src{dispatch-from-config.ts:2207}
 \\
 
 \pyII{sessionKey=acp\_dispatch\_session\_key,}
 &
-\src{dispatch-from-config.ts:2149}
+\src{dispatch-from-config.ts:2208}
 \\
 
 \pyII{agentId=session\_agent\_id}
 &
-\src{dispatch-from-config.ts:2150}
+\src{dispatch-from-config.ts:2209}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:2147--2151}
+\src{dispatch-from-config.ts:2206--2210}
 \\
 
 \pyI{message\_tool\_available = isToolAllowedByPolicies(}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2230--2240}
+\src{dispatch-from-config.ts:2289--2299}
 \\
 
 \pyII{"message", effective policy layers}
 &
-\src{dispatch-from-config.ts:2230--2240}
+\src{dispatch-from-config.ts:2289--2299}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:2230--2240}
+\src{dispatch-from-config.ts:2289--2299}
 \\
 
 \pyI{source\_reply\_policy = resolveSourceReplyVisibilityPolicy(...)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2241--2252}
+\src{dispatch-from-config.ts:2300--2321}
 \\
 
 \pyI{derive suppression / visibility state}
 &
-\src{dispatch-from-config.ts:2253--2262}
+\src{dispatch-from-config.ts:2300--2321}
 \\
 
 % ==============================================================
@@ -12712,27 +12737,27 @@ boundary.
 \pyI{inbound\_dedupe\_claim = claimInboundDedupe(ctx)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2282}
+\src{dispatch-from-config.ts:2342}
 \\
 
 \pyI{if status in ["duplicate", "inflight"]:}
 &
-\src{dispatch-from-config.ts:2283--2289}
+\src{dispatch-from-config.ts:2343--2349}
 \\
 
 \pyII{recordProcessed("skipped", reason="duplicate")}
 &
-\src{dispatch-from-config.ts:2284}
+\src{dispatch-from-config.ts:2344}
 \\
 
 \pyII{return without new dispatch}
 &
-\src{dispatch-from-config.ts:2285--2288}
+\src{dispatch-from-config.ts:2345--2348}
 \\
 
 \pyI{define commit / release helpers for claimed dedupe}
 &
-\src{dispatch-from-config.ts:2290--2299}
+\src{dispatch-from-config.ts:2350--2359}
 \\
 
 % ==============================================================
@@ -12749,32 +12774,32 @@ boundary.
 \py{def emitMessageReceivedHooks():}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2338--2364}
+\src{dispatch-from-config.ts:2399--2425}
 \\
 
 \pyI{run plugin message\_received hooks when enabled}
 &
-\src{dispatch-from-config.ts:2339--2351}
+\src{dispatch-from-config.ts:2400--2411}
 \\
 
 \pyI{run internal message:received hook when Session key exists}
 &
-\src{dispatch-from-config.ts:2352--2363}
+\src{dispatch-from-config.ts:2413--2424}
 \\
 
 \pyI{markProcessing()}
 &
-\src{dispatch-from-config.ts:2365}
+\src{dispatch-from-config.ts:2426}
 \\
 
 \pyI{load / execute fast-abort resolver}
 &
-\src{dispatch-from-config.ts:2367--2413}
+\src{dispatch-from-config.ts:2428--2474}
 \\
 
 \pyI{if fast\_abort.handled: return early result}
 &
-\src{dispatch-from-config.ts:2375--2413}
+\src{dispatch-from-config.ts:2436--2474}
 \\
 
 % ==============================================================
@@ -12788,25 +12813,25 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{pre\_dispatch = await ensureDispatchReplyOperation("pre\_dispatch")}
+\pytI{pre\_dispatch = await ensureDispatchReplyOperation("pre\_dispatch")}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2416}
+\src{dispatch-from-config.ts:2478}
 \\
 
-\pyI{if pre\_dispatch.status == "aborted": return aborted result}
+\pytI{if pre\_dispatch.status == "aborted": return aborted result}
 &
-\src{dispatch-from-config.ts:2417--2418}
+\src{dispatch-from-config.ts:2479--2480}
 \\
 
-\pyI{if pre\_dispatch.status == "busy": return busy result}
+\pytI{if pre\_dispatch.status == "busy": return busy result}
 &
-\src{dispatch-from-config.ts:2420--2421}
+\src{dispatch-from-config.ts:2482--2483}
 \\
 
-\pyI{if plugin-owned binding exists: evaluate plugin ownership path}
+\pytI{if plugin-owned binding exists: evaluate plugin ownership path}
 &
-\src{dispatch-from-config.ts:2423 onward}
+\src{dispatch-from-config.ts:2486 onward}
 \\
 
 % ==============================================================
@@ -12820,56 +12845,56 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{if hook\_runner.hasHooks("before\_dispatch"):}
+\pytI{if hook\_runner.hasHooks("before\_dispatch"):}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2840--2902}
+\src{dispatch-from-config.ts:2908--2968}
 \\
 
-\pyII{before\_dispatch\_result = await traceReplyPhase(}
+\pytII{before\_dispatch\_result = await traceReplyPhase(}
 &
-\src{dispatch-from-config.ts:2842 onward}
+\src{dispatch-from-config.ts:2910--2947}
 \\
 
-\pyIII{"reply.before\_dispatch\_hooks", ...}
+\pytIII{"reply.before\_dispatch\_hooks", ...}
 &
-\src{dispatch-from-config.ts:2842 onward}
+\src{dispatch-from-config.ts:2910--2947}
+\\
+
+\pytII{)}
+&
+\src{dispatch-from-config.ts:2910--2947}
+\\
+
+\pytII{if handled: deliver result and return}
+&
+\src{dispatch-from-config.ts:2948--2968}
+\\
+
+\pytI{if hook\_runner.hasHooks("reply\_dispatch"):}
+&
+\src{src/auto-reply/reply/}\newline
+\src{dispatch-from-config.ts:2973--3023}
+\\
+
+\pytII{reply\_dispatch\_result = await traceReplyPhase(}
+&
+\src{dispatch-from-config.ts:2974--3014}
+\\
+
+\pytIII{"reply.reply\_dispatch\_hooks", ...}
+&
+\src{dispatch-from-config.ts:2974--3014}
 \\
 
 \pyII{)}
 &
-\src{dispatch-from-config.ts:2842 onward}
+\src{dispatch-from-config.ts:2974--3014}
 \\
 
-\pyII{if handled: deliver result and return}
+\pytII{if handled: return hook result}
 &
-\src{dispatch-from-config.ts:2880--2902}
-\\
-
-\pyI{if hook\_runner.hasHooks("reply\_dispatch"):}
-&
-\src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2904--2953}
-\\
-
-\pyII{reply\_dispatch\_result = await traceReplyPhase(}
-&
-\src{dispatch-from-config.ts:2905--2945}
-\\
-
-\pyIII{"reply.reply\_dispatch\_hooks", ...}
-&
-\src{dispatch-from-config.ts:2905--2945}
-\\
-
-\pyII{)}
-&
-\src{dispatch-from-config.ts:2905--2945}
-\\
-
-\pyII{if handled: return hook result}
-&
-\src{dispatch-from-config.ts:2946--2953}
+\src{dispatch-from-config.ts:3015--3023}
 \\
 
 % ==============================================================
@@ -12883,26 +12908,26 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{dispatch\_acquisition = await ensureDispatchReplyOperation("dispatch")}
+\pytI{dispatch\_acquisition = await ensureDispatchReplyOperation("dispatch")}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2955}
+\src{dispatch-from-config.ts:3025}
 \\
 
-\pyI{if aborted: return aborted result}
+\pytI{if aborted: return aborted result}
 &
-\src{dispatch-from-config.ts:2956--2957}
+\src{dispatch-from-config.ts:3026--3027}
 \\
 
-\pyI{if busy: return busy result}
+\pytI{if busy: return busy result}
 &
-\src{dispatch-from-config.ts:2959--2960}
+\src{dispatch-from-config.ts:3029--3030}
 \\
 
-\pyI{prepare progress / tool / block / plan / approval callbacks}
+\pytI{prepare progress / tool / block / plan / approval callbacks}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:2970--3305}
+\src{dispatch-from-config.ts:3297--3380; line not pinned}
 \\
 
 % ==============================================================
@@ -12916,58 +12941,58 @@ boundary.
 {\normalfont\bfseries Source}
 \\[2mm]
 
-\pyI{reply\_resolver = params.replyResolver or}
+\pytI{reply\_resolver = params.replyResolver or}
 &
 \src{src/auto-reply/reply/}\newline
 \src{dispatch-from-config.ts:3381--3384}
 \\
 
-\pyII{traceReplyPhase("reply.load\_reply\_resolver",}
+\pytII{traceReplyPhase("reply.load\_reply\_resolver",}
 &
 \src{dispatch-from-config.ts:3381--3384}
 \\
 
-\pyIII{loadGetReplyFromConfigRuntime)}
+\pytIII{loadGetReplyFromConfigRuntime)}
 &
 \src{dispatch-from-config.ts:3381--3384}
 \\
 
-\pyI{reply\_config = withFullRuntimeReplyConfig(...)}
+\pytI{reply\_config = withFullRuntimeReplyConfig(...)}
 &
-\src{dispatch-from-config.ts:3310--3312}
+\src{dispatch-from-config.ts:3385--3387}
 \\
 
-\pyI{recordAgentDispatchStarted()}
+\pytI{recordAgentDispatchStarted()}
 &
-\src{dispatch-from-config.ts:3313}
+\src{dispatch-from-config.ts:3385--3387}
 \\
 
-\pyI{reply\_result = await runWithDispatchLifecycleAdmission(}
+\pytI{reply\_result = await runWithDispatchLifecycleAdmission(}
 &
-\src{dispatch-from-config.ts:3314--3736}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyII{traceReplyPhase("reply.run\_reply\_resolver",}
+\pytII{traceReplyPhase("reply.run\_reply\_resolver",}
 &
-\src{dispatch-from-config.ts:3319 onward}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply\_resolver(ctx, options, reply\_config)}
+\pytIII{reply\_resolver(ctx, options, reply\_config)}
 &
-\src{dispatch-from-config.ts:3320--3732}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
 \pyII{)}
 &
-\src{dispatch-from-config.ts:3319--3732}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
 \pyI{)}
 &
-\src{dispatch-from-config.ts:3314--3736}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
-\py{Cake2: resolver\_source = "default\_getReplyFromConfig"}
+\py{R1: resolver\_source = "default\_getReplyFromConfig"}
 &
 \src{TRACECLAW RUNTIME: G18}
 \\
@@ -12986,22 +13011,22 @@ boundary.
 \pyI{session\_metadata\_changes = takeCommandSessionMetadataChanges(ctx)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:3737}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyI{notifySessionMetadataChanges(session\_metadata\_changes)}
 &
-\src{dispatch-from-config.ts:3738}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyI{final\_dispatch = await ensureDispatchReplyOperation("dispatch")}
 &
-\src{dispatch-from-config.ts:3739--3750}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyI{if ACP tail dispatch is required: process special tail path}
 &
-\src{dispatch-from-config.ts:3751--3808}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 % ==============================================================
@@ -13023,32 +13048,32 @@ boundary.
 
 \pyI{flushPendingCommentaryProgress()}
 &
-\src{dispatch-from-config.ts:3812}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyI{for reply in replies:}
 &
-\src{dispatch-from-config.ts:3832 onward}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyII{apply reasoning / commentary / suppression checks}
 &
-\src{dispatch-from-config.ts:3832--3858}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyII{dedupe final payload}
 &
-\src{dispatch-from-config.ts:3859--3863}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyII{final\_reply = await sendFinalPayload(reply, ...)}
 &
-\src{dispatch-from-config.ts:3864--3870}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 \pyI{optionally perform TTS-only final delivery}
 &
-\src{dispatch-from-config.ts:3883--3958}
+\src{dispatch-from-config.ts:3812 onward}
 \\
 
 % ==============================================================
@@ -13065,47 +13090,47 @@ boundary.
 \pyI{await waitForPendingDirectBlockReplyDelivery(...)}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:3959}
+\src{dispatch-from-config.ts:4040}
 \\
 
 \pyI{counts = dispatcher.getQueuedCounts()}
 &
-\src{dispatch-from-config.ts:3960}
+\src{dispatch-from-config.ts:4041}
 \\
 
 \pyI{counts.final += routed\_final\_count}
 &
-\src{dispatch-from-config.ts:3961}
+\src{dispatch-from-config.ts:4042}
 \\
 
 \pyI{commitInboundDedupeIfClaimed()}
 &
-\src{dispatch-from-config.ts:3962}
+\src{dispatch-from-config.ts:4043}
 \\
 
 \pyI{recordAgentDispatchCompleted("completed")}
 &
-\src{dispatch-from-config.ts:3963}
+\src{dispatch-from-config.ts:4044}
 \\
 
 \pyI{recordProcessed("completed", ...)}
 &
-\src{dispatch-from-config.ts:3964--3967}
+\src{dispatch-from-config.ts:4045--4048}
 \\
 
 \pyI{markIdle("message\_completed")}
 &
-\src{dispatch-from-config.ts:3968}
+\src{dispatch-from-config.ts:4049}
 \\
 
 \pyI{completeDispatchReplyOperation()}
 &
-\src{dispatch-from-config.ts:3969}
+\src{dispatch-from-config.ts:4050}
 \\
 
 \pyI{return DispatchFromConfigResult(...)}
 &
-\src{dispatch-from-config.ts:3970--3981}
+\src{dispatch-from-config.ts:4051--4062}
 \\
 
 % ==============================================================
@@ -13122,86 +13147,86 @@ boundary.
 \pyI{except error:}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:3982--3998}
+\src{dispatch-from-config.ts:4063--4078}
 \\
 
 \pyII{if operation aborted: return aborted result}
 &
-\src{dispatch-from-config.ts:3983--3985}
+\src{dispatch-from-config.ts:4064--4066}
 \\
 
 \pyII{commit or release inbound dedupe according to replay safety}
 &
-\src{dispatch-from-config.ts:3986--3992}
+\src{dispatch-from-config.ts:4067--4073}
 \\
 
 \pyII{recordAgentDispatchCompleted("error", ...)}
 &
-\src{dispatch-from-config.ts:3993}
+\src{dispatch-from-config.ts:4074}
 \\
 
 \pyII{recordProcessed("error", ...)}
 &
-\src{dispatch-from-config.ts:3994}
+\src{dispatch-from-config.ts:4075}
 \\
 
 \pyII{markIdle("message\_error")}
 &
-\src{dispatch-from-config.ts:3995}
+\src{dispatch-from-config.ts:4076}
 \\
 
 \pyII{failDispatchReplyOperation(error)}
 &
-\src{dispatch-from-config.ts:3996}
+\src{dispatch-from-config.ts:4077}
 \\
 
 \pyII{raise error}
 &
-\src{dispatch-from-config.ts:3997}
+\src{dispatch-from-config.ts:4078}
 \\
 
 % ==============================================================
-% Cake2 concrete state
+% R1 concrete state
 % ==============================================================
 
 \hline
 
-{\normalfont\bfseries Cake2 concrete state}
+{\normalfont\bfseries R1 concrete state}
 &
 {\normalfont\bfseries Evidence}
 \\[2mm]
 
-\py{Cake2: message = "How to make a cake?"}
+\py{R1: message = "How to make a cake?"}
 &
 \src{G13 / G15 SOURCE-DERIVED}
 \\
 
-\py{Cake2: session\_key =}
+\py{R1: session\_key =}
 &
 \src{RUNTIME}
 \\
 
-\pyI{"agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4"}
+\pyI{"agent:main:dashboard:trace-82fbff4483c4"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: upstream AgentId = "main"}
+\py{R1: upstream AgentId = "main"}
 &
 \src{RUNTIME}
 \\
 
-\py{Cake2: G17 downstreamAgentId = "main"}
+\py{R1: G17 downstreamAgentId = "main"}
 &
 \src{TRACECLAW RUNTIME: G17}
 \\
 
-\py{Cake2: G17 result = "resolved"}
+\py{R1: G17 result = "resolved"}
 &
 \src{TRACECLAW RUNTIME: G17}
 \\
 
-\py{Cake2: G18 resolverSource =}
+\py{R1: G18 resolverSource =}
 &
 \src{TRACECLAW RUNTIME: G18}
 \\
@@ -13211,17 +13236,17 @@ boundary.
 \src{TRACECLAW RUNTIME: G18}
 \\
 
-\py{Cake2: G18 result = "selected"}
+\py{R1: G18 result = "selected"}
 &
 \src{TRACECLAW RUNTIME: G18}
 \\
 
-\py{Cake2: no standalone G16 TraceClaw result is asserted}
+\py{R1: no standalone G16 TraceClaw result is asserted}
 &
 \src{OBSERVATION BOUNDARY}
 \\
 
-\py{Cake2: exact G16 final counts are not asserted here}
+\py{R1: exact G16 final counts are not asserted here}
 &
 \src{NOT DIRECTLY OBSERVED}
 \\
@@ -13233,7 +13258,7 @@ boundary.
 % G16
 % ==============================================================
 
-\subsection*{G16: Reply Dispatch Orchestration}
+\subsection*{G16: Reply Dispatch Orchestration Flow Diagram}
 
 \textbf{Purpose:}
 This step receives the finalized context from G15 and carries out the
@@ -13344,7 +13369,7 @@ $\downarrow$\\[3mm]
 
 Main G16 implementation:\\
 \texttt{src/auto-reply/reply/}\\
-\texttt{dispatch-from-config.ts:1215--4080}\\[1mm]
+\texttt{dispatch-from-config.ts:1215--1228}\\[1mm]
 
 Initial dispatch / lifecycle setup:\\
 \texttt{dispatch-from-config.ts:1218--1339}\\[1mm]
@@ -13362,10 +13387,10 @@ Dedupe / interception paths:\\
 \texttt{dispatch-from-config.ts:2342--3031}\\[1mm]
 
 Delivery contract / G18 boundary:\\
-\texttt{dispatch-from-config.ts:3033--3811}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Post-resolver delivery / completion:\\
-\texttt{dispatch-from-config.ts:3812--4078}
+\texttt{dispatch-from-config.ts:3812 onward}
 };
 
 % ==============================================================
@@ -13393,15 +13418,15 @@ Optional:\\
 \texttt{replyResolver?}\\
 \texttt{onSessionMetadataChanges?}\\[4mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{Body =}\\
 \texttt{"How to make a cake?"}\\[2mm]
 
 \texttt{SessionKey =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[2mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[2mm]
 
 \texttt{AgentId = "main"}\\
 \texttt{ChatType = "direct"}
@@ -13449,9 +13474,9 @@ G16 starts from \texttt{dispatchReplyFromConfig(params)}. The
 \texttt{ctx} field is the \texttt{FinalizedMsgContext} produced by G15,
 together with configuration, dispatcher state, reply options, and
 optional callbacks.\\
-\textit{Source: dispatch-from-config.ts:1215 onward}\\[2mm]
+\textit{Source: dispatch-from-config.ts:1215--1228}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{Body = "How to make a cake?"}\\
 \texttt{AgentId = "main"}\\
 \texttt{ChatType = "direct"}\\[3mm]
@@ -13464,7 +13489,7 @@ then resolved again from this downstream Session context.\\
 
 The Agent re-resolution is the nested G17 stage.\\[2mm]
 
-Cake2 runtime observation:\\
+R1 runtime observation:\\
 \texttt{agentId = "main"}\\
 $\rightarrow$
 \texttt{downstreamAgentId = "main"}\\[3mm]
@@ -13504,7 +13529,7 @@ path uses \texttt{getReplyFromConfig}.\\
 \quad$\downarrow$\\
 \texttt{reply resolver result}\\[2mm]
 
-Cake2 runtime observation:\\
+R1 runtime observation:\\
 \texttt{resolverSource =}\\
 \texttt{"default\_getReplyFromConfig"}\\
 \texttt{result = "selected"}\\[3mm]
@@ -13514,7 +13539,7 @@ After the resolver returns, G16 processes the reply payloads, applies
 the relevant visibility / suppression logic, removes duplicate final
 payloads where required, and sends the remaining replies through the
 dispatcher.\\
-\textit{Source: dispatch-from-config.ts:3812--4038}\\[3mm]
+\textit{Source: dispatch-from-config.ts:3812 onward}\\[3mm]
 
 \textbf{Step 8: Complete the lifecycle and return the result}\\
 Finish the dispatch lifecycle, update dedupe / reply-operation state,
@@ -13602,7 +13627,7 @@ Agent. In the G17 call, no separate explicit \texttt{agentId} argument
 is supplied, so the downstream Session key is checked before
 \texttt{ctx.AgentId} is used as fallback.
 
-For Cake2, the downstream Session still identifies Agent
+For R1, the downstream Session still identifies Agent
 \texttt{"main"}, and the fallback \texttt{ctx.AgentId} is also
 \texttt{"main"}. TraceClaw therefore records
 \texttt{agentId = "main"} and
@@ -13613,7 +13638,7 @@ For Cake2, the downstream Session still identifies Agent
 % G17
 % ==============================================================
 
-\subsection*{G17: Downstream Effective Agent Re-resolution}
+\subsection*{G17: Downstream Effective Agent Re-resolution Flow Diagram}
 
 \textbf{Purpose:}
 This step re-resolves the effective Agent from the downstream Session
@@ -13734,12 +13759,12 @@ From G16:\\[1mm]
 Fallback:\\
 \texttt{ctx.AgentId}\\[4mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{SessionKey =}\\
 \texttt{"agent:main:dashboard:}\\
-\texttt{f73617ed-3b69-4864-}\\
-\texttt{bb5d-d5ff8d1c39c4"}\\[3mm]
+\texttt{trace-82fbff4483c4}\\
+\texttt{"}\\[3mm]
 
 \texttt{ctx.AgentId = "main"}
 };
@@ -13757,7 +13782,7 @@ Internal G16 state:\\[2mm]
 
 \texttt{sessionAgentCfg}\\[4mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{sessionAgentId = "main"}\\[3mm]
 
@@ -13792,7 +13817,7 @@ default can be used.\\
 \textit{Source: dispatch-from-config.ts:1422--1426;}\\
 \textit{agent-scope.ts:300--329}\\[2mm]
 
-Cake2:\\
+R1:\\
 \texttt{downstream Session Agent = "main"}\\
 \texttt{fallback ctx.AgentId = "main"}\\
 $\rightarrow$
@@ -13814,7 +13839,7 @@ The resolved Agent ID and Agent configuration remain internal to G16
 and are used by the following reply environment, routing, policy, and
 execution steps.\\[2mm]
 
-Cake2 TraceClaw:\\
+R1 TraceClaw:\\
 \texttt{event = "effective\_agent\_reresolved"}\\
 \texttt{agentId = "main"}\\
 \texttt{downstreamAgentId = "main"}\\
@@ -13885,7 +13910,7 @@ selects \texttt{getReplyFromConfig}. G18 then prepares the effective
 reply configuration, records the start of Agent dispatch, and invokes
 the selected resolver.
 
-For Cake2, no custom reply resolver was selected. TraceClaw records
+For R1, no custom reply resolver was selected. TraceClaw records
 \texttt{resolverSource = "default\_getReplyFromConfig"} and
 \texttt{result = "selected"}. The effective Agent entering this
 boundary remains \texttt{"main"}.
@@ -13913,7 +13938,7 @@ boundary remains \texttt{"main"}.
 \py{# G18 begins inside dispatchReplyFromConfig}
 &
 \src{src/auto-reply/reply/}\newline
-\src{dispatch-from-config.ts:3381--3811}
+\src{dispatch-from-config.ts:3381--3384}
 \\
 
 \py{reply_resolver = params.replyResolver}
@@ -13938,73 +13963,73 @@ boundary remains \texttt{"main"}.
 
 \hline
 
-\py{reply_config = withFullRuntimeReplyConfig(...)}
-&
-\src{dispatch-from-config.ts:3385--3387}
-\\
-
-\pyI{# optional configOverride is merged before use}
-&
-\src{dispatch-from-config.ts:3385--3387}
-\\
-
-\py{recordAgentDispatchStarted()}
+\pyt{reply\_config = withFullRuntimeReplyConfig(...)}
 &
 \src{dispatch-from-config.ts:3388}
 \\
 
+\pytI{\# optional configOverride is merged before use}
+&
+\src{dispatch-from-config.ts:3385--3387}
+\\
+
+\pyt{recordAgentDispatchStarted()}
+&
+\src{dispatch-from-config.ts:3385--3387}
+\\
+
 \hline
 
-\py{reply_result = await runWithDispatchLifecycleAdmission(...)}
+\pyt{reply\_result = await runWithDispatchLifecycleAdmission(...)}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyI{runWithDispatchAbortSignal(...)}
+\pytI{runWithDispatchAbortSignal(...)}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyII{traceReplyPhase("reply.run_reply_resolver", ...)}
+\pytII{traceReplyPhase("reply.run\_reply\_resolver", ...)}
 &
 \src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply_resolver(}
+\pytIII{reply\_resolver(}
 &
-\src{dispatch-from-config.ts:3395--3807}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
 \pyIII{ctx,}
 &
-\src{dispatch-from-config.ts:3395--3807}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply_options,}
+\pytIII{reply\_options,}
 &
-\src{dispatch-from-config.ts:3395--3807}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
-\pyIII{reply_config}
+\pytIII{reply\_config}
 &
-\src{dispatch-from-config.ts:3395--3807}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
 \pyIII{)}
 &
-\src{dispatch-from-config.ts:3395--3807}
+\src{dispatch-from-config.ts:3389--3811}
 \\
 
 \hline
 
-\py{# reply_result returns to the surrounding G16 flow}
+\pyt{\# reply\_result returns to the surrounding G16 flow}
 &
 \src{dispatch-from-config.ts:3812 onward}
 \\
 
 \hline
 
-\py{# Cake2 runtime}
+\py{# R1 runtime}
 &
 \src{TRACECLAW runtime evidence}
 \\
@@ -14031,7 +14056,7 @@ boundary remains \texttt{"main"}.
 % G18
 % ==============================================================
 
-\subsection*{G18: Reply Resolver Boundary}
+\subsection*{G18: Reply Resolver Boundary Flow Diagram}
 
 \textbf{Purpose:}
 This step selects and invokes the reply resolver used by G16. The
@@ -14133,19 +14158,19 @@ $\downarrow$\\[3mm]
 
 G18 inside G16:\\
 \texttt{src/auto-reply/reply/}\\
-\texttt{dispatch-from-config.ts:3381--3811}\\[2mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[2mm]
 
 Resolver selection / loading:\\
 \texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Reply configuration:\\
-\texttt{dispatch-from-config.ts:3385--3387}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Agent-dispatch start:\\
-\texttt{dispatch-from-config.ts:3388}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 Resolver lifecycle / invocation:\\
-\texttt{dispatch-from-config.ts:3389--3811}\\[1mm]
+\texttt{dispatch-from-config.ts:3381--3384}\\[1mm]
 
 G16 resumes:\\
 \texttt{dispatch-from-config.ts:3812 onward}
@@ -14170,7 +14195,7 @@ From G16:\\[1mm]
 Optional:\\
 \texttt{params.replyResolver}\\[4mm]
 
-Cake2:\\[1mm]
+R1:\\[1mm]
 
 \texttt{Body =}\\
 \texttt{"How to make a cake?"}\\[2mm]
@@ -14192,7 +14217,7 @@ Internal G16 result:\\[2mm]
 
 \texttt{replyResult}\\[4mm]
 
-Cake2 resolver selection:\\[1mm]
+R1 resolver selection:\\[1mm]
 
 \texttt{resolverSource =}\\
 \texttt{"default\_getReplyFromConfig"}\\[3mm]
@@ -14221,7 +14246,7 @@ If so, use it. Otherwise load the default reply runtime and select
 \texttt{getReplyFromConfig}.\\
 \textit{Source: dispatch-from-config.ts:3381--3384}\\[2mm]
 
-Cake2:\\
+R1:\\
 No custom resolver is selected.\\
 $\rightarrow$
 \texttt{getReplyFromConfig}\\[3mm]
@@ -14230,19 +14255,19 @@ $\rightarrow$
 Build the runtime reply configuration from the current G16
 configuration. If a configuration override exists, merge it before
 constructing the full runtime configuration.\\
-\textit{Source: dispatch-from-config.ts:3385--3387}\\[3mm]
+\textit{Source: dispatch-from-config.ts:3381--3384}\\[3mm]
 
 \textbf{Step 3: Mark the Agent dispatch start}\\
 Call \texttt{recordAgentDispatchStarted()} immediately before entering
 the resolver execution path.\\
-\textit{Source: dispatch-from-config.ts:3388}\\[3mm]
+\textit{Source: dispatch-from-config.ts:3381--3384}\\[3mm]
 
 \textbf{Step 4: Invoke the resolver}\\
 Run the selected resolver under the existing dispatch lifecycle,
 abort signal, and native \texttt{reply.run\_reply\_resolver} diagnostic
 span. The resolver receives the finalized context, downstream reply
 options, callbacks, and the prepared reply configuration.\\
-\textit{Source: dispatch-from-config.ts:3389--3811}\\[2mm]
+\textit{Source: dispatch-from-config.ts:3381--3384}\\[2mm]
 
 \texttt{FinalizedMsgContext}\\
 \quad$\downarrow$\\
@@ -14256,10 +14281,9 @@ options, callbacks, and the prepared reply configuration.\\
 When the resolver completes, its result is returned to the surrounding
 G16 flow. G16 then continues with metadata handling, reply filtering,
 delivery, and lifecycle completion.\\
-\textit{Source: G18 ends at dispatch-from-config.ts:3811;}\\
-\textit{G16 resumes at 3812 onward}\\[2mm]
+\textit{Source: post-resolver handling at dispatch-from-config.ts:3812 onward}\\[2mm]
 
-Cake2 TraceClaw:\\
+R1 TraceClaw:\\
 \texttt{event = "reply\_resolver\_selected"}\\
 \texttt{agentId = "main"}\\
 \texttt{resolverSource = "default\_getReplyFromConfig"}\\
@@ -14551,7 +14575,7 @@ spec.
 \begin{verbatim}
 
                        OpenClaw Gateway
-              Case 2: "How to make a cake?"
+              R1: "How to make a cake?"
                               |
         +---------------------+----------------------+
         |                     |                      |
@@ -14562,16 +14586,16 @@ spec.
 |                    |  | Handling             |  | & Security           |
 | G0  Resolve auth   |  | G3  Method auth      |  | G10 Send policy      |
 |     state          |  |     allow            |  |     allow            |
-|     not_authorized |  |     (admin_scope)    |  |                      |
+|     authorized |  |     (operator.write)|  |                      |
 |       |            |  |                      |  | G11 Run / idempotency|
 |       v            |  | G4  Validate         |  |     guard            |
 | G1  Shared         |->|     chat.send        |->|     new_dispatch     |
 |     credential     |  |     pass             |  |                      |
-|     deny           |  |                      |  | G12 Work admission   |
+|     allow          |  |                      |  | G12 Work admission   |
 |                    |  | G5  Sanitize message |  |     & revalidation   |
 | G2  Final auth +   |  |     unchanged        |  |     admitted         |
 |     handshake      |  |                      |  |                      |
-|     device-token   |  | G6  Resolve requested|  +----------------------+
+|     shared-token   |  | G6  Resolve requested|  +----------------------+
 |     pass           |  |     Agent            |
 |     operator       |  |     resolved         |
 +--------------------+  |                      |
@@ -14594,8 +14618,8 @@ spec.
                  |                                      |
                  | Auxiliary Pre-dispatch               |
                  |   media / ACK / title / transcript   |
-                 |   ACK: 0.219 ms                      |
-                 |   title sync: 6655.825 ms            |
+                 |   ACK: NOT RECORDED                  |
+                 |   title sync: NOT RECORDED           |
                  |                |                     |
                  |                v                     |
                  | G13  Build MsgContext                |
@@ -14638,7 +14662,8 @@ spec.
                        |                          |
                        | model: gpt-5.5           |
                        | provider: openai         |
-                       | available tools: 33      |
+                       | available tools: NOT RECORDED |
+                       | tools invoked in R1: 0   |
                        +------------+-------------+
                                     |
                                     | replyResult
@@ -14661,14 +14686,14 @@ spec.
 \endgroup
 
 \caption{
-OpenClaw Gateway G0--G18 flow using Case 2
+OpenClaw Gateway G0--G18 flow using R1
 (\texttt{"How to make a cake?"}).
 The stages are grouped into Server \& Connection,
 Methods \& Request Handling, and Runtime Management \& Security.
-Values shown beside the stages are the main results observed in Case 2.
+Values shown beside the stages are the main results observed in R1.
 }
 
-\label{fig:gateway-g0-g18-case2}
+\label{fig:gateway-g0-g18-r1}
 
 \end{figure}
 
@@ -14724,7 +14749,7 @@ later resolver return, not from an earlier message-end hook.
 \textbf{Fixed OpenClaw v2026.7.1-2 source anchor} \\
 \midrule
 G18 resolver selection / invocation &
-\seqsplit{src/auto-reply/reply/dispatch-from-config.ts:3381--3808} \\
+\seqsplit{src/auto-reply/reply/dispatch-from-config.ts:3381--3384} \\
 \addlinespace
 Default resolver &
 \seqsplit{src/auto-reply/reply/get-reply.ts} \\
@@ -14815,155 +14840,157 @@ Resolver-return evidence. \\
 \bottomrule
 \end{tabularx}
 
-\subsection*{D. Repeated Weather Runtime Evidence}
+
+\subsection*{D. Controlled AR-Layer Ledgers}
+
+The controlled cohort uses the same AR vocabulary as the Gateway ledger.
+AR0--AR5 are runtime-observed when the saved trace contains the selected
+runtime, run start, tool/no-tool outcome, finalized reply, and run end.
+AR6 is treated separately: \texttt{reply\_resolver\_returned} observes the
+resolver return event, while the later G16/G14 resume is source-derived
+unless a separate post-return event is present.
+
+\paragraph{R1 no-tool path.}
+R1 is the detailed Gateway case. Its post-G18 path contains an embedded
+Agent run with no tool calls. The trace records
+\texttt{agent\_runtime\_selected}, \texttt{agent\_run\_started},
+\texttt{agent\_reply\_finalized}, \texttt{agent\_run\_ended}, and
+\texttt{reply\_resolver\_returned}. The absence of a tool event is part of
+the evidence: AR2 is \texttt{Observed(no\_tool)}, not missing.
 
 \begin{tabularx}{\linewidth}{
     @{}
-    >{\raggedright\arraybackslash}p{0.28\linewidth}
+    >{\raggedright\arraybackslash}p{0.16\linewidth}
+    >{\raggedright\arraybackslash}p{0.25\linewidth}
     >{\raggedright\arraybackslash}X
-    @{}
-}
-\toprule
-\textbf{Field} &
-\textbf{Evidence} \\
-\midrule
-Evidence source &
-Six anonymized New York weather runs recovered from historical
-\texttt{latest-live.js} snapshots. They support the runtime-return claim;
-they are not treated as Cake2 evidence. \\
-\addlinespace
-\texttt{agentRuntime.observed} &
-\texttt{true} \\
-\addlinespace
-Status &
-\texttt{completed} \\
-\addlinespace
-Final Agent &
-\texttt{main} \\
-\addlinespace
-Resolver source &
-\texttt{default\_getReplyFromConfig} \\
-\addlinespace
-Runner &
-\texttt{embedded} \\
-\addlinespace
-Tool count &
-\texttt{1--2}; each run includes an observed \texttt{web\_search}
-\texttt{tool\_started}/\texttt{tool\_result} pair. \\
-\addlinespace
-Reply result kind &
-\texttt{single} \\
-\addlinespace
-Return edge &
-\texttt{reply\_resolver\_returned = observed}; later G16/G14 resume is
-source-derived. \\
-\bottomrule
-\end{tabularx}
-
-Common event order. The \texttt{bash} skill-loading probe appears only in
-the runs that loaded the weather skill:
-
-\begin{verbatim}
-agent_runtime_selected
-agent_run_started
-tool_started        (optional bash)
-tool_result         (optional bash, completed)
-tool_started        (web_search)
-tool_result         (web_search, completed)
-agent_reply_finalized
-agent_run_ended
-reply_resolver_returned
-\end{verbatim}
-
-\textbf{Use in paper:} supports the AR0--AR6 event vocabulary and the
-\texttt{reply\_resolver\_returned} return edge for successful tool-using
-runs.
-
-\textbf{Do not claim:} that these post-G18 events came from the archived
-Cake2 file.
-
-\begin{tabularx}{\linewidth}{
-    @{}
-    >{\raggedright\arraybackslash}p{0.17\linewidth}
-    >{\raggedright\arraybackslash}p{0.24\linewidth}
     >{\raggedright\arraybackslash}p{0.18\linewidth}
-    >{\raggedright\arraybackslash}X
     @{}
 }
 \toprule
-\textbf{Run} &
-\textbf{Saved trace source} &
-\textbf{Validation} &
-\textbf{Evidence kept} \\
+\textbf{AR stage} &
+\textbf{R1 evidence} &
+\textbf{R1 value} &
+\textbf{Status} \\
 \midrule
-W16:47 &
-\texttt{09e237f:latest-live.js} &
-G0--G18 complete &
-\texttt{web\_search}, final reply, resolver return. \\
+AR0 & Runtime selected & runner \texttt{embedded}; Agent \texttt{main}; provider \texttt{openai}; model \texttt{gpt-5.5} & Observed \\
 \addlinespace
-W16:49 &
-\texttt{9f6e39d:latest-live.js} &
-G0--G18 complete &
-\texttt{web\_search}, final reply, resolver return. \\
+AR1 & Agent run started & run is correlated with R1 run ID and Session key & Observed \\
 \addlinespace
-W17:01 &
-\texttt{5392b60:latest-live.js} &
-G0--G18 complete &
-\texttt{bash}, \texttt{web\_search}, final reply, resolver return. \\
+AR2 & Tool loop & no \texttt{tool\_started} / \texttt{tool\_result} pair is present & Observed(no-tool) \\
 \addlinespace
-W17:18 &
-\texttt{00a70e6:latest-live.js} &
-G0--G18 complete &
-\texttt{web\_search}, final reply, resolver return. \\
+AR3 & Final reply & final reply event present; text redacted from the audit table & Observed \\
 \addlinespace
-W17:26 &
-\texttt{a9193fd:latest-live.js} &
-G0--G18 complete &
-\texttt{bash}, \texttt{web\_search}, final reply, resolver return. \\
+AR4 & Run ended & terminal lifecycle event has stop reason \texttt{stop} & Observed \\
 \addlinespace
-W21:27 &
-\texttt{cd549d0:latest-live.js} &
-G0--G18 complete &
-\texttt{web\_search}, final reply, resolver return. \\
+AR5 & Resolver returned & \texttt{reply\_resolver\_returned}; reply-result kind \texttt{single} & Observed \\
+\addlinespace
+AR6 & Return to Gateway post-processing & G16/G14 continuation follows from source after resolver return & SourceDerived \\
 \bottomrule
 \end{tabularx}
 
-Machine-readable summary:
-\texttt{artifacts/repeated-run-validation.json} and
-\texttt{artifacts/repeated-run-validation.csv}.
+\paragraph{R3 external side-effect path.}
+R3 is the controlled run that exercises an external side effect through a
+host application. The trace contains five \texttt{bash} tool calls: four
+capability probes and one Apple Mail invocation through \texttt{osascript}.
+The four probes are \texttt{command -v osascript || true},
+\texttt{command -v mutt || true}, \texttt{command -v mail || true}, and
+\texttt{command -v msmtp || true}. The tool results record exit status and
+timing, but not stdout, so the exact probe output and the reason for
+choosing \texttt{osascript} are rationale-level gaps. The final
+\texttt{osascript} command exits with code 0, which supports only
+host-side command completion; it does not verify downstream email
+delivery. No separate approval or confirmation event is observed beyond
+the user's prompt.
 
-\subsection*{E. Cake2 Boundary Status}
-
-\begin{tabularx}{\linewidth}{
-    @{}
-    >{\raggedright\arraybackslash}p{0.30\linewidth}
-    >{\raggedright\arraybackslash}X
-    @{}
-}
+\begin{tabularx}{\linewidth}{@{}l X X l@{}}
 \toprule
-\textbf{Claim} &
-\textbf{Cake2 evidence status} \\
+\textbf{Order} & \textbf{Tool} & \textbf{Recorded evidence} & \textbf{Status} \\
 \midrule
-Complete Gateway path &
-Supported for G0--G18. \\
-\addlinespace
-G18 resolver boundary &
-Supported. Resolver source is
-\texttt{default\_getReplyFromConfig}; Agent is \texttt{main}. \\
-\addlinespace
-Provider / model at boundary &
-Observed as \texttt{openai} / \texttt{gpt-5.5}. \\
-\addlinespace
-Available tools at boundary &
-Observed as \texttt{33}. \\
-\addlinespace
-Cake2 AR0--AR6 runtime replay &
-Not supported by the archived Cake2 file. It lacks a full top-level
-\texttt{agentRuntime} object. \\
+1 & \texttt{bash} & \texttt{command -v osascript || true}; stdout not recorded & Observed; rationale gap \\
+2 & \texttt{bash} & \texttt{command -v mutt || true}; stdout not recorded & Observed; rationale gap \\
+3 & \texttt{bash} & \texttt{command -v mail || true}; stdout not recorded & Observed; rationale gap \\
+4 & \texttt{bash} & \texttt{command -v msmtp || true}; stdout not recorded & Observed; rationale gap \\
+5 & \texttt{bash} & Apple Mail invocation through \texttt{osascript}; exit code 0 & Observed host-side completion \\
 \bottomrule
 \end{tabularx}
 
-\subsection*{F. Anonymous Artifact Handles}
+\paragraph{Compact AR summary for R1--R7.}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\input{../artifacts/controlled/ar-metrics-table.tex}
+\end{adjustbox}
+\end{center}
+\endgroup
+
+\subsection*{E. Controlled Cohort Tables}
+
+The following tables are generated from saved R1--R7 trace artifacts.
+They are included here to keep the main paper compact while preserving
+machine-checkable evidence for the controlled cohort.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+
+\paragraph{Run summary.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\input{../artifacts/controlled/controlled-cohort-table.tex}
+\end{adjustbox}
+\end{center}
+
+\paragraph{Stage-by-run branch matrix.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\input{../artifacts/controlled/stage-run-matrix-r1-r7.tex}
+\end{adjustbox}
+\end{center}
+
+\paragraph{Execution classes.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\input{../artifacts/controlled/execution-classes-table.tex}
+\end{adjustbox}
+\end{center}
+
+\paragraph{Repeatability pairs.}
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\input{../artifacts/controlled/repeatability-table.tex}
+\end{adjustbox}
+\end{center}
+
+\endgroup
+
+\subsection*{F. Historical Trace Notes}
+
+\paragraph{Historical Cake2.}
+The older Cake2 artifact is retained for provenance only. It came from an
+earlier instrumentation generation and is not used in the R1--R7
+quantitative analysis. Its useful role is qualitative: it shows a
+previously observed path with device-token fallback and an
+\texttt{operator.admin} authorization state. That historical contrast is
+kept separate from R1, whose controlled path uses shared-token
+authentication, role \texttt{operator}, scope \texttt{operator.write}, and
+the ordinary G3 required-scope check.
+
+\paragraph{Historical Weather.}
+Historical New York and Beijing weather traces are also retained as
+artifact-only context. They suggest that the G0--G18 Gateway skeleton can
+remain stable across successful tool-using requests, but they are not the
+current controlled cohort. The saved New York evidence contains six
+near-identical Weather requests: four contain only \texttt{web\_search},
+and two contain \texttt{bash} setup / skill-loading activity followed by
+\texttt{web\_search}. The Beijing trace is a separate historical example
+with \texttt{bash} followed by \texttt{web\_search}; it is not counted as
+one of the six New York runs. Current quantitative claims in the paper
+therefore cite R1--R7, not the historical Weather runs.
+
+\subsection*{G. Anonymous Artifact Handles}
 
 \begin{tabularx}{\linewidth}{
     @{}
@@ -14990,7 +15017,7 @@ Withheld during review; restore only after review if allowed. \\
 \section{Experimental Settings and Artifact Checklist}
 \label{app:experiment-settings}
 
-This section records the Cake2 setting. Missing fields are marked rather
+This section records the R1 setting. Missing fields are marked rather
 than guessed.
 
 \subsection*{A. System and Software Setting}
@@ -15008,7 +15035,7 @@ than guessed.
 \textbf{Meaning / role} \\
 \midrule
 Target system &
-OpenClaw &
+OpenClaw v2026.7.1-2 (0790d9f) with a TraceClaw instrumentation patch applied &
 Agent system whose Gateway path is analyzed. \\
 \addlinespace
 OpenClaw version &
@@ -15024,7 +15051,7 @@ Control UI / WebChat \texttt{chat.send} &
 Concrete request path traced in this paper. \\
 \addlinespace
 Trace label &
-Cake2 &
+R1 &
 Name of the concrete case study. \\
 \addlinespace
 User message &
@@ -15040,8 +15067,9 @@ Model observed in dispatch &
 Model value recorded in the Gateway / dispatch trace. \\
 \addlinespace
 Available tools &
-\texttt{33} &
-Tool count visible at the deeper runtime boundary. \\
+\texttt{NOT RECORDED} &
+R1 invokes zero tools; the complete available-tool inventory is not
+archived in the saved trace. \\
 \addlinespace
 Python version &
 Not archived in the current trace &
@@ -15087,20 +15115,20 @@ Required because the paper uses \texttt{xeCJK} and Unicode text. \\
 }
 \toprule
 \textbf{Parameter} &
-\textbf{Cake2 value} &
+\textbf{R1 value} &
 \textbf{Role} \\
 \midrule
 \texttt{SESSION\_KEY} &
-\seqsplit{agent:main:dashboard:f73617ed-3b69-4864-bb5d-d5ff8d1c39c4} &
+\seqsplit{agent:main:dashboard:trace-82fbff4483c4} &
 Links the request to the Dashboard Session and later to Agent
 \texttt{main}. \\
 \addlinespace
 \texttt{SESSION\_ID} &
-\seqsplit{af48dd1c-2e18-4d4d-9b08-432df4352674} &
-Persistent Session identity loaded in G7. \\
+\seqsplit{NOT RECORDED} &
+Gateway Session identity is not emitted; AR-layer Session ID is separate. \\
 \addlinespace
 \texttt{RUN\_ID} &
-\seqsplit{808b4380-f27b-4c2e-9421-74e043c3badd} &
+\seqsplit{ANON-R1-RUN-ID} &
 Used for idempotency, admission, and run-state tracking. \\
 \addlinespace
 \texttt{AgentId} &
@@ -15128,8 +15156,9 @@ Provider value observed near the deeper reply-runtime boundary. \\
 Model value observed in the dispatch trace. \\
 \addlinespace
 \texttt{availableTools} &
-\texttt{33} &
-Tool count visible at the boundary to the deeper runtime. \\
+\texttt{NOT RECORDED} &
+Available-tool inventory is not archived as an R1 trace value. R1
+runtime evidence records tools invoked as \texttt{0}. \\
 \bottomrule
 \end{tabularx}
 
@@ -15166,7 +15195,7 @@ Trace input &
 Publish the exact request payload after removing secrets. \\
 \addlinespace
 Authentication mode &
-Device-token path accepted &
+Shared-token path accepted; role \texttt{operator}; scope \texttt{operator.write} &
 Publish the non-secret configuration needed to reproduce G0--G2. \\
 \addlinespace
 Gateway route &
@@ -15196,8 +15225,8 @@ document their role. \\
 \subsection*{D. Trace and Measurement Scope}
 
 \begin{itemize}
-    \item The experiment validates the Gateway control path for one
-    request. It does not benchmark answer quality.
+    \item The controlled cohort covers R1--R7, with R1 used as the
+    detailed Gateway case. It does not benchmark answer quality.
     \item Runtime timing values should be treated as case-specific
     observations, not as performance claims.
     \item Branches with no direct runtime event are marked as
@@ -15227,7 +15256,7 @@ Anonymous demo link &
 during double-blind review. \\
 \addlinespace
 Trace logs &
-Should include the Cake2 G0--G18 runtime events and, for final release,
+Should include the R1 G0--G18 runtime events and, for final release,
 the correlated post-G18 \texttt{agentRuntime} events. \\
 \addlinespace
 Source snapshot &

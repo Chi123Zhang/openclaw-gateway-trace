@@ -1,0 +1,13 @@
+\begin{tabularx}{\linewidth}{@{}l X l X@{}}
+\toprule
+Run & Request label & Class & Observed tools \\
+\midrule
+R1 & cake baseline & no-tool & none \\
+R2 & OpenTelemetry retrieval & read-only retrieval & \texttt{web\_search} \( \times 6 \) \\
+R3 & redacted email action & external side effect via host app & \texttt{bash} \( \times 5 \) \\
+R4 & Fibonacci file creation & local file write & \texttt{bash} \( \times 3 \) + \texttt{apply\_patch} \\
+R5 & tracing/provenance explanation & no-tool & none \\
+R6 & tracing/provenance repeat & no-tool & none \\
+R7 & cake repeat & no-tool & none \\
+\bottomrule
+\end{tabularx}
