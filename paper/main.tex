@@ -193,15 +193,14 @@ systems answer related but different questions. TraceClaw asks which
 concrete value selected a control-plane branch and which unselected
 branch is therefore excluded for this run.
 
-This distinction matters for agent systems because many important
-decisions are not naturally span-shaped. A span can record that
-\texttt{chat.send} authorization completed, but the audit question is
-which scope made the call legal and whether a more privileged shortcut was
-skipped. A provenance relation can record that a reply depends on a tool
-result, but the audit question may be whether the tool was reached after
-a policy gate, a duplicate-run check, and a resolver decision. TraceClaw
-therefore treats traces and provenance records as evidence sources rather
-than as the complete explanation.
+In agent systems, many control-plane decisions are not naturally
+span-shaped. A span can record that \texttt{chat.send} authorization
+completed, while the audit still needs the scope that made the call legal
+and whether a more privileged shortcut was skipped. A provenance relation
+can record that a reply depends on a tool result, while the audit may
+still need the policy gate, duplicate-run check, and resolver decision
+that led to that tool. TraceClaw therefore treats traces and provenance
+records as evidence sources rather than as the complete explanation.
 
 \textbf{Dynamic program analysis.}
 Program slicing and dynamic slicing connect execution behavior to source
@@ -455,8 +454,7 @@ R1 is the controlled replacement for the old Cake2 case. Its prompt is
 historical context because it was collected under earlier instrumentation
 and used a different authentication path.
 
-R1 is a baseline, not the main novelty by itself. The prompt is ordinary
-on purpose: the value of the case is that an apparently simple accepted
+R1 serves as the baseline case. Its prompt is ordinary, but the accepted
 request still crosses authentication, method authorization, Session
 resolution, Agent selection, send policy, duplicate-run checking,
 admission, context construction, resolver selection, and resolver return.
@@ -476,11 +474,12 @@ authorization can short-circuit; otherwise \texttt{chat.send} requires
 this paper does not claim that authentication method alone causes that
 scope.
 
-The source-anchored ledger prevents a common mistake here. The trace
-directly shows the R1 branch outcome and the observed scopes. The source
-explains which branches those scopes make possible. The small cohort does
-not establish the causal path from authentication method to resulting
-scope, so we do not state that path as a finding.
+The ledger separates the observed R1 branch outcome from source-derived
+scope reasoning. The trace directly shows the R1 branch outcome and the
+observed scopes. The source explains which branches those scopes make
+possible. The small cohort does not establish the causal path from
+authentication method to resulting scope, so we do not state that path as
+a finding.
 
 From G4 onward, R1 follows the same successful Gateway branch structure
 as the later controlled runs: request validation passes, the message is
@@ -514,8 +513,8 @@ The AR layer uses the same audit discipline as the Gateway layer, but it
 answers a different question. G0--G18 explains how the request reaches a
 resolver. AR0--AR6 explains what kind of runtime execution the resolver
 produces: no tool, read-only retrieval, local workspace mutation, or
-external side effect. This separation prevents the paper from treating a
-successful answer as the only result of interest.
+external side effect. The analysis therefore keeps the final answer, the
+Gateway path, and the deeper runtime path as separate evidence objects.
 
 \begin{table}[H]
 \centering
@@ -591,12 +590,12 @@ state. Tool summaries report counts rather than full event sequences.}
 \subsection{Gateway Coverage and Observation}
 
 All seven controlled runs have \(\mathrm{cov}=19/19\) and
-\(\mathrm{obs}=19/19\). This does not mean the traces are complete in a
-strong semantic sense. It means every Gateway stage has source/value
-coverage and a directly observed stage outcome. Rationale visibility is
-still partial: exact internal allow sub-branches, stdout from short
-probes, tokens, and some return payload fields are not fully emitted.
-After re-auditing G0--G18, the final count is
+\(\mathrm{obs}=19/19\). These scores mean that every Gateway stage has
+source/value coverage and a directly observed stage outcome; they do not
+mean that every internal predicate or returned field is emitted.
+Rationale visibility is still partial: exact internal allow
+sub-branches, stdout from short probes, tokens, and some return payload
+fields are not fully emitted. The G0--G18 rationale-visibility count is
 \(\mathrm{full}=0/19\), \(\mathrm{partial}=19/19\), and
 \(\mathrm{source\mbox{-}derived}=0/19\) for the
 \texttt{rationale\_visibility} label.
@@ -715,7 +714,7 @@ count, and no Weather score is combined with R1--R7.
 counts come from saved repository artifacts, not from new runs.}
 \label{tab:historical-weather}
 {\scriptsize
-\begin{tabularx}{\linewidth}{@{}l c X X X@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{.16\linewidth} c >{\hsize=.85\hsize\raggedright\arraybackslash}X >{\hsize=.90\hsize\raggedright\arraybackslash}X >{\hsize=1.25\hsize\raggedright\arraybackslash}X@{}}
 \toprule
 Evidence set & Saved runs & Prompt relationship & Observed post-G18 tool pattern & Role in this paper \\
 \midrule
@@ -746,7 +745,7 @@ Each listed Gateway stage has an observed outcome, but not every internal
 predicate or returned field is emitted.}
 \label{tab:rationale-gaps}
 {\scriptsize
-\begin{tabularx}{\linewidth}{@{}l X X@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{.13\linewidth} >{\hsize=.95\hsize\raggedright\arraybackslash}X >{\hsize=1.05\hsize\raggedright\arraybackslash}X@{}}
 \toprule
 Stage(s) & Observed outcome & Rationale field not fully emitted \\
 \midrule
@@ -823,9 +822,9 @@ patch audit.
 The method is also partly manual. Stage labels are introduced by
 TraceClaw, not by OpenClaw itself, and source anchors require content
 checking. The appendix therefore cites upstream 0790d9f decision sites,
-not patched instrumentation line numbers. This is deliberate: runtime
-events may be emitted by instrumentation, but the branch claim should
-point to the upstream decision it observes.
+not patched instrumentation line numbers. Runtime events may be emitted
+by instrumentation, while the branch claim points to the upstream
+decision it observes.
 
 Finally, the external side-effect case is intentionally conservative. The
 trace proves that a host-side command exited successfully; it does not
