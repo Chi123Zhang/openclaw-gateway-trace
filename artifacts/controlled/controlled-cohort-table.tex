@@ -1,13 +1,13 @@
-\begin{tabularx}{\linewidth}{@{}l X X c c@{}}
+\begin{tabularx}{\linewidth}{@{}l X X X c@{}}
 \toprule
-Run & Request class & Tool summary & Gateway & AR \\
+Run & Request label & Runtime class & Observed tools & Gateway / AR \\
 \midrule
-R1 & cake baseline & none & 19/19, 19/19 & observed \\
-R2 & OpenTelemetry retrieval & \texttt{web\_search} \( \times 6 \) & 19/19, 19/19 & observed \\
-R3 & redacted email action & \texttt{bash} \( \times 5 \) & 19/19, 19/19 & observed \\
-R4 & Fibonacci file creation & \texttt{bash} \( \times 3 \) + \texttt{apply\_patch} & 19/19, 19/19 & observed \\
-R5 & tracing/provenance explanation & none & 19/19, 19/19 & observed \\
-R6 & tracing/provenance repeat & none & 19/19, 19/19 & observed \\
-R7 & cake repeat & none & 19/19, 19/19 & observed \\
+R1 & cake baseline & no-tool & none & complete; observed \\
+R2 & OpenTelemetry retrieval & retrieval & \texttt{web\_search} \( \times 6 \) & complete; observed \\
+R3 & redacted email action & external side effect & \texttt{bash} \( \times 5 \) & complete; observed \\
+R4 & Fibonacci file creation & local write & \texttt{bash} \( \times 3 \) + \texttt{apply\_patch} & complete; observed \\
+R5 & tracing/provenance explanation & no-tool & none & complete; observed \\
+R6 & tracing/provenance repeat & no-tool & none & complete; observed \\
+R7 & cake repeat & no-tool & none & complete; observed \\
 \bottomrule
 \end{tabularx}

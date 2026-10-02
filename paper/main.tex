@@ -1,8 +1,9 @@
 % ======================================================
-\documentclass[12pt,a4paper,twoside]{article}
+\documentclass[11pt,a4paper]{article}
 
 \usepackage{geometry}
-\geometry{left=1.9cm,right=1.9cm,top=1.9cm,bottom=1.9cm}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{microtype}
 
 \usepackage{graphicx}
 \usepackage{float}
@@ -49,7 +50,10 @@
 
 \title{TraceClaw: Source-Anchored Auditing of the\\
 LLM Agent Control Plane}
-\author{Anonymous Author(s)}
+\author{Chi Zhang\\[0.4em]
+\normalsize Computer Network Information Center (CNIC)\\
+\normalsize Chinese Academy of Sciences\\[0.6em]
+\normalsize Advisor: Kun Yang}
 \date{October 2026}
 
 \begin{document}
@@ -66,16 +70,19 @@ instrumentation patch applied. Each Gateway stage is written as a
 falsifiable claim with source anchors, case values, observation status,
 and a branch outcome. In a seven-run controlled cohort, all runs cover
 the same G0--G18 Gateway path (\(\mathrm{cov}=19/19\)) and directly emit
-the stage outcomes (\(\mathrm{obs}=19/19\)). The result is not a broad
-generalization claim. It is a controlled audit showing that source
-anchoring turns successful agent executions into checkable evidence:
+the stage outcomes (\(\mathrm{obs}=19/19\)). Source anchoring turns these
+successful agent executions into checkable evidence:
 R1/R7 and R5/R6 repeat the same prompts with identical Gateway branches,
 R2 exercises read-only retrieval, R4 exercises a local workspace
 mutation, and R3 exposes an external side-effect path whose command
-completed but whose downstream delivery is not verified. The paper also
-separates stage-outcome observation from rationale visibility: even when
+completed but whose downstream delivery is not verified. We also separate
+stage-outcome observation from rationale visibility: even when
 a stage outcome is observed, internal predicates and returned fields may
 remain only partially visible.
+
+\medskip
+\noindent\textbf{Keywords:} LLM agents, control plane, runtime auditing,
+source anchoring, provenance, OpenClaw
 \end{abstract}
 
 \section{Introduction}
@@ -127,7 +134,7 @@ Section~\ref{sec:experiments}.
 \section{Research Questions and Contributions}
 \label{sec:questions-contributions}
 
-The paper asks three questions.
+We ask three questions.
 
 \begin{enumerate}
     \item \textbf{RQ1: Gateway path.} Can a concrete request be followed
@@ -204,12 +211,11 @@ TraceClaw borrows the execution-specific mindset, but its output is an
 audit ledger rather than a slice or an inferred invariant set.
 
 The ledger is deliberately less automatic than slicing. It does not try
-to compute all statements that influenced a value. Instead, it records the
+to compute every statement that influenced a value. We record the
 decision sites that an auditor would cite in a paper: the source range,
 the run value, the observed outcome, and the nearby branch that did not
-fire. This makes the result easier to inspect, but it also means the
-method depends on careful source-anchor checking and conservative
-``not recorded'' labels when the trace lacks a field.
+fire. This makes the ledger inspectable, while keeping source-anchor
+checking and conservative ``not recorded'' labels central to the method.
 
 \textbf{Agent debugging and runtime observability.}
 Agent debugging and visualization systems such as XAgen, FlowForge, and
@@ -221,12 +227,12 @@ the Gateway boundary: it connects control-plane decisions to later
 runtime evidence.
 
 The closest connection to these systems is the post-G18 runtime layer.
-TraceClaw does not stop when the Gateway chooses a resolver. It records
-whether the deeper run is no-tool, retrieval-only, local-mutation, or an
-external side-effect execution, then links the resolver-return event back
-to the Gateway source path. The result is a repeatable structure for
-separating control-plane evidence, runtime evidence, and source-derived
-return-path claims.
+TraceClaw follows the run after the Gateway chooses a resolver. It
+records whether the deeper run is no-tool, retrieval-only,
+local-mutation, or an external side-effect execution, then links the
+resolver-return event back to the Gateway source path. This gives us a
+repeatable way to separate control-plane evidence, runtime evidence, and
+source-derived return-path claims.
 
 \section{Method: Source-Anchored Runtime Trace}
 \label{sec:method}
@@ -311,9 +317,9 @@ as \(\#\texttt{tool\_result}/\#\texttt{tool\_started}\). AR6 is marked
 dispatch source point, while later Gateway post-processing is not a
 separate runtime event unless instrumented.
 
-This three-way distinction keeps the reported numbers honest. A run can
-have \(\mathrm{cov}=19/19\) and \(\mathrm{obs}=19/19\) while still
-containing many field-level gaps. The appendix therefore lists
+With this distinction, a run can have \(\mathrm{cov}=19/19\) and
+\(\mathrm{obs}=19/19\) while still containing field-level gaps. The
+appendix therefore lists
 \texttt{NOT RECORDED} values without lowering coverage when the stage has
 enough source/value evidence to audit its outcome.
 
@@ -405,10 +411,10 @@ ordered stage groups, and each stage is checked against a source/value
 ledger. The trace then supports auditable claims about authentication,
 routing, work admission, resolver selection, and runtime return.
 
-The framework is intentionally modest. It does not summarize all
-OpenClaw behavior, and it does not claim that one trace explains every
-request. Its unit of analysis is narrower: one pinned source snapshot,
-one ordered trace per run, and one explicit evidence ledger. The same
+The framework does not summarize all OpenClaw behavior, and one trace
+does not explain every request. Its unit of analysis is narrower: one
+pinned source snapshot, one ordered trace per run, and one explicit
+evidence ledger. The same
 unit can be repeated for other prompts, compared across versions, or used
 to decide where additional instrumentation is needed.
 
@@ -435,9 +441,9 @@ tool/no-tool class, resolver return, and rationale gaps};
 \draw[->, thick, dashed] (ev) -- (claim);
 \end{tikzpicture}
 \end{adjustbox}
-\caption{TraceClaw framework. The paper separates Gateway-stage evidence
-from the deeper Agent Runtime layer, then connects them with the resolver
-return edge.}
+\caption{TraceClaw framework. We separate Gateway-stage evidence from the
+deeper Agent Runtime layer, then connect them with the resolver return
+edge.}
 \label{fig:framework}
 \end{figure}
 
@@ -531,12 +537,12 @@ Mail through \texttt{osascript} and exits 0. The evidence supports only
 the host-side command completion; downstream email delivery is not
 verified.
 
-Two details make this runtime layer useful. First, a no-tool run is still
-evidence: it shows that the Agent lifecycle completed without tool
-events, so the absence of tools is recorded rather than assumed. Second,
-tool runs are not collapsed into a single ``used tools'' flag. The paper
-keeps command count, result count, stop reason, final reply, and resolver
-return separate, because each supports a different claim.
+We use the runtime layer in two ways. A no-tool run is still evidence: it
+shows that the Agent lifecycle completed without tool events, so the
+absence of tools is recorded rather than assumed. Tool runs are recorded
+as sequences, not as a single ``used tools'' flag. We keep command count,
+result count, stop reason, final reply, and resolver return separate
+because each supports a different claim.
 
 \section{Controlled Experiments}
 \label{sec:experiments}
@@ -572,9 +578,10 @@ rather than by trace-embedded metadata.
 
 \begin{table}[H]
 \centering
-\caption{Controlled cohort. Gateway column reports coverage and direct
-stage-outcome observation; tool summaries report counts rather than full
-event sequences.}
+\caption{Controlled cohort and runtime class. In the Gateway / AR column,
+\textit{complete} means \(\mathrm{cov}=19/19\) and \(\mathrm{obs}=19/19\);
+\textit{observed} means the AR lifecycle reaches a recorded completion
+state. Tool summaries report counts rather than full event sequences.}
 \label{tab:controlled-cohort}
 {\scriptsize
 \input{../artifacts/controlled/controlled-cohort-table.tex}
@@ -594,17 +601,7 @@ After re-auditing G0--G18, the final count is
 \(\mathrm{source\mbox{-}derived}=0/19\) for the
 \texttt{rationale\_visibility} label.
 
-\subsection{Execution Classes}
-
-\begin{table}[H]
-\centering
-\caption{Execution classes assigned only from the observed runtime path.
-The R3 prompt is redacted in submitted material.}
-\label{tab:execution-classes}
-{\scriptsize
-\input{../artifacts/controlled/execution-classes-table.tex}
-}
-\end{table}
+\subsection{Runtime Classes}
 
 R1, R5, R6, and R7 are no-tool runs. R2 is read-only retrieval and records
 six \texttt{web\_search} calls with matching results. R4 records
@@ -665,11 +662,10 @@ execution. The effective tool-policy path that allows that execution is
 source-derived from the G16 dispatch path, not emitted as a separate
 authorization event in the saved trace.
 
-R3 gives the clearest rationale-visibility gap. The runtime records that
-the command completed, but it does not record stdout from the short
+R3 gives the clearest rationale-visibility gap. The runtime records
+command completion, but it does not record stdout from the short
 \texttt{command -v ... || true} probes and it does not emit a separate
-approval or delivery-confirmation event. A normal success log might
-invite a downstream-delivery inference. The ledger supports the weaker
+approval or delivery-confirmation event. The ledger supports the narrower
 claim: the host-side command path completed, and the missing
 approval/delivery evidence is an observability gap.
 
@@ -689,13 +685,14 @@ Agent, resolver, tool/no-tool choice, stop reason, and AR structure match.
 The expected differences are run ID, Gateway Session key, AR session
 identifier where emitted, timestamps, and reply wording.
 
-The repeat pairs are not a general stability theorem. They are a sanity
-check on the ledger. If the same prompt under the same controlled
-environment changed Gateway branches without a recorded reason, the stage
-model would be suspect. Instead, the branch structure is stable and the
-run-specific identifiers change as expected. This supports using R1 as
-the detailed source-audit baseline while using R7 as an exact-prompt
-repeat.
+Both exact-prompt repeat pairs are no-tool runs. They test repeatability
+of the Gateway path and the no-tool runtime path; they do not establish
+that tool-using runtime paths are stable under exact-prompt repetition.
+If the same prompt under the same controlled environment changed Gateway
+branches without a recorded reason, the stage model would be suspect. In
+these two pairs, the branch structure is stable and the run-specific
+identifiers change as expected. This supports using R1 as the detailed
+source-audit baseline while using R7 as an exact-prompt repeat.
 
 \subsection{Historical Weather Supplement}
 \label{sec:historical-weather}
@@ -731,13 +728,16 @@ Beijing Weather & 1 & separate Weather request & \texttt{bash} + \texttt{web\_se
 
 \subsection{Repeated-Run Consistency and Rationale Gaps}
 
-All 19 Gateway stages take the same branch across R1--R7. The values
-that should differ do differ: run identifiers, Session keys, timestamps,
-and the AR-layer tool path. Because every Gateway stage still has only
-\textsc{partial} rationale visibility, the compact main-paper table lists
-the gaps that matter instead of printing 19 rows with the same visibility
-label. The full stage-by-run matrix and the R1 per-stage source audit are
-kept in the supplementary appendix.
+All 19 Gateway stages take the same branch across R1--R7. Across the
+exact-prompt repeat pairs, run-specific identifiers, Session keys, and
+timestamps differ as expected while the audited Gateway branch structure
+stays unchanged. Across different request classes, the post-G18 runtime
+path changes, most visibly in whether and how tools are used. Because
+every Gateway stage still has only \textsc{partial} rationale visibility,
+the compact main-paper table lists the gaps that matter instead of
+printing 19 rows with the same visibility label. The full stage-by-run
+matrix and the R1 per-stage source audit are kept in the supplementary
+appendix.
 
 \begin{table}[H]
 \centering
@@ -769,25 +769,21 @@ probe stdout, separate approval event, and delivery confirmation \\
 
 \subsection{Audit Findings}
 
-The controlled cohort yields three findings that plain final-answer
-evaluation would miss. First, Gateway structure is stable across seven
-successful runs while runtime class varies. Second, R3 exposes an
-approval and tool-policy audit boundary: the trace records \texttt{bash}
-execution and command completion, while the effective policy path that
-permits the tool is source-derived and no separate delivery-confirmation
-event is recorded. Third, the traces demonstrate a rationale-level
-observability gap even with 19/19 stage outcome observation.
+The controlled cohort yields three findings. First, Gateway structure is
+stable across seven successful runs while runtime class varies. Second,
+R3 exposes an approval and tool-policy audit boundary: the trace records
+\texttt{bash} execution and command completion, while the effective
+policy path that permits the tool is source-derived and no separate
+delivery-confirmation event is recorded. Third, the traces show
+rationale-level gaps even when every Gateway stage outcome is observed.
 
-These findings are modest but specific. TraceClaw does not show that
-OpenClaw is safe in general, nor that a successful run proves policy
-compliance in every layer. It shows that an accepted request can be
-turned into a falsifiable ledger: G3 can prove that the ordinary
-\texttt{operator.write} branch, not the administrator shortcut, is the R1
-authorization path; G10 can show the outcome \texttt{allow} while still
-leaving the exact internal allow sub-branch only partially visible; AR6
-can show resolver return while marking later Gateway resume as
-source-derived. Final-answer evaluation alone would not expose these
-control-flow and evidence-boundary details.
+TraceClaw does not show that OpenClaw is safe in general, nor that a
+successful run proves policy compliance in every layer. It turns an
+accepted request into a falsifiable ledger: G3 identifies the ordinary
+\texttt{operator.write} authorization path; G10 records the
+\texttt{allow} outcome while marking the internal allow sub-branch as
+partially visible; AR6 links resolver return to a source-derived Gateway
+resume. These details sit below the final natural-language answer.
 
 \subsection{Coverage Limits}
 
@@ -833,9 +829,9 @@ point to the upstream decision it observes.
 
 Finally, the external side-effect case is intentionally conservative. The
 trace proves that a host-side command exited successfully; it does not
-prove email delivery. The paper therefore treats R3 as an audit finding
-about command-level evidence and missing approval/confirmation events,
-not as proof of downstream delivery.
+prove email delivery. We therefore treat R3 as an audit finding about
+command-level evidence and missing approval/confirmation events, not as
+proof of downstream delivery.
 
 \section{Artifact, Privacy, and Future Work}
 \label{sec:artifact}
